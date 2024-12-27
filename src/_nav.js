@@ -22,7 +22,7 @@ import { PiListStarLight } from 'react-icons/pi'
 import { LiaFileInvoiceDollarSolid } from 'react-icons/lia'
 import { TbReport } from 'react-icons/tb'
 import { TbSettings } from 'react-icons/tb'
-// import { LuHelpCircle } from 'react-icons/lu'
+import { MdOutlineSupportAgent } from "react-icons/md";
 import { BiLogOutCircle } from 'react-icons/bi'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -211,14 +211,14 @@ const _nav = [
     to: '/h&s',
     icon: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <BiLogOutCircle style={{ marginRight: '15px', fontSize: '23px' }} />
+        <MdOutlineSupportAgent  style={{ marginRight: '15px', fontSize: '23px' }} />
       </div>
     ),
   },
   {
     component: CNavItem,
     name: 'LogOut',
-    to: '/forms/logout',
+    to: '/login',
     icon: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <BiLogOutCircle style={{ marginRight: '15px', fontSize: '23px' }} />

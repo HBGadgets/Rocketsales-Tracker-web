@@ -15,13 +15,20 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
-
+import { useNavigate } from 'react-router-dom'
 const Login = () => {
+  const navigate = useNavigate() 
+  const handleRegisterRedirect = () => {
+    navigate('/register') // This will navigate to the /login route
+  }
+  const handleLogin = () => {
+    navigate('/')
+  }
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
-          <CCol md={8}>
+          <CCol md={10}>
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
@@ -46,10 +53,13 @@ const Login = () => {
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="primary" className="px-4">
+                        <CButton color="primary" className="px-4"  onClick={handleLogin}>
                           Login
                         </CButton>
                       </CCol>
+                      <div className="d-grid" onClick={handleRegisterRedirect} style={{ cursor: 'pointer', marginTop: '10px' }}>
+                        <p>New Here? <strong>Register</strong></p>
+                      </div>
                       <CCol xs={6} className="text-right">
                         <CButton color="link" className="px-0">
                           Forgot password?
