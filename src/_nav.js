@@ -25,7 +25,25 @@ import { TbSettings } from 'react-icons/tb'
 import { MdOutlineSupportAgent } from "react-icons/md";
 import { BiLogOutCircle } from 'react-icons/bi'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import Cookies from 'js-cookie';
+import jwt_decode from 'jwt-decode';
 
+
+
+const getUserRole = () => {
+  const token = Cookies.get('token');  // Retrieve token from localStorage
+  if (token) {
+    const decodedToken = jwt_decode(token);  // Decode the JWT
+    return decodedToken.role;  // Assuming the 'role' is a property in the token payload
+  }
+  return null;  // Return null if no token is found
+};
+
+
+
+
+// Conditional rendering of User Management based on the role
+const userRole = getUserRole();  // Get the user role
 const _nav = [
   {
     component: CNavTitle,
@@ -140,11 +158,14 @@ const _nav = [
         name: 'Task Management',
         to: '/task-management',
       },
-      {
-        component: CNavItem,
-        name: 'User Management',
-        to: '/user-management',
-      },
+       // Conditionally render 'User Management' only if the role is 1
+       ...(userRole === 1 ? [
+        {
+          component: CNavItem,
+          name: 'Company Management',
+          to: '/company-management',
+        },
+      ] : []),
     ],
   },
 
@@ -224,7 +245,21 @@ const _nav = [
         <BiLogOutCircle style={{ marginRight: '15px', fontSize: '23px' }} />
       </div>
     ),
+    onClick: () => handleLogout(), // Add logout function here
   },
 ]
+
+const handleLogout = () => {
+  // Clear the token from localStorage
+  localStorage.removeItem('token');
+
+  // Clear the token from cookies (if it's stored there)
+  Cookies.remove('token');
+
+  // Optionally, clear any other session-related data
+  
+  // Redirect to the login page after logout
+  navigate('/login');
+};
 
 export default _nav
