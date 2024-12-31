@@ -25,9 +25,12 @@ const EmployeeDetails = React.lazy(() => import('./views/base/ReportMange/Employ
 
 const Settings = React.lazy(() => import('./views/forms/settings/Settings'))
 const HelpSupp = React.lazy(() => import('./views/forms/help-support/HelpSupp'))
-
-
-
+const Company=React.lazy(()=>import('./views/base/Management/Company'))
+const Branches=React.lazy(()=>import('./views/base/Management/Branches'))
+const BranchGroup=React.lazy(()=>import('./views/base/Management/BranchGroup'))
+const Supervisor=React.lazy(()=>import('./views/base/Management/Supervisor'))
+// const Company=React.lazy(()=>import('./views/base/Management/Company'))
+// const Company=React.lazy(()=>import('./views/base/Management/Company'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   
@@ -49,7 +52,10 @@ const routes = [
   
   { path: '/task-management', name: 'Task Management', element: TaskManagment },
   { path: '/user-management', name: 'User Management', element: UserDetailsForm },
-  
+  { path: '/Company', name: 'Comapany', element: Company },
+  { path: '/Branches', name: 'Branches', element: Branches },
+  { path: '/Supervisor', name: 'Supervisor', element: Supervisor },
+  { path: '/Branch-Group', name: 'Branch-Group', element: BranchGroup },
   { path: '/expense-details', name: 'Expense Details', element: ExpenseDetails },
   { path: '/manual-expense', name: 'Manual Expense', element: ManualExpense },
   

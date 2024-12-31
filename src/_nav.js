@@ -145,6 +145,26 @@ const _nav = [
         name: 'User Management',
         to: '/user-management',
       },
+      {
+        component: CNavItem,
+        name: 'Company',
+        to: '/Company',
+      },
+      {
+        component: CNavItem,
+        name: 'Branch Group',
+        to: '/Branch-Group',
+      },
+      {
+        component: CNavItem,
+        name: 'Branches',
+        to: '/Branches',
+      },
+      {
+        component: CNavItem,
+        name: 'Supervisor',
+        to: '/Supervisor',
+      },
     ],
   },
 
