@@ -27,24 +27,62 @@ import { BiLogOutCircle } from 'react-icons/bi'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import Cookies from 'js-cookie';
 import jwt_decode from 'jwt-decode';
+const token=Cookies.get("token");
+let role=null
+if(token){
+  const decodetoken=jwt_decode(token);
+   role=decodetoken.role;
+}
+console.log(role)
+
+let managementItems = [];
+if (role === 1) {
+  managementItems = [
+    { component: CNavItem, name: 'Task Management', to: '/task-management' },
+    { component: CNavItem, name: 'User Management', to: '/user-management' },
+    { component: CNavItem, name: 'Company', to: '/Company' },
+    { component: CNavItem, name: 'Branch Group', to: '/Branch-Group' },
+    { component: CNavItem, name: 'Branches', to: '/Branches' },
+    { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+  ];
+} else if (role === 2) {
+  managementItems = [
+    { component: CNavItem, name: 'Task Management', to: '/task-management' },
+    { component: CNavItem, name: 'User Management', to: '/user-management' },
+    { component: CNavItem, name: 'Branch Group', to: '/Branch-Group' },
+    { component: CNavItem, name: 'Branches', to: '/Branches' },
+    { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+  ];
+}else if (role === 3) {
+  managementItems = [
+    { component: CNavItem, name: 'Task Management', to: '/task-management' },
+    { component: CNavItem, name: 'User Management', to: '/user-management' },
+    { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+  ];
+}else if (role === 4) {
+  managementItems = [
+    { component: CNavItem, name: 'Task Management', to: '/task-management' },
+    { component: CNavItem, name: 'User Management', to: '/user-management' },
+ 
+  ];
+}else if (role === 6) {
+  managementItems = [
+    { component: CNavItem, name: 'Task Management', to: '/task-management' },
+    { component: CNavItem, name: 'User Management', to: '/user-management' },
+
+    { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+  ];
+}else{
+  managementItems = [
+    { component: CNavItem, name: 'Task Management', to: '/task-management' },
+    { component: CNavItem, name: 'User Management', to: '/user-management' },
+  ];
+}
 
 
-
-// const getUserRole = () => {
-//   const token = Cookies.get('token');  // Retrieve token from localStorage
-//   if (token) {
-//     const decodedToken = jwt_decode(token);  // Decode the JWT
-//     return decodedToken.role;  // Assuming the 'role' is a property in the token payload
-//   }
-//   return null;  // Return null if no token is found
-// };
-
-
-
-
-// Conditional rendering of User Management based on the role
-// const userRole = getUserRole();  // Get the user role
 const _nav = [
+
+  
   {
     component: CNavTitle,
     name: 'Admin Menu',
@@ -152,13 +190,7 @@ const _nav = [
         <PiListStarLight style={{ marginRight: '15px', fontSize: '25px' }} />
       </div>
     ),
-    items: [
-      {
-        component: CNavItem,
-        name: 'Task Management',
-        to: '/task-management',
-      },
-    ],
+    items: managementItems,
   },
 
   {
@@ -224,7 +256,7 @@ const _nav = [
     to: '/h&s',
     icon: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <MdOutlineSupportAgent  style={{ marginRight: '15px', fontSize: '23px' }} />
+        <MdOutlineSupportAgent style={{ marginRight: '15px', fontSize: '23px' }} />
       </div>
     ),
   },
@@ -242,10 +274,15 @@ const _nav = [
 ]
 
 const handleLogout = () => {
-
+  // Clear the token from localStorage
   localStorage.removeItem('token');
 
+  // Clear the token from cookies (if it's stored there)
   Cookies.remove('token');
+
+  // Optionally, clear any other session-related data
+  
+  // Redirect to the login page after logout
   navigate('/login');
 };
 
