@@ -26,7 +26,7 @@ const EmployeeDetails = React.lazy(() => import('./views/base/ReportMange/Employ
 const Settings = React.lazy(() => import('./views/forms/settings/Settings'))
 const HelpSupp = React.lazy(() => import('./views/forms/help-support/HelpSupp'))
 const Company=React.lazy(()=>import('./views/base/Management/Company/Company'))
-const Branches=React.lazy(()=>import('./views/base/Management/Branches'))
+const Branches=React.lazy(()=>import('./views/base/Management/Branches/Branches'))
 const BranchGroup=React.lazy(()=>import('./views/base/Management/BranchGroup'))
 const Supervisor=React.lazy(()=>import('./views/base/Management/Supervisor'))
 // const Company=React.lazy(()=>import('./views/base/Management/Company'))

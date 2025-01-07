@@ -53,12 +53,13 @@ import '../../../../../src/app.css'
 import { COLUMNS } from './columns'
 import { StyledTablePagination } from '../../../../views/PaginationCssFile/TablePaginationStyles'
 // import { FaBriefcase   } from 'react-icons/fa';
-import { BsBuildingsFill } from 'react-icons/bs'
+import { FiGitBranch } from 'react-icons/fi';
+
 import '../../ReusablecodeforTable/styles.css';
 import ExcelJS from 'exceljs';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
-const Company = () => {
+const Branches = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [formData, setFormData] = useState({})
@@ -106,7 +107,7 @@ const Company = () => {
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/get-companies`;
+    const url = `https://rocketsales-server.onrender.com/api/branches`;
   
     try {
       const response = await axios.get(url, {
@@ -115,14 +116,31 @@ const Company = () => {
         },
       });
   
+//     const allData=response.data.flatMap((branchh)=>{
+// Array.isArray(branchh.Branches)&&branchh.Branches.length>0?
+// branchh.Branches.map((itemm)=>{
+//   ...itemm,
+//   companyName:branchh.companyName,
+// })
+// :[]
+//     })
+const allData = response.data.flatMap((branchh) => 
+  branchh.branches.map((item)=>({
+    ...item,
+    companyName: branchh.companyName,
+  }))
+ 
+);
+console.log("mm",allData)
       if (response.data) {
         // Filter the data based on the search query if it is not empty
-        const filteredData = response.data
+        const filteredData = allData
           .map((item) => {
             // Apply the formatDate method to 'created_at' field if it exists
             if (item.created_at) {
               item.created_at = formatDate(item.created_at);
             }
+            
             return item;
           })
           .filter((item) =>
@@ -168,7 +186,7 @@ const Company = () => {
       setFilteredData(data) // No query, show all drivers
     } else {
       const filtered = data.filter((group) =>
-        group.companyName.toLowerCase().includes(searchQuery.toLowerCase()),
+        group.BranchesName.toLowerCase().includes(searchQuery.toLowerCase()),
       )
       setFilteredData(filtered)
       setCurrentPage(1)
@@ -192,7 +210,7 @@ const Company = () => {
     console.log(formData)
     try {
       const accessToken = Cookies.get('token')
-      const response = await axios.post(`https://rocketsales-server.onrender.com/api/create-company`, formData, {
+      const response = await axios.post(`https://rocketsales-server.onrender.com/api/create-Branches`, formData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -228,7 +246,7 @@ const Company = () => {
     try {
       const accessToken = Cookies.get('authToken')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/update-company/${formData._id}`,
+        `https://rocketsales-server.onrender.com/api/update-Branches/${formData._id}`,
         formData,
         {
           headers: {
@@ -275,7 +293,7 @@ const Company = () => {
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        url: `https://rocketsales-server.onrender.com/api/delete-company/${item._id}`,
+        url: `https://rocketsales-server.onrender.com/api/delete-Branches/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -295,18 +313,18 @@ const Company = () => {
 
   
   const exportToExcel = ExcelExporter({
-    mytitle:'Branches Data Report',
+  
     columns: COLUMNS(),
     data: filteredData,
-    fileName: 'company_data.xlsx',
-   
+    fileName: 'Branches_data.xlsx',
+    mytitle:'Branches Data Report',
   });
 
 const exportToPDF = PDFExporter({
-  title: 'Company Data Report',
+  title: 'Branches Data Report',
   columns: COLUMNS(),
   data: filteredData,
-  fileName: 'Company_data_report.pdf',
+  fileName: 'Branches_data_report.pdf',
 });
 
   return (
@@ -324,8 +342,8 @@ const exportToPDF = PDFExporter({
               fontFamily: "'Poppins', sans-serif",
             }}
           >
-            <BsBuildingsFill style={{ fontSize: '24px', color: '#4c637c' }} />
-            Company
+            <FiGitBranch  style={{ fontSize: '24px', color: '#4c637c' }} />
+            Branches
           </h2>
         </div>
 
@@ -583,7 +601,7 @@ const exportToPDF = PDFExporter({
   <Box sx={style}>
     <div className="d-flex justify-content-between">
       <Typography id="modal-modal-title" variant="h6" component="h2">
-        Add New Company
+        Add New Branches
       </Typography>
       <IconButton onClick={handleAddModalClose}>
         <CloseIcon />
@@ -592,7 +610,7 @@ const exportToPDF = PDFExporter({
     <DialogContent>
       <form onSubmit={handleAddSubmit}>
         <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {COLUMNS().slice(0,-1).map((column) => (
+          {COLUMNS().map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}
@@ -637,7 +655,7 @@ const exportToPDF = PDFExporter({
   <Box sx={style}>
     <div className="d-flex justify-content-between">
       <Typography id="modal-modal-title" variant="h6" component="h2">
-        Edit Company
+        Edit Branches
       </Typography>
       <IconButton onClick={handleEditModalClose}>
         <CloseIcon />
@@ -646,7 +664,7 @@ const exportToPDF = PDFExporter({
     <DialogContent>
       <form onSubmit={handleEditSubmit}>
         <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {COLUMNS().slice(0,-1).map((column) => (
+          {COLUMNS().map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}
@@ -684,4 +702,4 @@ const exportToPDF = PDFExporter({
   )
 }
 
-export default Company
+export default Branches

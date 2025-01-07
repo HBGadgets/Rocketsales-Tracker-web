@@ -38,4 +38,8 @@ export const StyledTablePagination = styled('div')(({ theme }) => ({
   "& .MuiSelect-select": {
     cursor: "pointer", // Set cursor to pointer when hovering over the select box
   },
+  "& .MuiTablePagination-displayedRows": {
+    marginBottom: "0rem !important",
+  }
+  
 }));
