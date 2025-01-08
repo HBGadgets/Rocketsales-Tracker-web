@@ -54,7 +54,7 @@ import { COLUMNS } from './columns'
 import { StyledTablePagination } from '../../../../views/PaginationCssFile/TablePaginationStyles'
 // import { FaBriefcase   } from 'react-icons/fa';
 import { FiGitBranch } from 'react-icons/fi';
-
+import BusinessIcon from '@mui/icons-material/Business';
 import '../../ReusablecodeforTable/styles.css';
 import ExcelJS from 'exceljs';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
@@ -116,18 +116,12 @@ const Branches = () => {
         },
       });
   
-//     const allData=response.data.flatMap((branchh)=>{
-// Array.isArray(branchh.Branches)&&branchh.Branches.length>0?
-// branchh.Branches.map((itemm)=>{
-//   ...itemm,
-//   companyName:branchh.companyName,
-// })
-// :[]
-//     })
+
 const allData = response.data.flatMap((branchh) => 
   branchh.branches.map((item)=>({
     ...item,
     companyName: branchh.companyName,
+    companyId:branchh._id,
   }))
  
 );
@@ -186,7 +180,7 @@ console.log("mm",allData)
       setFilteredData(data) // No query, show all drivers
     } else {
       const filtered = data.filter((group) =>
-        group.BranchesName.toLowerCase().includes(searchQuery.toLowerCase()),
+        group.branchName.toLowerCase().includes(searchQuery.toLowerCase()),
       )
       setFilteredData(filtered)
       setCurrentPage(1)
@@ -246,7 +240,7 @@ console.log("mm",allData)
     try {
       const accessToken = Cookies.get('authToken')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/update-Branches/${formData._id}`,
+        `https://rocketsales-server.onrender.com/api/Company/${formData.companyId}/branch/${formData._id}`,
         formData,
         {
           headers: {
@@ -293,7 +287,8 @@ console.log("mm",allData)
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        url: `https://rocketsales-server.onrender.com/api/delete-Branches/${item._id}`,
+        // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
+        url: `https://rocketsales-server.onrender.com/api/Company/${item.companyId}/branch/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -609,8 +604,33 @@ const exportToPDF = PDFExporter({
     </div>
     <DialogContent>
       <form onSubmit={handleAddSubmit}>
+
         <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {COLUMNS().map((column) => (
+        <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
+  <InputLabel id="company-label">Company</InputLabel>
+  <Select
+    labelId="company-label"
+    id="company"
+    value={formData.company || ''}
+    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+    label="Company"
+    renderValue={(selected) => (
+      <>
+        <InputAdornment position="start">
+          <BusinessIcon />
+        </InputAdornment>
+        {selected}
+      </>
+    )}
+  >
+    {/* Populate this with your list of companies */}
+    <MenuItem value="Company 1">Company 1</MenuItem>
+    <MenuItem value="Company 2">Company 2</MenuItem>
+    <MenuItem value="Company 3">Company 3</MenuItem>
+    {/* Add more companies as needed */}
+  </Select>
+</FormControl>
+          {COLUMNS().slice(1).map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}
@@ -629,7 +649,9 @@ const exportToPDF = PDFExporter({
               }}
             />
           ))}
+         
         </FormControl>
+        
         <Button
           variant="contained"
           color="primary"

@@ -6,7 +6,7 @@ import CreditCardIcon from '@mui/icons-material/CreditCard';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import LockIcon from '@mui/icons-material/Lock';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'; // Specific icon for username
-
+import { Call } from '@mui/icons-material';
 export const COLUMNS = () => [
   {
     Header: 'Company Name',
@@ -27,6 +27,11 @@ export const COLUMNS = () => [
     Header: 'Owner Email',
     accessor: 'ownerEmail',
     icon: <EmailIcon />,
+  },
+  {
+    Header: 'company Phone',
+    accessor: 'companyPhone',
+    icon: <Call />,
   },
   {
     Header: 'GST Number',
