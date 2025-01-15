@@ -51,7 +51,7 @@ import GroupIcon from '@mui/icons-material/Group'
 import { cilSettings } from '@coreui/icons'
 import '../../../../../src/app.css'
 import { COLUMNS } from './columns'
-import { StyledTablePagination } from '../../../../views/PaginationCssFile/TablePaginationStyles'
+import { StyledTablePagination } from '../../../PaginationCssFile/TablePaginationStyles'
 // import { FaBriefcase   } from 'react-icons/fa';
 import { FiGitBranch } from 'react-icons/fi';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -67,7 +67,7 @@ if(token){
    role=decodetoken.role;
 }
 console.log("n",role)
-const Branches = () => {
+const Supervisor = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [formData, setFormData] = useState({})
@@ -116,7 +116,7 @@ const Branches = () => {
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/branches`;
+    const url = `https://rocketsales-server.onrender.com/api/Company/branch/supervisors`;
   
     try {
       const response = await axios.get(url, {
@@ -127,7 +127,7 @@ const Branches = () => {
   
 
 const allData = response.data.flatMap((branchh) => 
-  branchh.branches.map((item)=>({
+  branchh.Supervisor.map((item)=>({
     ...item,
     companyName: branchh.companyName,
     companyId:branchh._id,
@@ -349,15 +349,15 @@ console.log("mm",allData)
   
     columns: COLUMNS(),
     data: filteredData,
-    fileName: 'Branches_data.xlsx',
-    mytitle:'Branches Data Report',
+    fileName: 'Supervisor_data.xlsx',
+    mytitle:'Supervisor Data Report',
   });
 
 const exportToPDF = PDFExporter({
-  title: 'Branches Data Report',
+  title: 'Supervisor Data Report',
   columns: COLUMNS(),
   data: filteredData,
-  fileName: 'Branches_data_report.pdf',
+  fileName: 'Supervisor_data_report.pdf',
 });
 
   return (
@@ -376,7 +376,7 @@ const exportToPDF = PDFExporter({
             }}
           >
             <FiGitBranch  style={{ fontSize: '24px', color: '#4c637c' }} />
-            Branches
+            Supervisor
           </h2>
         </div>
 
@@ -634,7 +634,7 @@ const exportToPDF = PDFExporter({
   <Box sx={style}>
     <div className="d-flex justify-content-between">
       <Typography id="modal-modal-title" variant="h6" component="h2">
-        Add New Branches
+        Add New Supervisor
       </Typography>
       <IconButton onClick={handleAddModalClose}>
         <CloseIcon />
@@ -719,7 +719,7 @@ const exportToPDF = PDFExporter({
   <Box sx={style}>
     <div className="d-flex justify-content-between">
       <Typography id="modal-modal-title" variant="h6" component="h2">
-        Edit Branches
+        Edit Supervisor
       </Typography>
       <IconButton onClick={handleEditModalClose}>
         <CloseIcon />
@@ -794,4 +794,4 @@ const exportToPDF = PDFExporter({
   )
 }
 
-export default Branches
+export default Supervisor
