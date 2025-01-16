@@ -1,13 +1,15 @@
-import React from 'react'
+import React , { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
 import {
   CCloseButton,
+  CHeaderToggler,
   CSidebar,
   CSidebarBrand,
   CSidebarFooter,
   CSidebarHeader,
   CSidebarToggler,
+  CTooltip,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 
@@ -18,18 +20,25 @@ import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
 import navigation from '../_nav'
-
+import { useNavigate } from 'react-router-dom'
+import { cilDelete, cilMenu } from '@coreui/icons'
+import rocketimg from './image.png';
+import "./AppSidebar.css"
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
-  const sidebarShow = useSelector((state) => state.sidebarShow)
-
+  const sidebarShow = useSelector((state) => state.sidebar.sidebarShow)
+console.log(unfoldable,"k");
+  const navigate = useNavigate()
+  const [navigatingNav, setNavigatingNav] = useState(null)
+  const toggle = useSelector((state) => state.navbar)
+  // console.log("toggle starte",toggle)
   return (
     <CSidebar
       className="border-end"
       colorScheme="dark"
       position="fixed"
-      unfoldable={unfoldable}
+      unfoldable={sidebarShow}
       visible={sidebarShow}
       onVisibleChange={(visible) => {
         dispatch({ type: 'set', sidebarShow: visible })
@@ -38,12 +47,13 @@ const AppSidebar = () => {
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/dashboard">
           <img src={logo} alt="Logo" className="sidebar-brand-full" height={45} width={200} />
-          <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} />
+          <img src={logo} alt="Logo" className="sidebar-brand-narrow" height={32} width={32} />
+          {/* <CIcon customClassName="sidebar-brand-narrow" icon={rocketimg} height={32} /> */}
         </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"
           dark
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+          onClick={() => dispatch({ type: 'set', sidebarShow: true })}
         />
       </CSidebarHeader>
       <AppSidebarNav items={navigation} />

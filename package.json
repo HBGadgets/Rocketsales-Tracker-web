@@ -33,6 +33,7 @@
     "@mui/material": "^6.0.2",
     "@mui/x-date-pickers": "^7.16.0",
     "@popperjs/core": "^2.11.8",
+    "@reduxjs/toolkit": "^2.5.0",
     "auth0-js": "^9.28.0",
     "axios": "^1.7.7",
     "chart.js": "^4.4.3",

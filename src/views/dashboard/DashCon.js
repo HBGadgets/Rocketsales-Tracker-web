@@ -53,7 +53,7 @@ import avatar6 from 'src/assets/images/avatars/6.jpg'
 import WidgetsBrand from '../widgets/WidgetsBrand'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainMap from '../Map/MapComponent';
-
+import "./styledash.css"
 const Dashboard = () => {
   const progressExample = [
     { title: 'Visits', value: '29.703 Users', percent: 40, color: 'success' },
@@ -178,13 +178,14 @@ const Dashboard = () => {
 
   return (
     <>
-      <WidgetsDropdown className="mb-4" />
+      
       <CCard className="mb-4">
-        <CCardBody>
+        <CCardBody className="content  " >
           <CRow>
             <CCol sm={7} className="d-none d-md-block"></CCol>
           </CRow>
           <MainMap />
+         
         </CCardBody>
         <CCardFooter>
           <CRow
@@ -211,6 +212,7 @@ const Dashboard = () => {
           </CRow>
         </CCardFooter>
       </CCard>
+      <WidgetsDropdown className="mb-4" />
       <WidgetsBrand className="mb-4" withCharts />
       <CRow>
         <CCol xs>

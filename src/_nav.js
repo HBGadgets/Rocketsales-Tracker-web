@@ -13,6 +13,9 @@ import {
   cilSpeedometer,
   cilStar,
 } from '@coreui/icons'
+// import { TbReport } from 'react-icons/tb'
+import { FaBoxes, FaUserTie } from 'react-icons/fa'
+
 import { IoLocationOutline } from 'react-icons/io5'
 import { BsWindowFullscreen } from 'react-icons/bs'
 import { BsChatDots } from 'react-icons/bs'
@@ -25,8 +28,12 @@ import { TbSettings } from 'react-icons/tb'
 import { MdOutlineSupportAgent } from "react-icons/md";
 import { BiLogOutCircle } from 'react-icons/bi'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import { FaCarOn, FaUserGroup } from 'react-icons/fa6'
 import Cookies from 'js-cookie';
 import jwt_decode from 'jwt-decode';
+import { FaTasks, FaUsers, FaBuilding, FaLayerGroup, FaMapMarkerAlt } from 'react-icons/fa';
+import {  FaEdit, FaRegCalendarAlt, FaStore } from 'react-icons/fa';
+import {  FaFileInvoice, FaClipboardList, FaWarehouse } from 'react-icons/fa';
 const token=Cookies.get("token");
 let role=null
 if(token){
@@ -35,50 +42,284 @@ if(token){
 }
 console.log(role)
 
+// let managementItems = [];
+// if (role === 1) {
+//   managementItems = [
+//     { component: CNavItem, name: 'Task Management', to: '/task-management' },
+//     { component: CNavItem, name: 'User Management', to: '/user-management' },
+//     { component: CNavItem, name: 'Company', to: '/Company' },
+//     { component: CNavItem, name: 'Branch Group', to: '/Branch-Group' },
+//     { component: CNavItem, name: 'Branches', to: '/Branches' },
+//     { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+//   ];
+// } else if (role === 2) {
+//   managementItems = [
+//     { component: CNavItem, name: 'Task Management', to: '/task-management' },
+//     { component: CNavItem, name: 'User Management', to: '/user-management' },
+//     { component: CNavItem, name: 'Branch Group', to: '/Branch-Group' },
+//     { component: CNavItem, name: 'Branches', to: '/Branches' },
+//     { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+//   ];
+// }else if (role === 3) {
+//   managementItems = [
+//     { component: CNavItem, name: 'Task Management', to: '/task-management' },
+//     { component: CNavItem, name: 'User Management', to: '/user-management' },
+//     { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+//   ];
+// }else if (role === 4) {
+//   managementItems = [
+//     { component: CNavItem, name: 'Task Management', to: '/task-management' },
+//     { component: CNavItem, name: 'User Management', to: '/user-management' },
+ 
+//   ];
+// }else if (role === 6) {
+//   managementItems = [
+//     { component: CNavItem, name: 'Task Management', to: '/task-management' },
+//     { component: CNavItem, name: 'User Management', to: '/user-management' },
+
+//     { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+//   ];
+// }else{
+//   managementItems = [
+//     { component: CNavItem, name: 'Task Management', to: '/task-management' },
+//     { component: CNavItem, name: 'User Management', to: '/user-management' },
+//   ];
+// }
+
+
+
+
 let managementItems = [];
+
 if (role === 1) {
   managementItems = [
-    { component: CNavItem, name: 'Task Management', to: '/task-management' },
-    { component: CNavItem, name: 'User Management', to: '/user-management' },
-    { component: CNavItem, name: 'Company', to: '/Company' },
-    { component: CNavItem, name: 'Branch Group', to: '/Branch-Group' },
-    { component: CNavItem, name: 'Branches', to: '/Branches' },
-    { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+    {
+      component: CNavItem,
+      name: 'Task Management',
+      to: '/task-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaTasks style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'User Management',
+      to: '/user-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'Company',
+      to: '/Company',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaBuilding style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'Branch Group',
+      to: '/Branch-Group',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaLayerGroup style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'Branches',
+      to: '/Branches',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaMapMarkerAlt style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'Supervisor',
+      to: '/Supervisor',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUserTie style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
   ];
 } else if (role === 2) {
   managementItems = [
-    { component: CNavItem, name: 'Task Management', to: '/task-management' },
-    { component: CNavItem, name: 'User Management', to: '/user-management' },
-    { component: CNavItem, name: 'Branch Group', to: '/Branch-Group' },
-    { component: CNavItem, name: 'Branches', to: '/Branches' },
-    { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+    {
+      component: CNavItem,
+      name: 'Task Management',
+      to: '/task-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaTasks style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'User Management',
+      to: '/user-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'Branch Group',
+      to: '/Branch-Group',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaLayerGroup style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'Branches',
+      to: '/Branches',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaMapMarkerAlt style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'Supervisor',
+      to: '/Supervisor',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUserTie style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
   ];
-}else if (role === 3) {
+} else if (role === 3) {
   managementItems = [
-    { component: CNavItem, name: 'Task Management', to: '/task-management' },
-    { component: CNavItem, name: 'User Management', to: '/user-management' },
-    { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+    {
+      component: CNavItem,
+      name: 'Task Management',
+      to: '/task-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaTasks style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'User Management',
+      to: '/user-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'Supervisor',
+      to: '/Supervisor',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUserTie style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
   ];
-}else if (role === 4) {
+} else if (role === 4) {
   managementItems = [
-    { component: CNavItem, name: 'Task Management', to: '/task-management' },
-    { component: CNavItem, name: 'User Management', to: '/user-management' },
- 
+    {
+      component: CNavItem,
+      name: 'Task Management',
+      to: '/task-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaTasks style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'User Management',
+      to: '/user-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
   ];
-}else if (role === 6) {
+} else if (role === 6) {
   managementItems = [
-    { component: CNavItem, name: 'Task Management', to: '/task-management' },
-    { component: CNavItem, name: 'User Management', to: '/user-management' },
-
-    { component: CNavItem, name: 'Supervisor', to: '/Supervisor' },
+    {
+      component: CNavItem,
+      name: 'Task Management',
+      to: '/task-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaTasks style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'User Management',
+      to: '/user-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'Supervisor',
+      to: '/Supervisor',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUserTie style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
   ];
-}else{
+} else {
   managementItems = [
-    { component: CNavItem, name: 'Task Management', to: '/task-management' },
-    { component: CNavItem, name: 'User Management', to: '/user-management' },
+    {
+      component: CNavItem,
+      name: 'Task Management',
+      to: '/task-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaTasks style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
+    {
+      component: CNavItem,
+      name: 'User Management',
+      to: '/user-management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+    },
   ];
 }
-
 
 const _nav = [
 
@@ -98,35 +339,57 @@ const _nav = [
     ),
   },
 
-  {
-    component: CNavItem,
-    name: 'Live Tracking',
-    to: '/livetrack',
-    icon: (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <IoLocationOutline style={{ marginLeft: '0px', marginRight: '15px', fontSize: '23px' }} />
-      </div>
-    ),
-  },
-  {
-    component: CNavItem,
-    name: 'Chat Bot',
-    to: '/chatbot',
-    icon: (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <BsChatDots style={{ marginRight: '15px', fontSize: '20px' }} />
-      </div>
-    ),
-  },
-
+ 
   {
     component: CNavTitle,
     name: 'Manage',
   },
+  // {
+  //   component: CNavItem,
+  //   name: 'Manage Attendance',
+  //   // to: '/attendance',
+  //   icon: (
+  //     <div style={{ display: 'flex', alignItems: 'center' }}>
+  //       <FiList style={{ marginRight: '15px', fontSize: '20px' }} />
+  //     </div>
+  //   ),
+  //   items: [
+  //     {
+  //       component: CNavItem,
+  //       name: 'Attendance',
+  //       to: '/attendance',
+  //       visible: true,  // This can be a boolean or controlled by a state.
+  //       icon: (
+  //         <div style={{ display: 'flex', alignItems: 'center' }}>
+  //           <FaUserGroup style={{ marginRight: '15px', fontSize: '25px' }} />
+  //         </div>
+  //       ),
+  //     },
+  //     // {
+  //     //   component: CNavItem,
+  //     //   name: 'Attendance',
+  //     //   to: '/attendance',
+  //     // },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Manual Attendance',
+  //       to: '/manual-attendance',
+  //     },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Leave Application',
+  //       to: '/leave-application',
+  //     },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Visit Shop',
+  //       to: '/visit-shop',
+  //     },
+  //   ],
+  // },
   {
-    component: CNavGroup,
+    component: CNavItem,
     name: 'Manage Attendance',
-    // to: '/attendance',
     icon: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <FiList style={{ marginRight: '15px', fontSize: '20px' }} />
@@ -137,28 +400,76 @@ const _nav = [
         component: CNavItem,
         name: 'Attendance',
         to: '/attendance',
+        visible: true, // This can be a boolean or controlled by a state.
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaUserGroup style={{ marginRight: '15px', fontSize: '25px' }} />
+          </div>
+        ),
       },
       {
         component: CNavItem,
         name: 'Manual Attendance',
         to: '/manual-attendance',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaEdit style={{ marginRight: '15px', fontSize: '25px' }} /> {/* Example icon */}
+          </div>
+        ),
       },
       {
         component: CNavItem,
         name: 'Leave Application',
         to: '/leave-application',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaRegCalendarAlt style={{ marginRight: '15px', fontSize: '25px' }} /> {/* Example icon */}
+          </div>
+        ),
       },
       {
         component: CNavItem,
         name: 'Visit Shop',
         to: '/visit-shop',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaStore style={{ marginRight: '15px', fontSize: '25px' }} /> {/* Example icon */}
+          </div>
+        ),
       },
     ],
   },
+  
+  // {
+  //   component: CNavItem,
+  //   name: 'Manage Order',
+  //   // to: '/invoice',
+  //   icon: (
+  //     <div style={{ display: 'flex', alignItems: 'center' }}>
+  //       <FaRegEdit style={{ marginRight: '15px', fontSize: '20px' }} />
+  //     </div>
+  //   ),
+  //   items: [
+  //     {
+  //       component: CNavItem,
+  //       name: 'Invoice',
+  //       to: '/invoice',
+  //     },
+  //     {
+  //       component: CNavItem,
+  //       name: 'PO',
+  //       to: '/po',
+  //     },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Inventory Management',
+  //       to: '/inventory-management',
+  //     },
+  //   ],
+  // },
   {
-    component: CNavGroup,
+    component: CNavItem,
     name: 'Manage Order',
-    // to: '/invoice',
     icon: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <FaRegEdit style={{ marginRight: '15px', fontSize: '20px' }} />
@@ -169,21 +480,36 @@ const _nav = [
         component: CNavItem,
         name: 'Invoice',
         to: '/invoice',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaFileInvoice style={{ marginRight: '15px', fontSize: '20px' }} />
+          </div>
+        ),
       },
       {
         component: CNavItem,
         name: 'PO',
         to: '/po',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaClipboardList style={{ marginRight: '15px', fontSize: '20px' }} />
+          </div>
+        ),
       },
       {
         component: CNavItem,
         name: 'Inventory Management',
         to: '/inventory-management',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaWarehouse style={{ marginRight: '15px', fontSize: '20px' }} />
+          </div>
+        ),
       },
     ],
   },
   {
-    component: CNavGroup,
+    component: CNavItem,
     name: 'Management',
     icon: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -194,7 +520,7 @@ const _nav = [
   },
 
   {
-    component: CNavGroup,
+    component: CNavItem,
     name: 'Expense Management',
     icon: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -217,8 +543,29 @@ const _nav = [
       },
     ],
   },
+  // {
+  //   component: CNavItem,
+  //   name: 'Report Management',
+  //   icon: (
+  //     <div style={{ display: 'flex', alignItems: 'center' }}>
+  //       <TbReport style={{ marginRight: '15px', fontSize: '22px' }} />
+  //     </div>
+  //   ),
+  //   items: [
+  //     {
+  //       component: CNavItem,
+  //       name: 'Inventory',
+  //       to: '/inventory',
+  //     },
+  //     {
+  //       component: CNavItem,
+  //       name: 'Employee Details',
+  //       to: '/employee-details',
+  //     },
+  //   ],
+  // },
   {
-    component: CNavGroup,
+    component: CNavItem,
     name: 'Report Management',
     icon: (
       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -230,15 +577,45 @@ const _nav = [
         component: CNavItem,
         name: 'Inventory',
         to: '/inventory',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaBoxes style={{ marginRight: '15px', fontSize: '20px' }} />
+          </div>
+        ),
       },
       {
         component: CNavItem,
         name: 'Employee Details',
         to: '/employee-details',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaUserTie style={{ marginRight: '15px', fontSize: '20px' }} />
+          </div>
+        ),
       },
+      {
+        component: CNavItem,
+        name: 'Live Tracking',
+        to: '/livetrack',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <IoLocationOutline style={{ marginLeft: '0px', marginRight: '15px', fontSize: '23px' }} />
+          </div>
+        ),
+      },
+      {
+        component: CNavItem,
+        name: 'Chat Bot',
+        to: '/chatbot',
+        icon: (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <BsChatDots style={{ marginRight: '15px', fontSize: '20px' }} />
+          </div>
+        ),
+      }
+    
     ],
   },
-
   {
     component: CNavItem,
     name: 'Settings',

@@ -1,0 +1,8 @@
+@media (min-width: 992px) {
+    .sidebar-narrow:not(.sidebar-end):not(.hide) ~ *, .sidebar-narrow-unfoldable:not(.sidebar-end):not(.hide) ~ * {
+        --cui-sidebar-occupy-start: 3rem !important;
+    }
+}
+.sidebar-narrow, .sidebar-narrow-unfoldable:not(:hover) {
+    --cui-sidebar-narrow-width: 3.3rem !important;
+}

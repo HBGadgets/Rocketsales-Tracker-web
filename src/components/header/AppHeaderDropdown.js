@@ -21,10 +21,28 @@ import {
   cilUser,
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-
+import { useNavigate } from 'react-router-dom'
 import avatar8 from './../../assets/images/avatars/8.jpg'
-
+import Cookies from 'js-cookie'
 const AppHeaderDropdown = () => {
+  const navigate = useNavigate();
+  
+    const handleLogout = () => {
+      // Clear the token from localStorage
+      localStorage.removeItem('token');
+  
+      // Clear the token from cookies (if it's stored there)
+      Cookies.remove('token');
+  
+      // Redirect to the login page after logout
+      navigate('/login');
+    };
+    const handleSettingsClick = () => {
+      navigate('/setting'); // Navigate to the /setting route
+    };
+    const handleheplandsupportClick = () => {
+      navigate('/h&s'); // Navigate to the /setting route
+    };
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
@@ -65,10 +83,14 @@ const AppHeaderDropdown = () => {
           <CIcon icon={cilUser} className="me-2" />
           Profile
         </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilSettings} className="me-2" />
-          Settings
-        </CDropdownItem>
+        <CDropdownItem onClick={handleSettingsClick}>
+      <CIcon icon={cilSettings} className="me-2" />
+      Settings
+    </CDropdownItem>
+    <CDropdownItem onClick={handleheplandsupportClick}>
+      <CIcon icon={cilSettings} className="me-2" />
+      Help & Support
+    </CDropdownItem>
         <CDropdownItem href="#">
           <CIcon icon={cilCreditCard} className="me-2" />
           Payments
@@ -88,6 +110,10 @@ const AppHeaderDropdown = () => {
           <CIcon icon={cilLockLocked} className="me-2" />
           Lock Account
         </CDropdownItem>
+          <CDropdownItem onClick={handleLogout}>
+                  <CIcon icon={cilLockLocked} className="me-2" />
+                  Log Out
+                </CDropdownItem>
       </CDropdownMenu>
     </CDropdown>
   )
