@@ -298,7 +298,7 @@ const [role, setRole] = useState(null);
       setFilteredData(data) // No query, show all drivers
     } else {
       const filtered = data.filter((group) =>
-        group.branchName.toLowerCase().includes(searchQuery.toLowerCase()),
+        group.salesmanName.toLowerCase().includes(searchQuery.toLowerCase()),
       )
       setFilteredData(filtered)
       setCurrentPage(1)

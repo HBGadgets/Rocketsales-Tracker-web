@@ -267,7 +267,7 @@ const Supervisor = () => {
       setFilteredData(data) // No query, show all drivers
     } else {
       const filtered = data.filter((group) =>
-        group.branchName.toLowerCase().includes(searchQuery.toLowerCase()),
+        group.supervisorName.toLowerCase().includes(searchQuery.toLowerCase()),
       )
       setFilteredData(filtered)
       setCurrentPage(1)
