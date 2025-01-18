@@ -19,7 +19,8 @@ import logo from 'src/assets/brand/logo.svg'
 import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
-import navigation from '../_nav'
+// import navigation from '../_nav'
+import createNav from '../_nav'; 
 import { useNavigate } from 'react-router-dom'
 import { cilDelete, cilMenu } from '@coreui/icons'
 import rocketimg from './image.png';
@@ -34,6 +35,7 @@ const [show, setShow] = useState(false);
   const navigate = useNavigate()
   const [navigatingNav, setNavigatingNav] = useState(null)
   const toggle = useSelector((state) => state.navbar)
+ const navigation = createNav(); 
   // console.log("toggle starte",toggle)
   return (
     <CSidebar
