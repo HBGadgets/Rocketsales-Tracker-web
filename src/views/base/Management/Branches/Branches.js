@@ -17,6 +17,7 @@ import {
   Select,
   MenuItem,
   InputAdornment,
+  Autocomplete,
 } from '@mui/material'
 import { RiEdit2Fill } from 'react-icons/ri'
 import { AiFillDelete } from 'react-icons/ai'
@@ -116,7 +117,7 @@ const Branches = () => {
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/branches`;
+    const url = `https://rocketsales-server.onrender.com/api/branch`;
   
     try {
       const response = await axios.get(url, {
@@ -125,23 +126,25 @@ const Branches = () => {
         },
       });
   
-
-const allData = response.data.flatMap((branchh) => 
-  branchh.branches.map((item)=>({
-    ...item,
-    companyName: branchh.companyName,
-    companyId:branchh._id,
-  }))
- 
-);
-console.log("mm",allData)
-      if (response.data) {
+      // Log to check the full structure of the response
+      console.log("Full Response Data:", response.data);
+  
+      // Accessing the 'Branches' directly from the response data
+      const allData = response.data.Branches?.map((item) => ({
+        ...item,
+        companyName: item.companyId.companyName, // Extract company name from companyId object
+        companyId: item.companyId._id, // Extract companyId from companyId object
+      }));
+  
+      console.log("Processed Data:", allData);
+  
+      if (allData) {
         // Filter the data based on the search query if it is not empty
         const filteredData = allData
           .map((item) => {
-            // Apply the formatDate method to 'created_at' field if it exists
-            if (item.created_at) {
-              item.created_at = formatDate(item.created_at);
+            // Apply the formatDate method to 'createdAt' field if it exists
+            if (item.createdAt) {
+              item.createdAt = formatDate(item.createdAt);
             }
             
             return item;
@@ -155,7 +158,11 @@ console.log("mm",allData)
         setData(filteredData); // Set the filtered data to `data`
         setSortedData(filteredData); // Set the filtered data to `sortedData`
         setLoading(false);
+      } else {
+        console.error('Branches data is missing or incorrectly structured.');
+        setLoading(false);
       }
+  
     } catch (error) {
       setLoading(false);
       console.error('Error fetching data:', error);
@@ -163,9 +170,13 @@ console.log("mm",allData)
     }
   };
   
+  
+  
+  
+  
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/get-companies`;
+    const url = `https://rocketsales-server.onrender.com/api/company`;
   
     try {
       const response = await axios.get(url, {
@@ -241,7 +252,7 @@ console.log("mm",allData)
     console.log(formData)
     try {
       const accessToken = Cookies.get('token')
-      const response = await axios.post(`https://rocketsales-server.onrender.com/api/Company/branch`, formData, {
+      const response = await axios.post(`https://rocketsales-server.onrender.com/api/branch`, formData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -278,7 +289,7 @@ console.log("mm",allData)
     try {
       const accessToken = Cookies.get('authToken')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/Company/${formData.companyId}/branch/${formData._id}`,
+        `https://rocketsales-server.onrender.com/api/branch/${formData._id}`,
         formData,
         {
           headers: {
@@ -326,7 +337,7 @@ console.log("mm",allData)
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
         // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
-        url: `https://rocketsales-server.onrender.com/api/Company/${item.companyId}/branch/${item._id}`,
+        url: `https://rocketsales-server.onrender.com/api/branch/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -647,7 +658,7 @@ const exportToPDF = PDFExporter({
           {role==1?
           (
             <>
-            <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
                 <InputLabel id="company-label">Company</InputLabel>
                 <Select
                   labelId="company-label"
@@ -667,7 +678,45 @@ const exportToPDF = PDFExporter({
                     </MenuItem>
                   ))}
                 </Select>
-              </FormControl>
+              </FormControl> */}
+               <FormControl
+      variant="outlined"
+      sx={{ marginBottom: "10px" }}
+      fullWidth
+    >
+      <Autocomplete
+        id="searchable-company-select"
+        options={Array.isArray(companyData) ? companyData : []} // Ensure companyData is an array
+        getOptionLabel={(option) => option.companyName || ""} // Display company name
+        value={
+          Array.isArray(companyData)
+            ? companyData.find((company) => company._id === formData.companyId)
+            : null
+        } // Safely find the selected company
+        onChange={(event, newValue) => {
+          setFormData({
+            ...formData,
+            companyId: newValue?._id || "",
+          });
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Company Name"
+            variant="outlined"
+            name="companyId"
+            InputProps={{
+              ...params.InputProps,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <BusinessIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        )}
+      />
+    </FormControl>
               </>
           )
           :null}

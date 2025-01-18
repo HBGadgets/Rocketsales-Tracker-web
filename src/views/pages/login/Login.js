@@ -27,7 +27,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://rocketsales-server.onrender.com/api/users/login', {
+      const response = await fetch('https://rocketsales-server.onrender.com/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,6 +47,7 @@ const Login = () => {
       localStorage.setItem('token-rs', token);
       // Redirect to home or dashboard
       navigate('/dashboard');
+   
     } catch (error) {
       console.error('Login failed:', error);
       alert('Login failed, please try again');

@@ -106,8 +106,8 @@ const Company = () => {
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/get-companies`;
-  
+    const url = `https://rocketsales-server.onrender.com/api/company`;
+  console.log("to",accessToken)
     try {
       const response = await axios.get(url, {
         headers: {
@@ -120,8 +120,8 @@ const Company = () => {
         const filteredData = response.data
           .map((item) => {
             // Apply the formatDate method to 'created_at' field if it exists
-            if (item.created_at) {
-              item.created_at = formatDate(item.created_at);
+            if (item.createdAt) {
+              item.createdAt = formatDate(item.createdAt);
             }
             return item;
           })
@@ -192,7 +192,7 @@ const Company = () => {
     console.log(formData)
     try {
       const accessToken = Cookies.get('token')
-      const response = await axios.post(`https://rocketsales-server.onrender.com/api/create-company`, formData, {
+      const response = await axios.post(`https://rocketsales-server.onrender.com/api/company`, formData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -222,13 +222,14 @@ const Company = () => {
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
+  
   const handleEditSubmit = async (e) => {
     e.preventDefault()
     console.log(formData)
     try {
-      const accessToken = Cookies.get('authToken')
+      const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/update-company/${formData._id}`,
+        `https://rocketsales-server.onrender.com/api/company/${formData._id}`,
         formData,
         {
           headers: {
@@ -275,17 +276,17 @@ const Company = () => {
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        url: `https://rocketsales-server.onrender.com/api/delete-company/${item._id}`,
+        url: `https://rocketsales-server.onrender.com/api/company/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       })
 
-      if (response.status === 200) {
+      // if (response.status === 200) {
         toast.success('Group deleted successfully')
         fetchData()
-      }
+      // }
     } catch (error) {
       console.error('Error Details:', error.response || error.message)
       toast.error('An error occurred while deleting the group.')

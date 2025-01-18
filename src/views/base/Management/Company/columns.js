@@ -13,11 +13,11 @@ export const COLUMNS = () => [
     accessor: 'companyName',
     icon: <BusinessIcon />,
   },
-  {
-    Header: 'Company Email',
-    accessor: 'companyEmail',
-    icon: <EmailIcon />,
-  },
+  // {
+  //   Header: 'Company Email',
+  //   accessor: 'companyEmail',
+  //   icon: <EmailIcon />,
+  // },
   {
     Header: 'Owner Name',
     accessor: 'ownerName',
@@ -50,17 +50,17 @@ export const COLUMNS = () => [
   },
   {
     Header: 'Company Username',
-    accessor: 'companyUsername',
+    accessor: 'username',
     icon: <AccountCircleIcon />, // Unique icon for username
   },
   {
     Header: 'Company Password',
-    accessor: 'companyPassword',
+    accessor: 'password',
     icon: <LockIcon />,
   },
   {
     Header: 'Created At',
-    accessor: 'created_at',
+    accessor: 'createdAt',
    
   },
 ];

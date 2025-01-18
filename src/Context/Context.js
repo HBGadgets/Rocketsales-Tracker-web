@@ -1,11 +1,15 @@
 import axios from 'axios'
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useState  } from 'react'
+import Cookies from 'js-cookie'
+import jwt_decode from 'jwt-decode'
 
 export const GlobalContext = createContext(null)
 
 export default function GlobalState({ children }) {
   const [salesManList, setSalesManList] = useState([])
   const [salesman, setSalesman] = useState([]);
+  const [role, setRole] = useState('') // State to manage the role
+
 
   const [salesManPosition, setSalesmanPosition] = useState([
     {
@@ -17,6 +21,22 @@ export default function GlobalState({ children }) {
   const [selectedSalesMan, setSelectedSalesMan] = useState()
 
   useEffect(() => {
+    const token = Cookies.get('token') // Get token from cookies
+    if (token) {
+      try {
+        const decodedToken = jwt_decode(token)
+        if (decodedToken && decodedToken.role) {
+          setRole(decodedToken.role) // Set the role from the decoded token
+        } else {
+          console.warn('Role not found in the decoded token.')
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error)
+      }
+    } else {
+      console.warn('Token not found. Ensure the user is logged in.')
+    }
+
     const getSalesmanPosition = async () => {
       try {
         const username = 'schoolmaster'
@@ -71,7 +91,7 @@ export default function GlobalState({ children }) {
   }, [])
 
   return (
-    <GlobalContext.Provider value={{ salesManPosition,salesman, salesManList, selectedSalesMan, setSelectedSalesMan }}>
+    <GlobalContext.Provider value={{ salesManPosition,salesman, salesManList, selectedSalesMan, setSelectedSalesMan,  role,setRole }}>
       {children}
     </GlobalContext.Provider>
   )

@@ -5,23 +5,21 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey'; // Icon for password
 import { FiGitBranch } from 'react-icons/fi';
 import EmailIcon from '@mui/icons-material/Email';
 import { PhoneAndroid } from '@mui/icons-material';
-import { Call } from '@mui/icons-material';
 
 export const COLUMNS = () => [
-
   {
-    Header: 'Supervisor Name',
-    accessor: 'supervisorName',
-    icon: <AccountCircleIcon />, // AccountCircle icon for supervisor's name
+    Header: 'Salesman Name',
+    accessor: 'salesmanName',
+    icon: <AccountCircleIcon />, // AccountCircle icon for salesman's name
   },
   {
-    Header: 'Supervisor Email',
-    accessor: 'supervisorEmail',
-    icon: <EmailIcon />,
+    Header: 'Salesman Email',
+    accessor: 'salesmanEmail',
+    icon: <EmailIcon />, // Email icon for salesman's email
   },
   {
-    Header: 'Supervisor Phone',
-    accessor: 'supervisorPhone',
+    Header: 'Salesman Phone',
+    accessor: 'salesmanPhone',
     icon: <PhoneAndroid />, // PhoneAndroid icon represents the phone
   },
   {
@@ -36,22 +34,17 @@ export const COLUMNS = () => [
   },
   {
     Header: 'Company Name',
-    accessor: 'companyName', // from companyId.companyName
+    accessor: 'companyName', // Nested accessor for company name
     icon: <BusinessIcon />, // Business icon represents the company
   },
   {
     Header: 'Branch Name',
-    accessor: 'branchName', // from branchId.branchName
+    accessor: 'branchName', // Nested accessor for branch name
     icon: <FiGitBranch />, // Branch icon represents a branch
   },
-  // {
-  //   Header: 'Branch Location',
-  //   accessor: 'branchLocation', // from branchId.branchLocation
-  //   icon: <LocationOnIcon />, // Location icon for branch location
-  // },
   {
     Header: 'Created At',
     accessor: 'createdAt',
-   
+    icon: null, // No icon for created at
   },
 ];

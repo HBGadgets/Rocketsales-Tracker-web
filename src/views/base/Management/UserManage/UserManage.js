@@ -68,7 +68,7 @@ if(token){
    role=decodetoken.role;
 }
 console.log("n",role)
-const Supervisor = () => {
+const UserManage = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [formData, setFormData] = useState({})
@@ -87,6 +87,7 @@ const Supervisor = () => {
   const [sortedData, setSortedData] = useState([])
   const [companyData, setCompanyData] = useState([]);
   const [BranchData, setBranchData] = useState([]);
+  const [SupervisorData, setSupervisorData] = useState([]);
   const handleEditModalClose = () => {
     setFormData({})
     setEditModalOpen(false)
@@ -118,7 +119,7 @@ const Supervisor = () => {
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/supervisor`;
+    const url = `https://rocketsales-server.onrender.com/api/salesman`;
   
     try {
       const response = await axios.get(url, {
@@ -130,31 +131,31 @@ const Supervisor = () => {
       // Log the full response data to inspect its structure
       console.log("Full Response Data:", response.data);
   
-      // Flattening the supervisor data and adding companyName and branchName
-      const allData = response.data.supervisors.map((item) => ({
+      // Process the salesmandata
+      const salesmandata = response.data.salesmandata.map((item) => ({
         ...item,
-        companyName: item.companyId.companyName, // Extract companyName from companyId
-        companyId: item.companyId._id,            // Extract companyId from companyId
-        branchName: item.branchId.branchName,      // Extract branchName from branchId
-        branchId: item.branchId._id,               // Extract branchId from branchId
+        companyName: item.companyId?.companyName || null, // Extract companyName or set null
+        companyId: item.companyId?._id || null,          // Extract companyId or set null
+        branchName: item.branchId?.branchName || null,   // Extract branchName or set null
+        branchId: item.branchId?._id || null,            // Extract branchId or set null
       }));
   
-      console.log("Processed Data:", allData);
+      console.log("Processed Data:", salesmandata);
   
-      if (allData) {
+      if (salesmandata) {
         // Filter the data based on the search query if it is not empty
-        const filteredData = allData
+        const filteredData = salesmandata
           .map((item) => {
             // Apply the formatDate method to 'createdAt' field if it exists
             if (item.createdAt) {
               item.createdAt = formatDate(item.createdAt); // Use your custom formatDate method
             }
-            
+  
             return item;
           })
           .filter((item) =>
             Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+              value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
             )
           );
   
@@ -162,16 +163,16 @@ const Supervisor = () => {
         setSortedData(filteredData); // Set the filtered data to `sortedData`
         setLoading(false);
       } else {
-        console.error('Supervisors data is missing or incorrectly structured.');
+        console.error('Salesman data is missing or incorrectly structured.');
         setLoading(false);
       }
-  
     } catch (error) {
       setLoading(false);
       console.error('Error fetching data:', error);
       throw error; // Re-throw the error for further handling if needed
     }
   };
+  
   
   
   const fetchCompany = async () => {
@@ -223,9 +224,35 @@ const Supervisor = () => {
       throw error; // Re-throw the error for further handling if needed
     }
   };
+  const fetchsupervisor = async () => {
+    const accessToken = Cookies.get('token');
+    const url = `https://rocketsales-server.onrender.com/api/supervisor`;
+  
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: 'Bearer ' + accessToken,
+        },
+      });
+  console.log("my data response",response.data)
+  const supervisor = response.data.supervisors || []; 
+      if (response.data) {
+      
+        // const companydata1 = response.data
+        setSupervisorData(supervisor ||[]);
+       
+      }
+      console.log("supervisor  are",SupervisorData);
+    } catch (error) {
+      setLoading(false);
+      console.error('Error fetching data:', error);
+      throw error; // Re-throw the error for further handling if needed
+    }
+  };
   useEffect(() => {
     fetchCompany();
     fetchBranch();
+    fetchsupervisor();
   }, []);
   // Format the date into DD-MM-YYYY format
   function formatDate(date) {
@@ -278,7 +305,7 @@ const Supervisor = () => {
     console.log(formData)
     try {
       const accessToken = Cookies.get('token')
-      const response = await axios.post(`https://rocketsales-server.onrender.com/api/supervisor`, formData, {
+      const response = await axios.post(`https://rocketsales-server.onrender.com/api/salesman`, formData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -315,7 +342,7 @@ const Supervisor = () => {
     try {
       const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/supervisor/${formData._id}`,
+        `https://rocketsales-server.onrender.com/api/salesman/${formData._id}`,
         formData,
         {
           headers: {
@@ -363,7 +390,7 @@ const Supervisor = () => {
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
         // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
-        url: `https://rocketsales-server.onrender.com/api/supervisor/${item._id}`,
+        url: `https://rocketsales-server.onrender.com/api/salesman/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -386,15 +413,15 @@ const Supervisor = () => {
   
     columns: COLUMNS(),
     data: filteredData,
-    fileName: 'Supervisor_data.xlsx',
-    mytitle:'Supervisor Data Report',
+    fileName: 'UserManage_data.xlsx',
+    mytitle:'UserManage Data Report',
   });
 
 const exportToPDF = PDFExporter({
-  title: 'Supervisor Data Report',
+  title: 'UserManage Data Report',
   columns: COLUMNS(),
   data: filteredData,
-  fileName: 'Supervisor_data_report.pdf',
+  fileName: 'UserManage_data_report.pdf',
 });
 
   return (
@@ -413,7 +440,7 @@ const exportToPDF = PDFExporter({
             }}
           >
             <FiGitBranch  style={{ fontSize: '24px', color: '#4c637c' }} />
-            Supervisor
+            Manage User
           </h2>
         </div>
 
@@ -671,7 +698,7 @@ const exportToPDF = PDFExporter({
   <Box sx={style}>
     <div className="d-flex justify-content-between">
       <Typography id="modal-modal-title" variant="h6" component="h2">
-        Add New Supervisor
+        Add New UserManage
       </Typography>
       <IconButton onClick={handleAddModalClose}>
         <CloseIcon />
@@ -727,6 +754,28 @@ const exportToPDF = PDFExporter({
 
   </Select>
 </FormControl>
+<FormControl style={{ display: 'flex', flexDirection: 'column'}}>
+  <InputLabel id="supervisor-label">Supervisor</InputLabel>
+  <Select
+    labelId="supervisor-label"
+    id="supervisorId"
+    value={formData.supervisorId || ''} // Bind the value to formData
+    onChange={(e) => setFormData({ ...formData, supervisorId: e.target.value })} // Update formData on selection
+    label="Supervisor"
+    startAdornment={
+      <InputAdornment position="start">
+        <FiGitBranch />
+      </InputAdornment>
+    }
+  >
+   {Array.isArray(SupervisorData) && SupervisorData.map((supervisor) => (
+  <MenuItem key={supervisor._id} value={supervisor._id}>
+    {supervisor.supervisorName}
+  </MenuItem>
+))}
+  </Select>
+</FormControl>
+
 
               </>
           )
@@ -779,7 +828,7 @@ const exportToPDF = PDFExporter({
   <Box sx={style}>
     <div className="d-flex justify-content-between">
       <Typography id="modal-modal-title" variant="h6" component="h2">
-        Edit Supervisor
+        Edit UserManage
       </Typography>
       <IconButton onClick={handleEditModalClose}>
         <CloseIcon />
@@ -788,7 +837,7 @@ const exportToPDF = PDFExporter({
     <DialogContent>
       <form onSubmit={handleEditSubmit}>
       <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {role==1?
+      {role==1?
           (
             <>
             <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
@@ -834,6 +883,28 @@ const exportToPDF = PDFExporter({
 
   </Select>
 </FormControl>
+<FormControl style={{ display: 'flex', flexDirection: 'column'}}>
+  <InputLabel id="supervisor-label">Supervisor</InputLabel>
+  <Select
+    labelId="supervisor-label"
+    id="supervisorId"
+    value={formData.supervisorId || ''} // Bind the value to formData
+    onChange={(e) => setFormData({ ...formData, supervisorId: e.target.value })} // Update formData on selection
+    label="Supervisor"
+    startAdornment={
+      <InputAdornment position="start">
+        <FiGitBranch />
+      </InputAdornment>
+    }
+  >
+   {Array.isArray(SupervisorData) && SupervisorData.map((supervisor) => (
+  <MenuItem key={supervisor._id} value={supervisor._id}>
+    {supervisor.supervisorName}
+  </MenuItem>
+))}
+  </Select>
+</FormControl>
+
 
               </>
           )
@@ -878,4 +949,4 @@ const exportToPDF = PDFExporter({
   )
 }
 
-export default Supervisor
+export default UserManage

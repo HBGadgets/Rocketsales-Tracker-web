@@ -34,12 +34,12 @@ export const COLUMNS = () => [
   },
   {
     Header: 'User Name',
-    accessor: 'branchUsername',
+    accessor: 'username',
     icon: <AccountCircleIcon />, // AccountCircle icon for username
   },
   {
     Header: 'Password',
-    accessor: 'branchPassword',
+    accessor: 'password',
     icon: <VpnKeyIcon />, // VpnKey icon for password
   },
 ];

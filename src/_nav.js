@@ -105,8 +105,8 @@ if (role === 1) {
     },
     {
       component: CNavItem,
-      name: 'User Management',
-      to: '/user-management',
+      name: 'Manage User',
+      to: '/UserManage',
       icon: (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
@@ -168,8 +168,8 @@ if (role === 1) {
     },
     {
       component: CNavItem,
-      name: 'User Management',
-      to: '/user-management',
+      name: 'User Manage',
+      to: '/UserManage',
       icon: (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
@@ -221,8 +221,8 @@ if (role === 1) {
     },
     {
       component: CNavItem,
-      name: 'User Management',
-      to: '/user-management',
+      name: 'User Manage',
+      to: '/UserManage',
       icon: (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
@@ -254,8 +254,8 @@ if (role === 1) {
     },
     {
       component: CNavItem,
-      name: 'User Management',
-      to: '/user-management',
+      name: 'User Manage',
+      to: '/UserManage',
       icon: (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
@@ -277,8 +277,8 @@ if (role === 1) {
     },
     {
       component: CNavItem,
-      name: 'User Management',
-      to: '/user-management',
+      name: 'User Manage',
+      to: '/UserManage',
       icon: (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
@@ -310,8 +310,8 @@ if (role === 1) {
     },
     {
       component: CNavItem,
-      name: 'User Management',
-      to: '/user-management',
+      name: 'Manage User',
+      to: '/UserManage',
       icon: (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />

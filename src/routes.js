@@ -29,6 +29,7 @@ const Company=React.lazy(()=>import('./views/base/Management/Company/Company'))
 const Branches=React.lazy(()=>import('./views/base/Management/Branches/Branches'))
 const BranchGroup=React.lazy(()=>import('./views/base/Management/BranchGroup'))
 const Supervisor=React.lazy(()=>import('./views/base/Management/Supervisor/Supervisor'))
+const UserManage=React.lazy(()=>import('./views/base/Management/UserManage/UserManage'))
 // const Company=React.lazy(()=>import('./views/base/Management/Company'))
 // const Company=React.lazy(()=>import('./views/base/Management/Company'))
 const routes = [
@@ -55,6 +56,7 @@ const routes = [
   { path: '/Company', name: 'Comapany', element: Company },
   { path: '/Branches', name: 'Branches', element: Branches },
   { path: '/Supervisor', name: 'Supervisor', element: Supervisor },
+  { path: '/UserManage', name: 'UserManage', element: UserManage },
   { path: '/Branch-Group', name: 'Branch-Group', element: BranchGroup },
   { path: '/expense-details', name: 'Expense Details', element: ExpenseDetails },
   { path: '/manual-expense', name: 'Manual Expense', element: ManualExpense },

@@ -29,6 +29,8 @@ const AppSidebar = () => {
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebar.sidebarShow)
 console.log(unfoldable,"k");
+const [show, setShow] = useState(false);
+// console.log(sidebarUnfoldable,"myyy")
   const navigate = useNavigate()
   const [navigatingNav, setNavigatingNav] = useState(null)
   const toggle = useSelector((state) => state.navbar)
@@ -59,7 +61,8 @@ console.log(unfoldable,"k");
       <AppSidebarNav items={navigation} />
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler
-          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
+          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable }) ,console.log("hi") }
+          
         />
       </CSidebarFooter>
     </CSidebar>
