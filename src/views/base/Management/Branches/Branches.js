@@ -61,13 +61,14 @@ import ExcelJS from 'exceljs';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode';
+import { Token } from '@mui/icons-material'
 const token=Cookies.get("token");
-let role=null
-if(token){
-  const decodetoken=jwt_decode(token);
-   role=decodetoken.role;
-}
-console.log("n",role)
+// let role=null
+// if(token){
+//   const decodetoken=jwt_decode(token);
+//    role=decodetoken.role;
+// }
+// console.log("n",role)
 const Branches = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -95,7 +96,21 @@ const Branches = () => {
     setFormData({})
     setAddModalOpen(false)
   }
+const [role, setRole] = useState(null);
 
+  useEffect(() => {
+    const fetchRole = () => {
+      const token = Cookies.get("token");
+      if (token) {
+        const decodedToken = jwt_decode(token);
+        setRole(decodedToken.role);
+      } else {
+        setRole(null);
+      }
+    };
+  
+    fetchRole(); // Call the function to fetch role
+  }, []); 
   const style = {
     position: 'absolute',
     top: '50%',
@@ -246,34 +261,79 @@ const Branches = () => {
     setLoading(true)
     fetchData(page)
   }
+  
+  // const handleAddSubmit = async (e) => {
+  //   e.preventDefault()
+  //   console.log(formData)
+  //   try {
+  //     const accessToken = Cookies.get('token')
+  //     const response = await axios.post(`https://rocketsales-server.onrender.com/api/branch`, formData, {
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     })
 
-  const handleAddSubmit = async (e) => {
-    e.preventDefault()
-    console.log(formData)
-    try {
-      const accessToken = Cookies.get('token')
-      const response = await axios.post(`https://rocketsales-server.onrender.com/api/branch`, formData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (response.status === 201) {
-        toast.success('Branch is created successfully')
-        fetchData()
-        setFormData({ name: '' })
-        setAddModalOpen(false)
-      }
-      fetchData();
-    } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
-    }
-  }
+  //     if (response.status === 201) {
+  //       toast.success('Branch is created successfully')
+  //       fetchData()
+  //       setFormData({ name: '' })
+  //       setAddModalOpen(false)
+  //     }
+  //     fetchData();
+  //   } catch (error) {
+  //     toast.error('An error occured')
+  //     throw error.response ? error.response.data : new Error('An error occurred')
+  //   }
+  // }
 
   // ###################################################################
   // ######################### Edit Group #########################
+ 
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+  
+    try {
+      const accessToken = Cookies.get('token')
+      // const accessToken = token;
+      console.log("MYTT",token)
+      let updatedFormData = { ...formData }; // Copy existing formData
+  
+      if (token) {
+        const decodedToken = jwt_decode(token); // Decode the token
+        // const role = decodedToken.role;
+  
+        if (role == 2) {
+          updatedFormData.companyId = decodedToken.id; // Add companyId from the token
+        }
+      }
+  
+      console.log('FormData to be submitted:', updatedFormData);
+  
+      const response = await axios.post(
+        `https://rocketsales-server.onrender.com/api/branch`,
+        updatedFormData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      if (response.status === 201) {
+        toast.success('Branch is created successfully');
+        fetchData(); // Refresh data
+        setFormData({ name: '' }); // Reset form
+        setAddModalOpen(false); // Close modal
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('An error occurred');
+      throw error.response ? error.response.data : new Error('An error occurred');
+    }
+  };
+  
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10)
     setRowsPerPage(newRowsPerPage === -1 ? sortedData.length : newRowsPerPage) // Set to all rows if -1
@@ -658,27 +718,7 @@ const exportToPDF = PDFExporter({
           {role==1?
           (
             <>
-            {/* <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
-                <InputLabel id="company-label">Company</InputLabel>
-                <Select
-                  labelId="company-label"
-                  id="companyId"
-                  value={formData.companyId || ''}
-                  onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
-                  label="Company"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <BusinessIcon />
-                    </InputAdornment>
-                  }
-                >
-                  {companyData.map((company) => (
-                    <MenuItem key={company._id} value={company._id}>
-                      {company.companyName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl> */}
+           
                <FormControl
       variant="outlined"
       sx={{ marginBottom: "10px" }}
@@ -690,7 +730,7 @@ const exportToPDF = PDFExporter({
         getOptionLabel={(option) => option.companyName || ""} // Display company name
         value={
           Array.isArray(companyData)
-            ? companyData.find((company) => company._id === formData.companyId)
+            ? companyData.find((company) => company._id == formData.companyId)
             : null
         } // Safely find the selected company
         onChange={(event, newValue) => {
@@ -781,27 +821,44 @@ const exportToPDF = PDFExporter({
         {role==1?
           (
             <>
-            <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
-                <InputLabel id="company-label">Company</InputLabel>
-                <Select
-                  labelId="company-label"
-                  id="companyId"
-                  value={formData.companyId || ''}
-                  onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
-                  label="Company"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <BusinessIcon />
-                    </InputAdornment>
-                  }
-                >
-                  {companyData.map((company) => (
-                    <MenuItem key={company._id} value={company._id}>
-                      {company.companyName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  <FormControl
+      variant="outlined"
+      sx={{ marginBottom: "10px" }}
+      fullWidth
+    >
+      <Autocomplete
+        id="searchable-company-select"
+        options={Array.isArray(companyData) ? companyData : []} // Ensure companyData is an array
+        getOptionLabel={(option) => option.companyName || ""} // Display company name
+        value={
+          Array.isArray(companyData)
+            ? companyData.find((company) => company._id == formData.companyId)
+            : null
+        } // Safely find the selected company
+        onChange={(event, newValue) => {
+          setFormData({
+            ...formData,
+            companyId: newValue?._id || "",
+          });
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Company Name"
+            variant="outlined"
+            name="companyId"
+            InputProps={{
+              ...params.InputProps,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <BusinessIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        )}
+      />
+    </FormControl>
               </>
           )
           :null}

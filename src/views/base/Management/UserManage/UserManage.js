@@ -17,6 +17,7 @@ import {
   Select,
   MenuItem,
   InputAdornment,
+  Autocomplete,
 } from '@mui/material'
 import { RiEdit2Fill } from 'react-icons/ri'
 import { AiFillDelete } from 'react-icons/ai'
@@ -62,12 +63,12 @@ import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode';
 
 const token=Cookies.get("token");
-let role=null
-if(token){
-  const decodetoken=jwt_decode(token);
-   role=decodetoken.role;
-}
-console.log("n",role)
+// let role=null
+// if(token){
+//   const decodetoken=jwt_decode(token);
+//    role=decodetoken.role;
+// }
+// console.log("n",role)
 const UserManage = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -115,7 +116,21 @@ const UserManage = () => {
     padding: '1rem',
     marginTop: '8px',
   }
+const [role, setRole] = useState(null);
 
+  useEffect(() => {
+    const fetchRole = () => {
+      const token = Cookies.get("token");
+      if (token) {
+        const decodedToken = jwt_decode(token);
+        setRole(decodedToken.role);
+      } else {
+        setRole(null);
+      }
+    };
+  
+    fetchRole(); // Call the function to fetch role
+  }, []); 
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
@@ -300,31 +315,77 @@ const UserManage = () => {
     fetchData(page)
   }
 
+  // const handleAddSubmit = async (e) => {
+  //   e.preventDefault()
+  //   console.log(formData)
+  //   try {
+  //     const accessToken = Cookies.get('token')
+  //     const response = await axios.post(`https://rocketsales-server.onrender.com/api/salesman`, formData, {
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     })
+
+  //     if (response.status === 201) {
+  //       toast.success('Branch is created successfully')
+  //       fetchData()
+  //       setFormData({ name: '' })
+  //       setAddModalOpen(false)
+  //     }
+  //     fetchData();
+  //   } catch (error) {
+  //     toast.error('An error occured')
+  //     throw error.response ? error.response.data : new Error('An error occurred')
+  //   }
+  // }
   const handleAddSubmit = async (e) => {
-    e.preventDefault()
-    console.log(formData)
+    e.preventDefault();
     try {
-      const accessToken = Cookies.get('token')
-      const response = await axios.post(`https://rocketsales-server.onrender.com/api/salesman`, formData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (response.status === 201) {
-        toast.success('Branch is created successfully')
-        fetchData()
-        setFormData({ name: '' })
-        setAddModalOpen(false)
+      const accessToken = Cookies.get('token');
+      if (!accessToken) {
+        throw new Error('Token is missing');
       }
-      fetchData();
+  
+      // Decode the token to get role and other details
+      const decodedToken = jwt_decode(accessToken);
+  
+      // Determine the user's role and update formData accordingly
+      if (decodedToken.role === 2) {
+        formData.companyId = decodedToken.id; // Use companyId from the token
+      } else if (decodedToken.role === 3) {
+        formData.companyId = decodedToken.companyId; // Use companyId from the token
+        formData.branchId = decodedToken.id; // Use branchId from the token
+      } else if (decodedToken.role === 4) {
+        formData.supervisorId = decodedToken.id; // Use supervisorId from the token
+        formData.companyId = decodedToken.companyId; // Use companyId from the token
+        formData.branchId = decodedToken.branchId; // Use branchId from the token
+      }
+  
+      // Perform the POST request
+      const response = await axios.post(
+        `https://rocketsales-server.onrender.com/api/salesman`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      if (response.status === 201) {
+        toast.success('Branch is created successfully');
+        fetchData(); // Refresh data
+        setFormData({ name: '' }); // Reset form data
+        setAddModalOpen(false); // Close modal
+      }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      toast.error('An error occurred');
+      throw error.response ? error.response.data : new Error('An error occurred');
     }
-  }
-
+  };
+  
   // ###################################################################
   // ######################### Edit Group #########################
   const handleChangeRowsPerPage = (event) => {
@@ -707,80 +768,224 @@ const exportToPDF = PDFExporter({
     <DialogContent>
       <form onSubmit={handleAddSubmit}>
 
-        <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {role==1?
-          (
+         <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      
+             {role == 1 ? (
             <>
-            <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
-                <InputLabel id="company-label">Company</InputLabel>
-                <Select
-                  labelId="company-label"
-                  id="companyId"
-                  value={formData.companyId || ''}
-                  onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
-                  label="Company"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <BusinessIcon />
-                    </InputAdornment>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                <Autocomplete
+                  id="searchable-company-select"
+                  options={Array.isArray(companyData) ? companyData : []}
+                  getOptionLabel={(option) => option.companyName || ''}
+                  value={
+                    Array.isArray(companyData)
+                      ? companyData.find((company) => company._id == formData.companyId)
+                      : null
                   }
-                >
-                  {companyData.map((company) => (
-                    <MenuItem key={company._id} value={company._id}>
-                      {company.companyName}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  onChange={(event, newValue) =>
+                    setFormData({
+                      ...formData,
+                      companyId: newValue?._id || '',
+                    })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Company Name"
+                      variant="outlined"
+                      name="companyId"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <BusinessIcon />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
               </FormControl>
-              <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
-  <InputLabel id="branch-label">Branch</InputLabel>
-  <Select
-    labelId="branch-label"
-    id="branchId"
-    value={formData.branchId || ''}
-    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
-    label="Branch"
-    startAdornment={
-      <InputAdornment position="start">
-        <FiGitBranch />
-      </InputAdornment>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                <Autocomplete
+                  id="searchable-branch-select"
+                  options={Array.isArray(BranchData) ? BranchData : []}
+                  getOptionLabel={(option) => option.branchName || ''}
+                  value={
+                    Array.isArray(BranchData)
+                      ? BranchData.find((branch) => branch._id == formData.branchId)
+                      : null
+                  }
+                  onChange={(event, newValue) =>
+                    setFormData({
+                      ...formData,
+                      branchId: newValue?._id || '',
+                    })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Branch Name"
+                      variant="outlined"
+                      name="branchId"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FiGitBranch />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </FormControl>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-supervisor-select"
+    options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
+    getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
+    value={
+      Array.isArray(SupervisorData)
+        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
+        : null
+    } // Safely find the selected supervisor
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        supervisorId: newValue?._id || '', // Update the supervisorId in formData
+      })
     }
-  >
-  {Array.isArray(BranchData) && BranchData.map((branch) => (
-  <MenuItem key={branch._id} value={branch._id}>
-    {branch.branchName}
-  </MenuItem>
-))}
-
-  </Select>
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Supervisor"
+        variant="outlined"
+        name="supervisorId"
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiGitBranch />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
 </FormControl>
-<FormControl style={{ display: 'flex', flexDirection: 'column'}}>
-  <InputLabel id="supervisor-label">Supervisor</InputLabel>
-  <Select
-    labelId="supervisor-label"
-    id="supervisorId"
-    value={formData.supervisorId || ''} // Bind the value to formData
-    onChange={(e) => setFormData({ ...formData, supervisorId: e.target.value })} // Update formData on selection
-    label="Supervisor"
-    startAdornment={
-      <InputAdornment position="start">
-        <FiGitBranch />
-      </InputAdornment>
+            </>
+          ) : role == 2 ? (
+            <>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                <Autocomplete
+                  id="searchable-branch-select"
+                  options={Array.isArray(BranchData) ? BranchData : []}
+                  getOptionLabel={(option) => option.branchName || ''}
+                  value={
+                    Array.isArray(BranchData)
+                      ? BranchData.find((branch) => branch._id == formData.branchId)
+                      : null
+                  }
+                  onChange={(event, newValue) =>
+                    setFormData({
+                      ...formData,
+                      branchId: newValue?._id || '',
+                    })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Branch Name"
+                      variant="outlined"
+                      name="branchId"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FiGitBranch />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </FormControl>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-supervisor-select"
+    options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
+    getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
+    value={
+      Array.isArray(SupervisorData)
+        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
+        : null
+    } // Safely find the selected supervisor
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        supervisorId: newValue?._id || '', // Update the supervisorId in formData
+      })
     }
-  >
-   {Array.isArray(SupervisorData) && SupervisorData.map((supervisor) => (
-  <MenuItem key={supervisor._id} value={supervisor._id}>
-    {supervisor.supervisorName}
-  </MenuItem>
-))}
-  </Select>
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Supervisor"
+        variant="outlined"
+        name="supervisorId"
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiGitBranch />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
 </FormControl>
-
-
-              </>
-          )
-          :null}
+            </>
+          ) :role==3?(
+            <>
          
+            <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+<Autocomplete
+  id="searchable-supervisor-select"
+  options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
+  getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
+  value={
+    Array.isArray(SupervisorData)
+      ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
+      : null
+  } // Safely find the selected supervisor
+  onChange={(event, newValue) =>
+    setFormData({
+      ...formData,
+      supervisorId: newValue?._id || '', // Update the supervisorId in formData
+    })
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Supervisor"
+      variant="outlined"
+      name="supervisorId"
+      InputProps={{
+        ...params.InputProps,
+        startAdornment: (
+          <InputAdornment position="start">
+            <FiGitBranch />
+          </InputAdornment>
+        ),
+      }}
+    />
+  )}
+/>
+</FormControl>
+          </>
+
+          ): null}
           {COLUMNS().slice(0, -3).map((column) => (
             <TextField
               key={column.accessor}
@@ -837,78 +1042,222 @@ const exportToPDF = PDFExporter({
     <DialogContent>
       <form onSubmit={handleEditSubmit}>
       <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      {role==1?
-          (
+      {role == 1 ? (
             <>
-            <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
-                <InputLabel id="company-label">Company</InputLabel>
-                <Select
-                  labelId="company-label"
-                  id="companyId"
-                  value={formData.companyId || ''}
-                  onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
-                  label="Company"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <BusinessIcon />
-                    </InputAdornment>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                <Autocomplete
+                  id="searchable-company-select"
+                  options={Array.isArray(companyData) ? companyData : []}
+                  getOptionLabel={(option) => option.companyName || ''}
+                  value={
+                    Array.isArray(companyData)
+                      ? companyData.find((company) => company._id == formData.companyId)
+                      : null
                   }
-                >
-                  {companyData.map((company) => (
-                    <MenuItem key={company._id} value={company._id}>
-                      {company.companyName}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  onChange={(event, newValue) =>
+                    setFormData({
+                      ...formData,
+                      companyId: newValue?._id || '',
+                    })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Company Name"
+                      variant="outlined"
+                      name="companyId"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <BusinessIcon />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
               </FormControl>
-              <FormControl style={{ display: 'flex', flexDirection: 'column' }}>
-  <InputLabel id="branch-label">Branch</InputLabel>
-  <Select
-    labelId="branch-label"
-    id="branchId"
-    value={formData.branchId || ''}
-    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
-    label="Branch"
-    startAdornment={
-      <InputAdornment position="start">
-        <FiGitBranch />
-      </InputAdornment>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                <Autocomplete
+                  id="searchable-branch-select"
+                  options={Array.isArray(BranchData) ? BranchData : []}
+                  getOptionLabel={(option) => option.branchName || ''}
+                  value={
+                    Array.isArray(BranchData)
+                      ? BranchData.find((branch) => branch._id == formData.branchId)
+                      : null
+                  }
+                  onChange={(event, newValue) =>
+                    setFormData({
+                      ...formData,
+                      branchId: newValue?._id || '',
+                    })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Branch Name"
+                      variant="outlined"
+                      name="branchId"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FiGitBranch />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </FormControl>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-supervisor-select"
+    options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
+    getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
+    value={
+      Array.isArray(SupervisorData)
+        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
+        : null
+    } // Safely find the selected supervisor
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        supervisorId: newValue?._id || '', // Update the supervisorId in formData
+      })
     }
-  >
-  {Array.isArray(BranchData) && BranchData.map((branch) => (
-  <MenuItem key={branch._id} value={branch._id}>
-    {branch.branchName}
-  </MenuItem>
-))}
-
-  </Select>
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Supervisor"
+        variant="outlined"
+        name="supervisorId"
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiGitBranch />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
 </FormControl>
-<FormControl style={{ display: 'flex', flexDirection: 'column'}}>
-  <InputLabel id="supervisor-label">Supervisor</InputLabel>
-  <Select
-    labelId="supervisor-label"
-    id="supervisorId"
-    value={formData.supervisorId || ''} // Bind the value to formData
-    onChange={(e) => setFormData({ ...formData, supervisorId: e.target.value })} // Update formData on selection
-    label="Supervisor"
-    startAdornment={
-      <InputAdornment position="start">
-        <FiGitBranch />
-      </InputAdornment>
+            </>
+          ) : role == 2 ? (
+            <>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                <Autocomplete
+                  id="searchable-branch-select"
+                  options={Array.isArray(BranchData) ? BranchData : []}
+                  getOptionLabel={(option) => option.branchName || ''}
+                  value={
+                    Array.isArray(BranchData)
+                      ? BranchData.find((branch) => branch._id == formData.branchId)
+                      : null
+                  }
+                  onChange={(event, newValue) =>
+                    setFormData({
+                      ...formData,
+                      branchId: newValue?._id || '',
+                    })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Branch Name"
+                      variant="outlined"
+                      name="branchId"
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FiGitBranch />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </FormControl>
+              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-supervisor-select"
+    options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
+    getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
+    value={
+      Array.isArray(SupervisorData)
+        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
+        : null
+    } // Safely find the selected supervisor
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        supervisorId: newValue?._id || '', // Update the supervisorId in formData
+      })
     }
-  >
-   {Array.isArray(SupervisorData) && SupervisorData.map((supervisor) => (
-  <MenuItem key={supervisor._id} value={supervisor._id}>
-    {supervisor.supervisorName}
-  </MenuItem>
-))}
-  </Select>
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Supervisor"
+        variant="outlined"
+        name="supervisorId"
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiGitBranch />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
 </FormControl>
+            </>
+          ) :role==3?(
+            <>
+         
+            <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+<Autocomplete
+  id="searchable-supervisor-select"
+  options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
+  getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
+  value={
+    Array.isArray(SupervisorData)
+      ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
+      : null
+  } // Safely find the selected supervisor
+  onChange={(event, newValue) =>
+    setFormData({
+      ...formData,
+      supervisorId: newValue?._id || '', // Update the supervisorId in formData
+    })
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Supervisor"
+      variant="outlined"
+      name="supervisorId"
+      InputProps={{
+        ...params.InputProps,
+        startAdornment: (
+          <InputAdornment position="start">
+            <FiGitBranch />
+          </InputAdornment>
+        ),
+      }}
+    />
+  )}
+/>
+</FormControl>
+          </>
 
-
-              </>
-          )
-          :null}
+          ): null}
          
           {COLUMNS().slice(0, -3).map((column) => (
             <TextField
