@@ -43,6 +43,11 @@ export const COLUMNS = () => [
     icon: <FiGitBranch />, // Branch icon represents a branch
   },
   {
+    Header: 'supervisor Name',
+    accessor: 'supervisorName', // Nested accessor for branch name
+    icon: <FiGitBranch />, // Branch icon represents a branch
+  },
+  {
     Header: 'Created At',
     accessor: 'createdAt',
     icon: null, // No icon for created at

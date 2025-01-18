@@ -153,6 +153,8 @@ const [role, setRole] = useState(null);
         companyId: item.companyId?._id || null,          // Extract companyId or set null
         branchName: item.branchId?.branchName || null,   // Extract branchName or set null
         branchId: item.branchId?._id || null,            // Extract branchId or set null
+        supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
+        supervisorId: item.supervisorId?._id || null,    // Extract supervisorId or set null
       }));
   
       console.log("Processed Data:", salesmandata);
