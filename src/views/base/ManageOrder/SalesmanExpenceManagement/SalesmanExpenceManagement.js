@@ -53,11 +53,13 @@ import '../../../../../src/app.css'
 import { COLUMNS } from './columns'
 import { StyledTablePagination } from '../../../../views/PaginationCssFile/TablePaginationStyles'
 // import { FaBriefcase   } from 'react-icons/fa';
-import { BsBuildingsFill } from 'react-icons/bs'
-import '../../ReusablecodeforTable/styles.css';
-import ExcelJS from 'exceljs';
+import { BsFillPersonCheckFill } from 'react-icons/bs'
+import '../../ReusablecodeforTable/styles.css'
+import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
+import { LazyLoadImage } from 'react-lazy-load-image-component'
+// import { useNavigate } from 'react-router-dom';
 const SalesmanExpenceManagement = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -75,14 +77,101 @@ const SalesmanExpenceManagement = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25)
   const columns = COLUMNS()
   const [sortedData, setSortedData] = useState([])
-  const handleEditModalClose = () => {
-    setFormData({})
-    setEditModalOpen(false)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [selectedPeriod, setSelectedPeriod] = useState('today')
+  const [showCustomDates, setShowCustomDates] = useState(false)
+  // const navigate = useNavigate()
+
+  const styles = {
+    container: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%',
+      gap: '17px',
+    },
+    inputGroup: {
+      marginRight: '10px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    label: {
+      display: 'block',
+      fontWeight: 'bold',
+      fontSize: '14px',
+    },
+    input: {
+      width: '120px',
+      padding: '8px',
+      fontSize: '14px',
+      borderRadius: '4px',
+      border: '1px solid #ccc',
+    },
+    select: {
+      padding: '8px',
+      fontSize: '14px',
+      borderRadius: '4px',
+      border: '1px solid #ccc',
+    },
+    button: {
+      padding: '7px 15px',
+      fontSize: '16px',
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+    },
+    inputGroup: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px',
+      // marginBottom: '16px',
+      position: 'relative',
+    },
+    label: {
+      fontSize: '12px',
+      fontWeight: '500',
+      color: 'grey', // White color for the label
+      position: 'absolute',
+      top: '-10px',
+      left: '12px',
+      background: '#f3f4f7', // Match background color
+      padding: '0 4px',
+      zIndex: 1,
+    },
+    input: {
+      padding: '8px 2px',
+      borderRadius: '6px',
+      border: '1px solid #444', // Border color matching the dark theme
+      // background: '#2b2b2b', // Input background color
+      color: 'black', // White text for input
+      fontSize: '14px',
+      width: '136px',
+    },
+  }
+  const formatToUTCString = (dateString) => {
+    if (!dateString) return ''
+    return `${dateString}:00.000Z` // Keeps the entered time and adds `.000Z`
   }
 
-  const handleAddModalClose = () => {
-    setFormData({})
-    setAddModalOpen(false)
+  const handlePeriodChange = (e) => {
+    const value = e.target.value
+    setSelectedPeriod(value)
+    if (value === 'Custom') {
+      setShowCustomDates(true)
+    } else {
+      setShowCustomDates(false)
+    }
+  }
+  const handleApply = () => {
+    const formattedStartDate = formatToUTCString(startDate)
+    const formattedEndDate = formatToUTCString(endDate)
+    // alert(`Start Date: ${formattedStartDate}, End Date: ${formattedEndDate}`)
+    console.log(`Start Date: ${formattedStartDate}, End Date: ${formattedEndDate}`)
+    fetchData(formattedStartDate, formattedEndDate, selectedPeriod)
   }
 
   const style = {
@@ -103,63 +192,77 @@ const SalesmanExpenceManagement = () => {
     marginTop: '8px',
   }
 
-  // ##################### getting data  ###################
-  const fetchData = async (page = 1) => {
-    const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/SalesmanExpenceManagement`;
-  console.log("to",accessToken)
+  const fetchData = async (startDate, endDate, selectedPeriod, page = 1) => {
+    setLoading(true)
+    const accessToken = Cookies.get('token')
+    let url
+    console.log(selectedPeriod)
+    if (selectedPeriod && selectedPeriod !== 'Custom') {
+      // If the period is not custom, pass the period as a filter
+      url = `https://rocketsales-server.onrender.com/api/attendence?filter=${selectedPeriod}`
+    } else if (startDate && endDate) {
+      // For "Custom" date range, pass the startDate and endDate as query params
+      url = `https://rocketsales-server.onrender.com/api/attendence?startDate=${startDate}&endDate=${endDate}`
+    } else {
+      // If "Custom" is selected but no dates are provided, just fetch all data
+      url = `https://rocketsales-server.onrender.com/api/attendence`
+    }
+    console.log('my url', url)
+    console.log('Access Token:', accessToken)
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: 'Bearer ' + accessToken,
         },
-      });
-  
+      })
+      console.log('Response:', response.data)
       if (response.data) {
         // Filter the data based on the search query if it is not empty
-        const filteredData = response.data
-          .map((item) => {
-            // Apply the formatDate method to 'created_at' field if it exists
-            if (item.createdAt) {
-              item.createdAt = formatDate(item.createdAt);
-            }
-            return item;
-          })
+        const filteredData = response.data.data
+          .map((item) => ({
+            ...item,
+            createdAt: item.createdAt ? formatDate(item.createdAt) : null,
+            salesmanName: item.salesmanId ? item.salesmanId.salesmanName : null,
+            companyName: item.companyId?item.companyId.companyName:'N/A',
+            branchName: item.branchId?item.branchId.branchName:'N/A',
+            supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
+          }))
           .filter((item) =>
             Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          );
-  
-        setData(filteredData); // Set the filtered data to `data`
-        setSortedData(filteredData); // Set the filtered data to `sortedData`
-        setLoading(false);
+              value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+            ),
+          )
+
+        setData(filteredData) // Set the filtered data to `data`
+        setSortedData(filteredData) // Set the filtered data to `sortedData`
+        setLoading(false)
       }
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
     }
-  };
-  
+  }
+
   // Format the date into DD-MM-YYYY format
   function formatDate(date) {
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0'); // Add leading zero if single digit
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Add leading zero to month
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
+    const d = new Date(date)
+    const day = String(d.getDate()).padStart(2, '0') // Add leading zero if single digit
+    const month = String(d.getMonth() + 1).padStart(2, '0') // Add leading zero to month
+    const year = d.getFullYear()
+    return `${day}-${month}-${year}`
   }
-  
+
   // Example: parsing the formatted date string back to a Date object if needed
   function parseDate(dateString) {
-    const [day, month, year] = dateString.split('-').map(Number);
-    return new Date(year, month - 1, day);
+    const [day, month, year] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day)
   }
-  
+
   useEffect(() => {
     setLoading(true)
-    fetchData() // Refetch data when searchQuery changes
+    // fetchData() // Refetch data when searchQuery changes
+    fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
   }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
@@ -168,7 +271,7 @@ const SalesmanExpenceManagement = () => {
       setFilteredData(data) // No query, show all drivers
     } else {
       const filtered = data.filter((group) =>
-        group.SalesmanExpenceManagementName.toLowerCase().includes(searchQuery.toLowerCase()),
+        group.salesmanName.toLowerCase().includes(searchQuery.toLowerCase()),
       )
       setFilteredData(filtered)
       setCurrentPage(1)
@@ -187,30 +290,6 @@ const SalesmanExpenceManagement = () => {
     fetchData(page)
   }
 
-  const handleAddSubmit = async (e) => {
-    e.preventDefault()
-    console.log(formData)
-    try {
-      const accessToken = Cookies.get('token')
-      const response = await axios.post(`https://rocketsales-server.onrender.com/api/SalesmanExpenceManagement`, formData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (response.status === 201) {
-        toast.success('group is created successfully')
-        fetchData()
-        setFormData({ name: '' })
-        setAddModalOpen(false)
-      }
-    } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
-    }
-  }
-
   // ###################################################################
   // ######################### Edit Group #########################
   const handleChangeRowsPerPage = (event) => {
@@ -222,162 +301,209 @@ const SalesmanExpenceManagement = () => {
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
-  
-  const handleEditSubmit = async (e) => {
-    e.preventDefault()
-    console.log(formData)
-    try {
-      const accessToken = Cookies.get('token')
-      const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/SalesmanExpenceManagement/${formData._id}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      )
 
-      if (response.status === 200) {
-        toast.success('group is edited successfully')
-        fetchData()
-        setFormData({ name: '' })
-        setEditModalOpen(false)
-      }
-    } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
-    }
-  }
-
-  const handleEditGroup = async (item) => {
-    console.log(item)
-    setEditModalOpen(true)
-    setFormData({ ...item })
-    console.log('this is before edit', formData)
-  }
-
- 
-  const haqndleDeletesubmit = async (item) => {
-    if (!item._id) {
-      toast.error('Invalid item selected for deletion.')
-      return
-    }
-
-    const confirmed = confirm('Do you want to delete this user?')
-    if (!confirmed) return
-
-    try {
-      const accessToken = Cookies.get('token')
-      if (!accessToken) {
-        toast.error('Authentication token is missing.')
+    const haqndleDeletesubmit = async (item) => {
+      if (!item._id) {
+        toast.error('Invalid item selected for deletion.')
         return
       }
 
-      const response = await axios({
-        method: 'DELETE', // Explicitly specifying DELETE method
-        url: `https://rocketsales-server.onrender.com/api/SalesmanExpenceManagement/${item._id}`,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
+      const confirmed = confirm('Do you want to delete this user?')
+      if (!confirmed) return
+  console.log(`https://rocketsales-server.onrender.com/api/attendence/${item._id}`)
+      try {
+        const accessToken = Cookies.get('token')
+        if (!accessToken) {
+          toast.error('Authentication token is missing.')
+          return
+        }
 
-      // if (response.status === 200) {
+        const response = await axios({
+          method: 'DELETE', // Explicitly specifying DELETE method
+          url: `https://rocketsales-server.onrender.com/api/attendence/${item._id}`,
+
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+
+        })
+
+        // if (response.status === 200) {
         toast.success('Group deleted successfully')
-        fetchData()
-      // }
-    } catch (error) {
-      console.error('Error Details:', error.response || error.message)
-      toast.error('An error occurred while deleting the group.')
+        fetchData(formatToUTCString(startDate), formatToUTCString(endDate),selectedPeriod);
+        // }
+      } catch (error) {
+        console.error('Error Details:', error.response || error.message)
+        toast.error('An error occurred while deleting the group.')
+      }
     }
-  }
 
-
-  
   const exportToExcel = ExcelExporter({
-    mytitle:'Branches Data Report',
-    columns: COLUMNS(),
-    data: filteredData,
-    fileName: 'SalesmanExpenceManagement_data.xlsx',
-   
-  });
+    mytitle: 'Attendance Data Report',
+    columns: COLUMNS().slice(1),
+    data: filteredData.map(({ [COLUMNS()[0]?.accessor]: _, ...rest }) => rest),
+    fileName: 'Attendance_data.xlsx',
+  })
 
-const exportToPDF = PDFExporter({
-  title: 'SalesmanExpenceManagement Data Report',
-  columns: COLUMNS(),
-  data: filteredData,
-  fileName: 'SalesmanExpenceManagement_data_report.pdf',
-});
+  // const exportToPDF = PDFExporter({
+  //   title: 'Company Data Report',
+  //   columns: COLUMNS(),
+  //   data: filteredData,
+  //   fileName: 'Company_data_report.pdf',
+  // })
+  // const exportToPDF = () => {
+  //   // Get columns and remove the first one
+  //   const columns = COLUMNS().slice(1);
+  // console.log("pdfcall")
+  //   // Get accessor of the first column
+  //   const firstColumnAccessor = COLUMNS()[0]?.accessor;
 
+  //   // Remove the first column data from each row
+  //   const filteredDataWithoutFirstColumn = filteredData.map(({ [firstColumnAccessor]: _, ...rest }) => rest);
+
+  //   // Export to PDF
+  //   PDFExporter({
+  //     title: 'Company Data Report',
+  //     columns: columns,  // Updated columns
+  //     data: filteredDataWithoutFirstColumn, // Updated data
+  //     fileName: 'Company_data_report.pdf',
+  //   });
+  // };
+  const exportToPDF = PDFExporter({
+    title: 'Company Data Report',
+    columns: COLUMNS().slice(1),
+    data: filteredData.map(({ [COLUMNS()[0]?.accessor]: _, ...rest }) => rest),
+    fileName: 'Attendance_report.pdf',
+  })
+
+  // Use in Dropdown
+  // <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>;
+
+ 
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
-      <div className="d-flex justify-content-between mb-2">
-        <div>
-          <h2
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              color: '#4c637c',
-              fontWeight: '600',
-              fontFamily: "'Poppins', sans-serif",
-            }}
-          >
-            <BsBuildingsFill style={{ fontSize: '24px', color: '#4c637c' }} />
-            SalesmanExpenceManagement
-          </h2>
-        </div>
-
-
-<div className="d-flex align-items-center">
- 
-  <div className="me-3 d-none d-md-block">
-    <input
-      type="search"
-      className="form-control"
-      placeholder="🔍 Search here..."
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
+      <div className="d-flex  justify-content-between mb-2" style={{gap:'100px'}}>
+      <div style={{ display: 'flex', gap: selectedPeriod !== "Custom" ? "0px" : "42px" }}>
+  <div>
+    <h5
       style={{
-        height: "40px", // Ensure consistent height
-        padding: "8px 12px",
-        fontSize: "16px",
-        borderRadius: "8px",
-        border: "1px solid #ccc",
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        color: '#4c637c',
+        fontWeight: '600',
+        fontFamily: "'Poppins', sans-serif",
       }}
-    />
+    >
+      <BsFillPersonCheckFill style={{ fontSize: '58px', color: '#4c637c' }} />
+      Salesman Expense Management
+    </h5>
   </div>
 
-  {/* Settings Dropdown */}
+  <div
+    style={{
+      ...styles.container,
+      justifyContent: selectedPeriod !== "Custom" ? "center" : "space-between",
+      gap: selectedPeriod !== "Custom" ? "10px" : "0px",
+    }}
+  >
+    <div style={styles.inputGroup}>
+      <label htmlFor="period" style={styles.label}>Period:</label>
+      <select
+        id="period"
+        value={selectedPeriod}
+        onChange={handlePeriodChange}
+        style={styles.select}
+      >
+        <option value="today">Today</option>
+        <option value="yesterday">Yesterday</option>
+        <option value="thisWeek">This Week</option>
+        <option value="lastWeek">Previous Week</option>
+        <option value="thisMonth">This Month</option>
+        <option value="preMonth">Previous Month</option>
+        <option value="Custom">Custom</option>
+      </select>
+    </div>
+
+    {showCustomDates && (
+      <>
+        <div style={styles.inputGroup}>
+          <label htmlFor="startDate" style={styles.label}>From</label>
+          <input
+            type="datetime-local"
+            id="startDate"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={styles.input}
+          />
+        </div>
+
+        <div style={styles.inputGroup}>
+          <label htmlFor="endDate" style={styles.label}>To</label>
+          <input
+            type="datetime-local"
+            id="endDate"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={styles.input}
+          />
+        </div>
+      </>
+    )}
+
+    <button onClick={handleApply} style={styles.button}>Apply</button>
+  </div>
+</div>
 
 
-  {/* Add Button */}
-  <div className="add-container d-flex align-items-center" onClick={() => setAddModalOpen(true)}>
+        <div className="d-flex align-items-center">
+          <div className="me-3 d-none d-md-block">
+            <input
+              type="search"
+              className="form-control"
+              placeholder="🔍 Search here..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                height: '40px', // Ensure consistent height
+                padding: '8px 12px',
+                fontSize: '16px',
+                borderRadius: '8px',
+                border: '1px solid #ccc',
+              }}
+            />
+          </div>
+
+          {/* Settings Dropdown */}
+
+          {/* Add Button */}
+          <div className="add-container d-flex align-items-center" onClick={() => setAddModalOpen(true)}>
     <div className="add-icon">+</div>
     <span className="add-text ms-2">ADD</span>
   </div>
-  <CDropdown className="position-relative me-3">
-    <CDropdownToggle
-      color="secondary"
-      style={{
-        borderRadius: '50%',
-        padding: '10px',
-        height: '48px',
-        width: '48px',
-        marginLeft:'12px'
-      }}
-    >
-      <CIcon icon={cilSettings} />
-    </CDropdownToggle>
-    <CDropdownMenu>
-      <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
-      <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
-    </CDropdownMenu>
-  </CDropdown>
-</div>
+          <CDropdown className="position-relative me-3">
+            <CDropdownToggle
+              color="secondary"
+              style={{
+                borderRadius: '50%',
+                padding: '10px',
+                height: '48px',
+                width: '48px',
+                marginLeft: '12px',
+              }}
+            >
+              <CIcon icon={cilSettings} />
+            </CDropdownToggle>
+            <CDropdownMenu>
+              {/* <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem> */}
+              <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
 
+              <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
+            </CDropdownMenu>
+          </CDropdown>
+        </div>
       </div>
       <div className="d-md-none mb-2">
         <input
@@ -394,7 +520,6 @@ const exportToPDF = PDFExporter({
         sx={{
           height: 'auto',
           overflowX: 'auto',
-
         }}
       >
         <CTable
@@ -442,7 +567,7 @@ const exportToPDF = PDFExporter({
                   {col.Header}
                 </CTableHeaderCell>
               ))}
-              <CTableHeaderCell
+              {/* <CTableHeaderCell
                 className="text-center"
                 style={{
                   padding: '5px 12px', // Reduced padding for top and bottom
@@ -454,7 +579,7 @@ const exportToPDF = PDFExporter({
                 }}
               >
                 Actions
-              </CTableHeaderCell>
+              </CTableHeaderCell> */}
             </CTableRow>
           </CTableHead>
 
@@ -480,7 +605,7 @@ const exportToPDF = PDFExporter({
                   <CTableRow
                     key={index}
                     style={{
-                      backgroundColor: index % 2 === 0 ? 'transparent':  '#f1f8fd', // Grey for even rows, transparent for odd rows
+                      backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd', // Grey for even rows, transparent for odd rows
                       transition: 'background-color 0.3s ease',
                       borderBottom: '1px solid #e0e0e0',
                     }}
@@ -492,7 +617,7 @@ const exportToPDF = PDFExporter({
                         padding: '0px 12px',
                         color: '#242424',
                         fontSize: '13px',
-                        backgroundColor: index % 2 === 0 ? 'transparent':'#f1f8fd'  ,
+                        backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                       }}
                     >
                       {index + 1}
@@ -506,34 +631,51 @@ const exportToPDF = PDFExporter({
                           padding: '0px 12px',
                           color: '#242424',
                           fontSize: '13px',
-                          backgroundColor: index % 2 === 0 ?'transparent' : '#f1f8fd',
+                          backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                         }}
                       >
-                        {item[col.accessor] || '--'}
+                        {col.accessor === 'attendenceStatus' ? (
+                          <button
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: item[col.accessor] === 'Absent' ? 'red' : 'green',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '5px',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                            }}
+                            onClick={() => handleStatusClick(item)} // Optional: You can handle a click event
+                          >
+                            {item[col.accessor]}
+                          </button>
+                        ) : col.accessor == 'profileImgUrl' ? (
+                          item[col.accessor] ? (
+                            // Log the base64 string to the console
+                            (console.log('mm'),
+                            (
+                              // console.log(`data:image/png;base64,${item[col.accessor]}`),
+                              <img
+                                src={`data:image/png;base64,${item[col.accessor]}`} // Ensure the correct format
+                                alt="Profile"
+                                style={{
+                                  width: '80px',
+                                  height: '80px',
+                                  borderRadius: '50%',
+                                  padding: '9px',
+                                }}
+                              />
+                            ))
+                          ) : (
+                            <span>No Image</span> // Fallback if no image is available
+                          )
+                        ) : (
+                          item[col.accessor] || '--' // Default for other columns
+                        )}
                       </CTableDataCell>
                     ))}
 
                    
-  <CTableDataCell
-      className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
-    >
-      <IconButton
-        aria-label="edit"
-        onClick={() => handleEditGroup(item)}
-        className="icon-button icon-button-edit"
-      >
-        <RiEdit2Fill className="icon-button-icon" />
-      </IconButton>
-
-      <IconButton
-        aria-label="delete"
-        onClick={() => haqndleDeletesubmit(item)}
-        className="icon-button icon-button-delete"
-      >
-        <AiFillDelete className="icon-button-icon" />
-      </IconButton>
-    </CTableDataCell>
-
                   </CTableRow>
                 ))
             ) : (
@@ -555,8 +697,6 @@ const exportToPDF = PDFExporter({
         </CTable>
       </TableContainer>
 
-     
-
       <StyledTablePagination>
         <TablePagination
           rowsPerPageOptions={[{ label: 'All', value: -1 }, 1, 10, 25, 100, 1000]}
@@ -574,113 +714,8 @@ const exportToPDF = PDFExporter({
           }}
         />
       </StyledTablePagination>
-     
-      <Modal
-  open={addModalOpen}
-  onClose={handleAddModalClose}
-  aria-labelledby="modal-modal-title"
-  aria-describedby="modal-modal-description"
->
-  <Box sx={style}>
-    <div className="d-flex justify-content-between">
-      <Typography id="modal-modal-title" variant="h6" component="h2">
-        Add New SalesmanExpenceManagement
-      </Typography>
-      <IconButton onClick={handleAddModalClose}>
-        <CloseIcon />
-      </IconButton>
-    </div>
-    <DialogContent>
-      <form onSubmit={handleAddSubmit}>
-        <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {COLUMNS().slice(0,-1).map((column) => (
-            <TextField
-              key={column.accessor}
-              label={column.Header}
-              name={column.accessor}
-              value={formData[column.accessor] || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, [column.accessor]: e.target.value })
-              }
-              // Remove required attribute
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {column.icon}
-                  </InputAdornment>
-                ),
-              }}
-            />
-          ))}
-        </FormControl>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          style={{ marginTop: '20px' }}
-        >
-          Submit
-        </Button>
-      </form>
-    </DialogContent>
-  </Box>
-</Modal>
 
-
-
-    
-<Modal
-  open={editModalOpen}
-  onClose={handleEditModalClose}
-  aria-labelledby="modal-modal-title"
-  aria-describedby="modal-modal-description"
->
-  <Box sx={style}>
-    <div className="d-flex justify-content-between">
-      <Typography id="modal-modal-title" variant="h6" component="h2">
-        Edit SalesmanExpenceManagement
-      </Typography>
-      <IconButton onClick={handleEditModalClose}>
-        <CloseIcon />
-      </IconButton>
-    </div>
-    <DialogContent>
-      <form onSubmit={handleEditSubmit}>
-        <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {COLUMNS().slice(0,-1).map((column) => (
-            <TextField
-              key={column.accessor}
-              label={column.Header}
-              name={column.accessor}
-              value={formData[column.accessor] || ''} // Pre-fill with existing data
-              onChange={(e) =>
-                setFormData({ ...formData, [column.accessor]: e.target.value })
-              }
-              // Remove the required attribute
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {column.icon}
-                  </InputAdornment>
-                ),
-              }}
-            />
-          ))}
-        </FormControl>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          style={{ marginTop: '20px' }}
-        >
-          Submit
-        </Button>
-      </form>
-    </DialogContent>
-  </Box>
-</Modal>
-
-
+      
     </div>
   )
 }
