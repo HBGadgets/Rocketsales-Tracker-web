@@ -30,7 +30,7 @@ import { FaCarOn, FaUserGroup } from 'react-icons/fa6';
 import Cookies from 'js-cookie';
 import jwt_decode from 'jwt-decode';
 import { FaTasks, FaUsers, FaBuilding, FaLayerGroup, FaMapMarkerAlt } from 'react-icons/fa';
-import { FaEdit, FaRegCalendarAlt, FaStore } from 'react-icons/fa';
+import { FaEdit, FaRegCalendarAlt, FaStore,FaClock ,FaThumbsUp,FaThumbsDown } from 'react-icons/fa';
 import { FaFileInvoice, FaClipboardList, FaWarehouse } from 'react-icons/fa';
 
 const token = Cookies.get("token");
@@ -314,10 +314,21 @@ const createNav = () => {
         </div>
       ),
       items: [
+        // {
+        //   component: CNavItem,
+        //   name: 'Attendance',
+        //   to: '/attendance',
+        //   visible: true,
+        //   icon: (
+        //     <div style={{ display: 'flex', alignItems: 'center' }}>
+        //       <FaUserGroup style={{ marginRight: '15px', fontSize: '25px' }} />
+        //     </div>
+        //   ),
+        // },
         {
           component: CNavItem,
           name: 'Attendance',
-          to: '/attendance',
+          to: '/attendance1',
           visible: true,
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -337,14 +348,44 @@ const createNav = () => {
         },
         {
           component: CNavItem,
-          name: 'Absent Report',
-          to: '/absent-report',
+          name: 'Salesman Leave Request',
+          to: '/SalesmanLeaveRequest',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <TbReport style={{ marginRight: '15px', fontSize: '25px' }} />
+              <FaClock  style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
+        {
+          component: CNavItem,
+          name: 'Approve Request',
+          to: '/ApproveRequest',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <FaThumbsUp style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+        {
+          component: CNavItem,
+          name: 'Rejected Request',
+          to: '/DeniedRequest',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <FaThumbsDown style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+        // {
+        //   component: CNavItem,
+        //   name: 'Absent Report',
+        //   to: '/absent-report',
+        //   icon: (
+        //     <div style={{ display: 'flex', alignItems: 'center' }}>
+        //       <TbReport style={{ marginRight: '15px', fontSize: '25px' }} />
+        //     </div>
+        //   ),
+        // },
       ],
     },
     {
