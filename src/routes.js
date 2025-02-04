@@ -7,7 +7,7 @@ const ChatBot = React.lazy(() => import('./views/theme/chatbot/ChatBot'))
 
 const Attendance = React.lazy(() => import('./views/base/ManageAttend/Attendance'))
 const LeaveApplication = React.lazy(() => import('./views/base/ManageAttend/LeaveApplication'))
-const Manual = React.lazy(() => import('./views/base/ManageAttend/Manual'))
+const Manual = React.lazy(() => import('./views/base/ManageAttend/ManualAttendance/Manual'))
 const VisitShop = React.lazy(() => import('./views/base/ManageAttend/VistShop'))
 
 const InventoryManagment = React.lazy(() => import('./views/base/ManageOrder/InventoryManage'))
@@ -30,6 +30,11 @@ const Branches=React.lazy(()=>import('./views/base/Management/Branches/Branches'
 const BranchGroup=React.lazy(()=>import('./views/base/Management/BranchGroup'))
 const Supervisor=React.lazy(()=>import('./views/base/Management/Supervisor/Supervisor'))
 const UserManage=React.lazy(()=>import('./views/base/Management/UserManage/UserManage'))
+const Attendance1=React.lazy(()=>import('./views/base/ManageAttend/Attendance1/Attendance1'))
+const SalesmanLeaveRequest=React.lazy(()=>import('./views/base/ManageAttend/SalesmanLeaveRequest/SalesmanLeaveRequest'))
+const ApproveRequest=React.lazy(()=>import('./views/base/ManageAttend/ApproveRequest/ApproveRequest'))
+const DeniedRequest=React.lazy(()=>import('./views/base/ManageAttend/DeniedRequest/DeniedRequest'))
+const SalesmanExpenceManagement=React.lazy(()=>import('./views/base/ManageOrder/SalesmanExpenceManagement/SalesmanExpenceManagement'))
 // const Company=React.lazy(()=>import('./views/base/Management/Company'))
 // const Company=React.lazy(()=>import('./views/base/Management/Company'))
 const routes = [
@@ -42,7 +47,7 @@ const routes = [
   { path: '/livetrack', name: 'LiveTrack', element: LiveTrack },
   { path: '/salesman', name: 'IndividualTrack', element: IndividualTrack },
 
-  { path: '/attendance', name: 'Attendance', element: Attendance },
+  { path: '/attendance', name: 'Attendance1', element: Attendance },
   { path: '/manual-attendance', name: 'Manual Attendance', element: Manual },
   { path: '/leave-application', name: 'Leave Application', element: LeaveApplication },
   { path: '/visit-shop', name: 'Visit Shop', element: VisitShop },
@@ -66,8 +71,11 @@ const routes = [
   
   { path: '/setting', name: 'Setting', element: Settings },
   { path: '/h&s', name: 'Help & Support', element: HelpSupp },
-
-  
+  { path: '/Attendance1', name: 'Attendance', element: Attendance1 },
+  { path: '/SalesmanLeaveRequest', name: 'Salesman Leave Request', element: SalesmanLeaveRequest },
+  { path: '/ApproveRequest', name: 'Approve Request', element: ApproveRequest },
+  { path: '/DeniedRequest', name: 'Rejected Request', element: DeniedRequest },
+  { path: '/SalesmanExpenceManagement', name: 'Salesman Expence Management', element: SalesmanExpenceManagement },
 ]
 
 export default routes

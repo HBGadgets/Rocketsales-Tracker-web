@@ -61,7 +61,7 @@ import ExcelJS from 'exceljs';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode';
-
+import { FiUser } from "react-icons/fi";
 const token=Cookies.get("token");
 // let role=null
 // if(token){
@@ -72,7 +72,9 @@ const token=Cookies.get("token");
 const UserManage = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
-  const [formData, setFormData] = useState({})
+  // const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({ companyId: '', branchId: '',supervisorId:'' })
+    const [branchError, setBranchError] = useState(false)
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -486,7 +488,9 @@ const exportToPDF = PDFExporter({
   data: filteredData,
   fileName: 'UserManage_data_report.pdf',
 });
-
+const filteredBranches = formData.companyId
+? BranchData.filter((branch) => branch.companyId._id === formData.companyId)
+: []
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -774,96 +778,73 @@ const exportToPDF = PDFExporter({
       
              {role == 1 ? (
             <>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-                <Autocomplete
-                  id="searchable-company-select"
-                  options={Array.isArray(companyData) ? companyData : []}
-                  getOptionLabel={(option) => option.companyName || ''}
-                  value={
-                    Array.isArray(companyData)
-                      ? companyData.find((company) => company._id == formData.companyId)
-                      : null
-                  }
-                  onChange={(event, newValue) =>
-                    setFormData({
-                      ...formData,
-                      companyId: newValue?._id || '',
-                    })
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Company Name"
-                      variant="outlined"
-                      name="companyId"
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <BusinessIcon />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-              </FormControl>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-                <Autocomplete
-                  id="searchable-branch-select"
-                  options={Array.isArray(BranchData) ? BranchData : []}
-                  getOptionLabel={(option) => option.branchName || ''}
-                  value={
-                    Array.isArray(BranchData)
-                      ? BranchData.find((branch) => branch._id == formData.branchId)
-                      : null
-                  }
-                  onChange={(event, newValue) =>
-                    setFormData({
-                      ...formData,
-                      branchId: newValue?._id || '',
-                    })
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Branch Name"
-                      variant="outlined"
-                      name="branchId"
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FiGitBranch />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-              </FormControl>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+          
+<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
   <Autocomplete
-    id="searchable-supervisor-select"
-    options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
-    getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
-    value={
-      Array.isArray(SupervisorData)
-        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
-        : null
-    } // Safely find the selected supervisor
-    onChange={(event, newValue) =>
+    id="searchable-company-select"
+    options={Array.isArray(companyData) ? companyData : []}
+    getOptionLabel={(option) => option.companyName || ''}
+    value={companyData.find((company) => company._id == formData.companyId) || null}
+    onChange={(event, newValue) => {
       setFormData({
         ...formData,
-        supervisorId: newValue?._id || '', // Update the supervisorId in formData
+        companyId: newValue?._id || '',
+        branchId: '', // Reset branch when company changes
+        supervisorId: '', // Reset supervisor when company changes
       })
-    }
+      setBranchError(false) // Clear branch error
+    }}
     renderInput={(params) => (
       <TextField
         {...params}
-        label="Supervisor"
+        label="Company Name"
         variant="outlined"
-        name="supervisorId"
+        name="companyId"
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <BusinessIcon />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
+</FormControl>
+
+{/* Branch Dropdown */}
+<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-branch-select"
+    options={filteredBranches}
+    getOptionLabel={(option) => option.branchName || ''}
+    value={filteredBranches.find((branch) => branch._id == formData.branchId) || null}
+    onChange={(event, newValue) => {
+      if (!formData.companyId) {
+        setBranchError(true)
+      } else {
+        setFormData({ 
+          ...formData, 
+          branchId: newValue?._id || '', 
+          supervisorId: '' // Reset supervisor when branch changes
+        })
+        setBranchError(false)
+      }
+    }}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Branch Name"
+        variant="outlined"
+        name="branchId"
+        error={branchError} // Show error state
+        helperText={
+          branchError && formData.companyId
+            ? 'Please select a company first'
+            : ''
+        }
+        placeholder={!formData.companyId ? 'Select Company First' : 'Select Branch'}
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -874,67 +855,88 @@ const exportToPDF = PDFExporter({
         }}
       />
     )}
+    disabled={!formData.companyId} // Disable if no company is selected
   />
 </FormControl>
+
+<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-supervisor-select"
+    options={
+      formData.companyId && formData.branchId
+        ? SupervisorData.filter(
+            (supervisor) =>
+              supervisor.companyId?._id === formData.companyId &&
+              supervisor.branchId?._id === formData.branchId
+          )
+        : []
+    }
+    getOptionLabel={(option) => option.supervisorName || ''}
+    value={
+      SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId) || null
+    }
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        supervisorId: newValue?._id || '',
+      })
+    }
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Supervisor"
+        variant="outlined"
+        name="supervisorId"
+        placeholder={
+          !formData.companyId
+            ? 'Select Company First'
+            : !formData.branchId
+            ? 'Select Branch First'
+            : 'Select Supervisor'
+        }
+        disabled={!formData.companyId || !formData.branchId}
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiUser />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+    disabled={!formData.branchId} // Disable if branch is not selected
+  />
+</FormControl>
+
+
+
             </>
           ) : role == 2 ? (
             <>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-                <Autocomplete
-                  id="searchable-branch-select"
-                  options={Array.isArray(BranchData) ? BranchData : []}
-                  getOptionLabel={(option) => option.branchName || ''}
-                  value={
-                    Array.isArray(BranchData)
-                      ? BranchData.find((branch) => branch._id == formData.branchId)
-                      : null
-                  }
-                  onChange={(event, newValue) =>
-                    setFormData({
-                      ...formData,
-                      branchId: newValue?._id || '',
-                    })
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Branch Name"
-                      variant="outlined"
-                      name="branchId"
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FiGitBranch />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-              </FormControl>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+       <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
   <Autocomplete
-    id="searchable-supervisor-select"
-    options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
-    getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
+    id="searchable-branch-select"
+    options={Array.isArray(BranchData) ? BranchData : []}
+    getOptionLabel={(option) => option.branchName || ''}
     value={
-      Array.isArray(SupervisorData)
-        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
+      Array.isArray(BranchData)
+        ? BranchData.find((branch) => branch._id == formData.branchId)
         : null
-    } // Safely find the selected supervisor
+    }
     onChange={(event, newValue) =>
       setFormData({
         ...formData,
-        supervisorId: newValue?._id || '', // Update the supervisorId in formData
+        branchId: newValue?._id || '', // Update branch
+        supervisorId: '', // Reset supervisor
       })
     }
     renderInput={(params) => (
       <TextField
         {...params}
-        label="Supervisor"
+        label="Branch Name"
         variant="outlined"
-        name="supervisorId"
+        name="branchId"
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -947,6 +949,50 @@ const exportToPDF = PDFExporter({
     )}
   />
 </FormControl>
+
+<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-supervisor-select"
+    options={
+      formData.branchId // Only show supervisors if branch is selected
+        ? SupervisorData.filter((supervisor) => supervisor.branchId?._id === formData.branchId)
+        : []
+    }
+    getOptionLabel={(option) => option.supervisorName || ''}
+    value={
+      formData.supervisorId
+        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
+        : null // Ensure it is null if supervisorId is empty
+    }
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        supervisorId: newValue?._id || '', // Update supervisor
+      })
+    }
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Supervisor"
+        variant="outlined"
+        name="supervisorId"
+        placeholder={!formData.branchId ? 'Select Branch First' : 'Select Supervisor'}
+        disabled={!formData.branchId} // Disable when no branch is selected
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiGitBranch />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
+</FormControl>
+
+
+
             </>
           ) :role==3?(
             <>
@@ -1046,96 +1092,72 @@ const exportToPDF = PDFExporter({
       <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       {role == 1 ? (
             <>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-                <Autocomplete
-                  id="searchable-company-select"
-                  options={Array.isArray(companyData) ? companyData : []}
-                  getOptionLabel={(option) => option.companyName || ''}
-                  value={
-                    Array.isArray(companyData)
-                      ? companyData.find((company) => company._id == formData.companyId)
-                      : null
-                  }
-                  onChange={(event, newValue) =>
-                    setFormData({
-                      ...formData,
-                      companyId: newValue?._id || '',
-                    })
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Company Name"
-                      variant="outlined"
-                      name="companyId"
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <BusinessIcon />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-              </FormControl>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-                <Autocomplete
-                  id="searchable-branch-select"
-                  options={Array.isArray(BranchData) ? BranchData : []}
-                  getOptionLabel={(option) => option.branchName || ''}
-                  value={
-                    Array.isArray(BranchData)
-                      ? BranchData.find((branch) => branch._id == formData.branchId)
-                      : null
-                  }
-                  onChange={(event, newValue) =>
-                    setFormData({
-                      ...formData,
-                      branchId: newValue?._id || '',
-                    })
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Branch Name"
-                      variant="outlined"
-                      name="branchId"
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FiGitBranch />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-              </FormControl>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+             <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
   <Autocomplete
-    id="searchable-supervisor-select"
-    options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
-    getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
-    value={
-      Array.isArray(SupervisorData)
-        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
-        : null
-    } // Safely find the selected supervisor
-    onChange={(event, newValue) =>
+    id="searchable-company-select"
+    options={Array.isArray(companyData) ? companyData : []}
+    getOptionLabel={(option) => option.companyName || ''}
+    value={companyData.find((company) => company._id == formData.companyId) || null}
+    onChange={(event, newValue) => {
       setFormData({
         ...formData,
-        supervisorId: newValue?._id || '', // Update the supervisorId in formData
+        companyId: newValue?._id || '',
+        branchId: '', // Reset branch when company changes
+        supervisorId: '', // Reset supervisor when company changes
       })
-    }
+      setBranchError(false) // Clear branch error
+    }}
     renderInput={(params) => (
       <TextField
         {...params}
-        label="Supervisor"
+        label="Company Name"
         variant="outlined"
-        name="supervisorId"
+        name="companyId"
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <BusinessIcon />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
+</FormControl>
+
+{/* Branch Dropdown */}
+<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-branch-select"
+    options={filteredBranches}
+    getOptionLabel={(option) => option.branchName || ''}
+    value={filteredBranches.find((branch) => branch._id == formData.branchId) || null}
+    onChange={(event, newValue) => {
+      if (!formData.companyId) {
+        setBranchError(true)
+      } else {
+        setFormData({ 
+          ...formData, 
+          branchId: newValue?._id || '', 
+          supervisorId: '' // Reset supervisor when branch changes
+        })
+        setBranchError(false)
+      }
+    }}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Branch Name"
+        variant="outlined"
+        name="branchId"
+        error={branchError} // Show error state
+        helperText={
+          branchError && formData.companyId
+            ? 'Please select a company first'
+            : ''
+        }
+        placeholder={!formData.companyId ? 'Select Company First' : 'Select Branch'}
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -1146,12 +1168,63 @@ const exportToPDF = PDFExporter({
         }}
       />
     )}
+    disabled={!formData.companyId} // Disable if no company is selected
+  />
+</FormControl>
+
+<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-supervisor-select"
+    options={
+      formData.companyId && formData.branchId
+        ? SupervisorData.filter(
+            (supervisor) =>
+              supervisor.companyId?._id === formData.companyId &&
+              supervisor.branchId?._id === formData.branchId
+          )
+        : []
+    }
+    getOptionLabel={(option) => option.supervisorName || ''}
+    value={
+      SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId) || null
+    }
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        supervisorId: newValue?._id || '',
+      })
+    }
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Supervisor"
+        variant="outlined"
+        name="supervisorId"
+        placeholder={
+          !formData.companyId
+            ? 'Select Company First'
+            : !formData.branchId
+            ? 'Select Branch First'
+            : 'Select Supervisor'
+        }
+        disabled={!formData.companyId || !formData.branchId}
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiUser />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+    disabled={!formData.branchId} // Disable if branch is not selected
   />
 </FormControl>
             </>
           ) : role == 2 ? (
             <>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+              {/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
                 <Autocomplete
                   id="searchable-branch-select"
                   options={Array.isArray(BranchData) ? BranchData : []}
@@ -1218,7 +1291,84 @@ const exportToPDF = PDFExporter({
       />
     )}
   />
+</FormControl> */}
+<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-branch-select"
+    options={Array.isArray(BranchData) ? BranchData : []}
+    getOptionLabel={(option) => option.branchName || ''}
+    value={
+      Array.isArray(BranchData)
+        ? BranchData.find((branch) => branch._id == formData.branchId)
+        : null
+    }
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        branchId: newValue?._id || '',
+        supervisorId: '', // Reset supervisor when branch changes
+      })
+    }
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Branch Name"
+        variant="outlined"
+        name="branchId"
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiGitBranch />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
 </FormControl>
+
+<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-supervisor-select"
+    options={
+      formData.branchId // Only filter if branch is selected
+        ? SupervisorData.filter((supervisor) => supervisor.branchId?._id === formData.branchId)
+        : []
+    }
+    getOptionLabel={(option) => option.supervisorName || ''}
+    value={
+      Array.isArray(SupervisorData)
+        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
+        : null
+    }
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        supervisorId: newValue?._id || '',
+      })
+    }
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Supervisor"
+        variant="outlined"
+        name="supervisorId"
+        placeholder={!formData.branchId ? 'Select Branch First' : 'Select Supervisor'}
+        disabled={!formData.branchId} // Disable when branch is not selected
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiGitBranch />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
+</FormControl>
+
             </>
           ) :role==3?(
             <>

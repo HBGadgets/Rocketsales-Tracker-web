@@ -167,6 +167,8 @@ import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
 import { cilHome, cilUser, cilChartLine, cilBasket, cilClipboard } from '@coreui/icons';
 import { TbReportSearch } from 'react-icons/tb'
+import { AiOutlineShoppingCart } from "react-icons/ai";
+
 const AppHeader = () => {
   const headerRef = useRef()
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
@@ -273,7 +275,7 @@ const AppHeader = () => {
         <CHeaderNav className="ms-auto">
         
             <button className="nav-btn" onClick={() => handleOrder()}>
-              <TbReportSearch className="nav-icon" /> Manage order
+              <AiOutlineShoppingCart className="nav-icon" /> Manage order
             </button>
         
         </CHeaderNav>
