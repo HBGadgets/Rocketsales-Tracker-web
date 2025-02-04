@@ -13,11 +13,11 @@ export const COLUMNS = () => [
     accessor: 'companyName',
     icon: <BusinessIcon />,
   },
-  // {
-  //   Header: 'Company Email',
-  //   accessor: 'companyEmail',
-  //   icon: <EmailIcon />,
-  // },
+  {
+    Header: 'Company Email',
+    accessor: 'companyEmail',
+    icon: <EmailIcon />,
+  },
   {
     Header: 'Owner Name',
     accessor: 'ownerName',

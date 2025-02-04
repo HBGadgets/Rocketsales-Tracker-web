@@ -14,7 +14,7 @@ const InventoryManagment = React.lazy(() => import('./views/base/ManageOrder/Inv
 const InvoiceForm = React.lazy(() => import('./views/base/ManageOrder/Invoice'))
 const Po = React.lazy(() => import('./views/base/ManageOrder/PO'))
 
-const TaskManagment = React.lazy(() => import('./views/base/Management/TaskMange'))
+const TaskManagment = React.lazy(() => import('./views/base/Management/TaskManagement/TaskManagement'))
 const UserDetailsForm = React.lazy(() => import('./views/base/Management/UserMange'))
 
 const ExpenseDetails = React.lazy(() => import('./views/base/ExpenseMange/ExpenseDet'))
