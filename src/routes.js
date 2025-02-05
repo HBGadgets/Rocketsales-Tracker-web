@@ -35,6 +35,8 @@ const SalesmanLeaveRequest=React.lazy(()=>import('./views/base/ManageAttend/Sale
 const ApproveRequest=React.lazy(()=>import('./views/base/ManageAttend/ApproveRequest/ApproveRequest'))
 const DeniedRequest=React.lazy(()=>import('./views/base/ManageAttend/DeniedRequest/DeniedRequest'))
 const SalesmanExpenceManagement=React.lazy(()=>import('./views/base/ManageOrder/SalesmanExpenceManagement/SalesmanExpenceManagement'))
+const ExpenceType=React.lazy(()=>import('./views/base/ManageOrder/ExpenceType/ExpenceType'))
+
 // const Company=React.lazy(()=>import('./views/base/Management/Company'))
 // const Company=React.lazy(()=>import('./views/base/Management/Company'))
 const OrderList=React.lazy(()=>import('./views/base/ManageOrder/OrderList/OrderList'))
@@ -80,7 +82,8 @@ const routes = [
   { path: '/SalesmanLeaveRequest', name: 'Salesman Leave Request', element: SalesmanLeaveRequest },
   { path: '/ApproveRequest', name: 'Approve Request', element: ApproveRequest },
   { path: '/DeniedRequest', name: 'Rejected Request', element: DeniedRequest },
-  { path: '/SalesmanExpenceManagement', name: 'Salesman Expence Management', element: SalesmanExpenceManagement },
+  { path: '/SalesmanExpenceManagement', name: 'Salesman Expences', element: SalesmanExpenceManagement },
+  { path: '/ExpenceType', name: 'Expence Type', element: ExpenceType },
 ]
 
 export default routes

@@ -32,6 +32,10 @@ import jwt_decode from 'jwt-decode';
 import { FaTasks, FaUsers, FaBuilding, FaLayerGroup, FaMapMarkerAlt } from 'react-icons/fa';
 import { FaEdit, FaRegCalendarAlt, FaStore,FaClock ,FaThumbsUp,FaThumbsDown } from 'react-icons/fa';
 import { FaFileInvoice, FaClipboardList, FaWarehouse } from 'react-icons/fa';
+import { AiOutlineShoppingCart } from "react-icons/ai";
+import { MdOutlineAttachMoney } from "react-icons/md";
+import { BiMoney } from "react-icons/bi";
+
 import { ShoppingCart } from '@mui/icons-material';
 
 const token = Cookies.get("token");
@@ -315,17 +319,6 @@ const createNav = () => {
         </div>
       ),
       items: [
-        // {
-        //   component: CNavItem,
-        //   name: 'Attendance',
-        //   to: '/attendance',
-        //   visible: true,
-        //   icon: (
-        //     <div style={{ display: 'flex', alignItems: 'center' }}>
-        //       <FaUserGroup style={{ marginRight: '15px', fontSize: '25px' }} />
-        //     </div>
-        //   ),
-        // },
         {
           component: CNavItem,
           name: 'Attendance',
@@ -443,6 +436,49 @@ const createNav = () => {
         </div>
       ),
       items: managementItems,
+    },
+    {
+      component: CNavItem,
+      name: 'Manage Order',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <AiOutlineShoppingCart style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+      items: [
+        {
+          component: CNavItem,
+          name: 'Salesman Expences',
+          to: '/SalesmanExpenceManagement',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <MdOutlineAttachMoney style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+        {
+          component: CNavItem,
+          name: 'Expence Type',
+          to: '/ExpenceType',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <BiMoney style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+      
+        {
+          component: CNavItem,
+          name: 'Chat Bot',
+          to: '/chatBot',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <BiMoney style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+        
+      ],
     },
     {
       component: CNavItem,
