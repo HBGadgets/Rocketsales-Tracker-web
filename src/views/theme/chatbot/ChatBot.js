@@ -1,5 +1,11 @@
-import { useState } from 'react'
+import { useState,useEffect } from 'react'
 import './ChatBot.css'
+
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
+
+
 
 export default function Component() {
   const [activeChats, setActiveChats] = useState([
@@ -20,29 +26,90 @@ export default function Component() {
   ])
 
   const [selectedChat, setSelectedChat] = useState(null)
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      sender: 'John Doe',
-      content: 'Hello, I need some assistance with a client.',
-      timestamp: '10:30 AM',
-    },
-    { id: '2', sender: 'You', content: 'Sure, what can I help you with?', timestamp: '10:32 AM' },
-  ])
+  // const [messages, setMessages] = useState([
+  //   {
+  //     id: '1',
+  //     sender: 'John Doe',
+  //     content: 'Hello, I need some assistance with a client.',
+  //     timestamp: '10:30 AM',
+  //   },
+  //   { id: '2', sender: 'You', content: 'Sure, what can I help you with?', timestamp: '10:32 AM' },
+  // ])
+
+  const userName = "pavan"; // Replace with dynamic username from token
+
+  const receiverUserName = "gagan";
+
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [roomId, setRoomId] = useState("");
 
   const [newMessage, setNewMessage] = useState('')
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() === '') return
-    const newMsg = {
-      id: Date.now().toString(),
-      sender: 'You',
-      content: newMessage,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    }
-    setMessages([...messages, newMsg])
-    setNewMessage('')
-  }
+              // new code start from here
+
+              useEffect(() => {
+                if (userName && !roomId) { 
+                  const room = generateRoomId(userName, receiverUserName);
+                  setRoomId(room);
+                  socket.emit("joinRoom", { room, username: userName });
+                }
+              }, [userName, roomId]);
+
+              useEffect(() => {
+                // Create a function to handle incoming messages
+                const handleReceiveMessage = (data) => {
+                  setMessages((prevMessages) => [...prevMessages, data]);
+                };
+              
+               
+                socket.on("receiveMessage", handleReceiveMessage);
+              
+                
+                return () => {
+                  socket.off("receiveMessage", handleReceiveMessage);
+                };
+              }, []); 
+              
+              console.log("first",messages); 
+          
+
+              const generateRoomId = (user1, user2) => {
+                return [user1, user2].sort().join("_");
+              };
+
+              const handleSendMessage = () => {
+                if (message.trim()) {
+                  socket.emit("sendMessage", { room: roomId, message, sender: userName,receiver:receiverUserName });
+                  setMessage(""); // Clear the input
+                }
+              };
+
+
+
+
+              // new code end here
+
+
+
+
+
+
+
+
+
+
+  // const handleSendMessage = () => {
+  //   if (newMessage.trim() === '') return
+  //   const newMsg = {
+  //     id: Date.now().toString(),
+  //     sender: 'You',
+  //     content: newMessage,
+  //     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  //   }
+  //   setMessages([...messages, newMsg])
+  //   setNewMessage('')
+  // }
 
   return (
     <>
@@ -351,134 +418,33 @@ export default function Component() {
                   <p className="fw-bold p-2 ms-3 mb-1 ">Lorem ipsum dolor</p>
                 </div>
               </div>
-              <div
-                className="pt-3 px-3 overflow-y-scroll"
-                data-mdb-perfect-scrollbar-init
-                style={{ height: '60vh' }}
-              >
-                <div className="d-flex flex-row justify-content-start">
-                  <img
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
-                    alt="avatar 1"
-                    style={{ width: 45, height: '100%' }}
-                  />
-                  <div>
-                    <p className="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                      incididunt ut labore et dolore magna aliqua.
-                    </p>
-                    <p className=" fs-6 ms-3 mb-3 rounded-3 text-muted float-end">
-                      12:00 PM | Aug 13
-                    </p>
-                  </div>
-                </div>
-                <div className="d-flex flex-row justify-content-end">
-                  <div>
-                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                      Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                      aliquip ex ea commodo consequat.
-                    </p>
-                    <p className="fs-6 me-3 mb-3 rounded-3 text-muted">12:00 PM | Aug 13</p>
-                  </div>
-                  <img
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                    alt="avatar 1"
-                    style={{ width: 45, height: '100%' }}
-                  />
-                </div>
-                <div className="d-flex flex-row justify-content-start">
-                  <img
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
-                    alt="avatar 1"
-                    style={{ width: 45, height: '100%' }}
-                  />
-                  <div>
-                    <p className="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">
-                      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-                      eu fugiat nulla pariatur.
-                    </p>
-                    <p className="fs-6 ms-3 mb-3 rounded-3 text-muted float-end">
-                      12:00 PM | Aug 13
-                    </p>
-                  </div>
-                </div>
-                <div className="d-flex flex-row justify-content-end">
-                  <div>
-                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                      Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-                      deserunt mollit anim id est laborum.
-                    </p>
-                    <p className="small me-3 mb-3 rounded-3 text-muted">12:00 PM | Aug 13</p>
-                  </div>
-                  <img
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                    alt="avatar 1"
-                    style={{ width: 45, height: '100%' }}
-                  />
-                </div>
-                <div className="d-flex flex-row justify-content-start">
-                  <img
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
-                    alt="avatar 1"
-                    style={{ width: 45, height: '100%' }}
-                  />
-                  <div>
-                    <p className="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">
-                      Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-                      doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                      veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-                    </p>
-                    <p className="fs-6 ms-3 mb-3 rounded-3 text-muted float-end">
-                      12:00 PM | Aug 13
-                    </p>
-                  </div>
-                </div>
-                <div className="d-flex flex-row justify-content-end">
-                  <div>
-                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                      Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit,
-                      sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-                    </p>
-                    <p className="fs-6 me-3 mb-3 rounded-3 text-muted">12:00 PM | Aug 13</p>
-                  </div>
-                  <img
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                    alt="avatar 1"
-                    style={{ width: 45, height: '100%' }}
-                  />
-                </div>
-                <div className="d-flex flex-row justify-content-start">
-                  <img
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
-                    alt="avatar 1"
-                    style={{ width: 45, height: '100%' }}
-                  />
-                  <div>
-                    <p className="small p-2 ms-3 mb-1 rounded-3 bg-body-tertiary">
-                      Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur,
-                      adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et
-                      dolore magnam aliquam quaerat voluptatem.
-                    </p>
-                    <p className="fs-6 ms-3 mb-3 rounded-3 text-muted float-end">
-                      12:00 PM | Aug 13
-                    </p>
-                  </div>
-                </div>
-                <div className="d-flex flex-row justify-content-end">
-                  <div>
-                    <p className="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">
-                      Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit
-                      laboriosam, nisi ut aliquid ex ea commodi consequatur?
-                    </p>
-                    <p className="fs-6 me-3 mb-3 rounded-3 text-muted">12:00 PM | Aug 13</p>
-                  </div>
-                  <img
-                    src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                    alt="avatar 1"
-                    style={{ width: 45, height: '100%' }}
-                  />
-                </div>
-              </div>
+              <div>
+              {messages.map((msg, index) => (
+          <div
+            key={index}
+            style={{
+              display: "flex",
+              justifyContent: msg.sender === "me" ? "flex-end" : "flex-start", // Right for sender, left for receiver
+              width: "100%",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: msg.sender === "me" ? "#007bff" : "#ccc",
+                color: msg.sender === "me" ? "white" : "black",
+                padding: "10px",
+                borderRadius: "10px",
+                maxWidth: "60%",
+                margin: "5px 0",
+                textAlign: "left",
+              }}
+            >
+              <strong>{msg.sender}: </strong> {msg.message}
+            </div>
+          </div>
+        ))}
+           </div>
+
               <div className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2">
                 <img
                   src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
@@ -487,10 +453,19 @@ export default function Component() {
                 />
                 <input
                   type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="form-control form-control-lg ms-2"
                   id="exampleFormControlInput2"
                   placeholder="Type message"
                 />
+                <button
+                  onClick={handleSendMessage}
+                  className="form-control w-auto form-control-lg ms-2"
+                >
+                  Send
+                </button>
+
                 <a className="ms-1 text-muted" href="#!">
                   <i className="fas fa-paperclip" />
                 </a>
@@ -507,4 +482,67 @@ export default function Component() {
       </div>
     </>
   )
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <h1>Chat App</h1>
+      <div
+        style={{
+          width: "60%",
+          margin: "0 auto",
+          border: "1px solid #ccc",
+          padding: "10px",
+          height: "300px",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end", // Ensures the latest message stays at the bottom
+        }}
+      >
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            style={{
+              display: "flex",
+              justifyContent: msg.sender === "me" ? "flex-end" : "flex-start", // Right for sender, left for receiver
+              width: "100%",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: msg.sender === "me" ? "#007bff" : "#ccc",
+                color: msg.sender === "me" ? "white" : "black",
+                padding: "10px",
+                borderRadius: "10px",
+                maxWidth: "60%",
+                margin: "5px 0",
+                textAlign: "left",
+              }}
+            >
+              <strong>{msg.sender}: </strong> {msg.message}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: "20px" }}>
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Type a message..."
+          style={{ padding: "10px", width: "300px" }}
+        />
+        <button
+          onClick={handleSendMessage}
+          style={{ padding: "10px 20px", marginLeft: "10px" }}
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  );
+  
+  
+  
+  
 }
