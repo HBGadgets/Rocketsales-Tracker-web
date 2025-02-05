@@ -324,8 +324,11 @@ const handleEditGroup = async (item) => {
             createdAt: item.createdAt ? formatDate(item.createdAt) : null,
             salesmanName: item.salesmanId ? item.salesmanId.salesmanName : null,
             companyName: item.companyId ? item.companyId.companyName : 'N/A',
+            companyId: item.companyId ? item.companyId._id : 'N/A',
             branchName: item.branchId ? item.branchId.branchName : 'N/A',
+            branchId: item.branchId ? item.branchId._id : 'N/A',
             supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
+            supervisorId: item.supervisorId ? item.supervisorId._id : null,
           }))
           .filter((item) =>
             Object.values(item).some((value) =>
