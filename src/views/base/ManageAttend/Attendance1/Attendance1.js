@@ -302,42 +302,7 @@ const Attendance1 = () => {
     setPage(newPage)
   }
 
-  //   const haqndleDeletesubmit = async (item) => {
-  //     if (!item._id) {
-  //       toast.error('Invalid item selected for deletion.')
-  //       return
-  //     }
-
-  //     const confirmed = confirm('Do you want to delete this user?')
-  //     if (!confirmed) return
-  // console.log(`https://rocketsales-server.onrender.com/api/attendence/${item._id}`)
-  //     try {
-  //       const accessToken = Cookies.get('token')
-  //       if (!accessToken) {
-  //         toast.error('Authentication token is missing.')
-  //         return
-  //       }
-
-  //       const response = await axios({
-  //         method: 'DELETE', // Explicitly specifying DELETE method
-  //         url: `https://rocketsales-server.onrender.com/api/attendence/${item._id}`,
-
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken}`,
-  //           'Content-Type': 'application/json',
-  //         },
-
-  //       })
-
-  //       // if (response.status === 200) {
-  //       toast.success('Group deleted successfully')
-  //       fetchData(formatToUTCString(startDate), formatToUTCString(endDate),selectedPeriod);
-  //       // }
-  //     } catch (error) {
-  //       console.error('Error Details:', error.response || error.message)
-  //       toast.error('An error occurred while deleting the group.')
-  //     }
-  //   }
+ 
 
   const exportToExcel = ExcelExporter({
     mytitle: 'Attendance Data Report',
@@ -346,30 +311,7 @@ const Attendance1 = () => {
     fileName: 'Attendance_data.xlsx',
   })
 
-  // const exportToPDF = PDFExporter({
-  //   title: 'Company Data Report',
-  //   columns: COLUMNS(),
-  //   data: filteredData,
-  //   fileName: 'Company_data_report.pdf',
-  // })
-  // const exportToPDF = () => {
-  //   // Get columns and remove the first one
-  //   const columns = COLUMNS().slice(1);
-  // console.log("pdfcall")
-  //   // Get accessor of the first column
-  //   const firstColumnAccessor = COLUMNS()[0]?.accessor;
-
-  //   // Remove the first column data from each row
-  //   const filteredDataWithoutFirstColumn = filteredData.map(({ [firstColumnAccessor]: _, ...rest }) => rest);
-
-  //   // Export to PDF
-  //   PDFExporter({
-  //     title: 'Company Data Report',
-  //     columns: columns,  // Updated columns
-  //     data: filteredDataWithoutFirstColumn, // Updated data
-  //     fileName: 'Company_data_report.pdf',
-  //   });
-  // };
+  
   const exportToPDF = PDFExporter({
     title: 'Company Data Report',
     columns: COLUMNS().slice(1),

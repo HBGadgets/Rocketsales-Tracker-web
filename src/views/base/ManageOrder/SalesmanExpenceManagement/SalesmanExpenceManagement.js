@@ -1079,6 +1079,7 @@ const SalesmanExpenceManagement = () => {
                           setFormData({
                             ...formData,
                             supervisorId: newValue?._id || '',
+                            salesmanId:''
                           })
                         }
                         renderInput={(params) => (
