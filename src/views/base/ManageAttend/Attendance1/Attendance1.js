@@ -59,6 +59,7 @@ import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
+// import { DialogContent } from "@mui/material";
 // import { useNavigate } from 'react-router-dom';
 const Attendance1 = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -359,6 +360,13 @@ const Attendance1 = () => {
       alert('Failed to update attendance status')
     }
   }
+  const [open, setOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const handleImageClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setOpen(true);
+  };
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -616,44 +624,77 @@ const Attendance1 = () => {
                           backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                         }}
                       >
-                        {col.accessor === 'attendenceStatus' ? (
-                          <button
-                            style={{
-                              padding: '6px 12px',
-                              backgroundColor: item[col.accessor] === 'Absent' ? 'red' : 'green',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '5px',
-                              cursor: 'pointer',
-                              fontSize: '13px',
-                            }}
-                            onClick={() => handleStatusClick(item)} // Optional: You can handle a click event
-                          >
-                            {item[col.accessor]}
-                          </button>
-                        ) : col.accessor == 'profileImgUrl' ? (
-                          item[col.accessor] ? (
-                            // Log the base64 string to the console
-                            (console.log('mm'),
-                            (
-                              // console.log(`data:image/png;base64,${item[col.accessor]}`),
-                              <img
-                                src={`data:image/png;base64,${item[col.accessor]}`} // Ensure the correct format
-                                alt="Profile"
-                                style={{
-                                  width: '80px',
-                                  height: '80px',
-                                  borderRadius: '50%',
-                                  padding: '9px',
-                                }}
-                              />
-                            ))
-                          ) : (
-                            <span>No Image</span> // Fallback if no image is available
-                          )
-                        ) : (
-                          item[col.accessor] || '--' // Default for other columns
-                        )}
+                      {col.accessor === "attendenceStatus" ? (
+        <button
+          style={{
+            padding: "6px 12px",
+            backgroundColor: item[col.accessor] === "Absent" ? "red" : "green",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontSize: "13px",
+          }}
+          onClick={() => handleStatusClick(item)}
+        >
+          {item[col.accessor]}
+        </button>
+      ) : col.accessor === "profileImgUrl" ? (
+        item[col.accessor] ? (
+          <img
+            src={`data:image/png;base64,${item[col.accessor]}`}
+            alt="Profile"
+            style={{
+              width: "80px",
+              height: "80px",
+              borderRadius: "50%",
+              padding: "9px",
+              cursor: "pointer", // Make image clickable
+            }}
+            onClick={() =>
+              handleImageClick(`data:image/png;base64,${item[col.accessor]}`)
+            }
+          />
+        ) : (
+          <span>No Image</span>
+        )
+      ) : (
+        item[col.accessor] || "--"
+      )}
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogContent style={{ position: "relative", padding: "20px" }}>
+          {/* Close Button */}
+          <IconButton
+            onClick={() => setOpen(false)}
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              background: "white",
+              borderRadius: "50%",
+              boxShadow: "0px 0px 10px rgba(155, 148, 148, 0.2)",
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+
+          {/* Full-Size Image */}
+          {selectedImage && (
+            <img
+              src={selectedImage}
+              alt="Full Size Profile"
+              style={{
+                width: "100%",
+                height: "auto",
+                borderRadius: "10px",
+                maxWidth: "500px",
+                display: "block",
+                margin: "auto",
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
                       </CTableDataCell>
                     ))}
 
