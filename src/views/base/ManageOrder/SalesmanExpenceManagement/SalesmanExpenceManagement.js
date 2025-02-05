@@ -65,7 +65,7 @@ import { FiGitBranch } from 'react-icons/fi';
 import BusinessIcon from '@mui/icons-material/Business';
 import { FiUser } from "react-icons/fi";
 import PersonIcon from '@mui/icons-material/Person';
-
+import { CTooltip } from '@coreui/react';
 // import { useNavigate } from 'react-router-dom';
 const SalesmanExpenceManagement = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -859,57 +859,36 @@ const SalesmanExpenceManagement = () => {
                       {index + 1}
                     </CTableDataCell>
 
-                    {columns.map((col) => (
-                      <CTableDataCell
-                        key={col.accessor}
-                        className="text-center"
-                        style={{
-                          padding: '0px 12px',
-                          color: '#242424',
-                          fontSize: '13px',
-                          backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
-                        }}
-                      >
-                        {col.accessor === 'attendenceStatus' ? (
-                          <button
-                            style={{
-                              padding: '6px 12px',
-                              backgroundColor: item[col.accessor] === 'Absent' ? 'red' : 'green',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '5px',
-                              cursor: 'pointer',
-                              fontSize: '13px',
-                            }}
-                            onClick={() => handleStatusClick(item)} // Optional: You can handle a click event
-                          >
-                            {item[col.accessor]}
-                          </button>
-                        ) : col.accessor == 'profileImgUrl' ? (
-                          item[col.accessor] ? (
-                            // Log the base64 string to the console
-                            (console.log('mm'),
-                            (
-                              // console.log(`data:image/png;base64,${item[col.accessor]}`),
-                              <img
-                                src={`data:image/png;base64,${item[col.accessor]}`} // Ensure the correct format
-                                alt="Profile"
-                                style={{
-                                  width: '80px',
-                                  height: '80px',
-                                  borderRadius: '50%',
-                                  padding: '9px',
-                                }}
-                              />
-                            ))
-                          ) : (
-                            <span>No Image</span> // Fallback if no image is available
-                          )
-                        ) : (
-                          item[col.accessor] || '--' // Default for other columns
-                        )}
-                      </CTableDataCell>
-                    ))}
+                   {columns.map((col) => (
+                     <CTableDataCell
+                       key={col.accessor}
+                       className="text-center"
+                       style={{
+                         padding: '0px 12px',
+                         color: '#242424',
+                         fontSize: '13px',
+                         backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
+                       }}
+                     >
+                       {col.accessor === 'expenceDescription' ? (
+                         <CTooltip content={item[col.accessor] || '--'} placement="top">
+                           <span
+                             style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                             onClick={() => {
+                               // Handle the click event here
+                               // alert('Reason clicked: ' + (item[col.accessor] || '--'));
+                             }}
+                           >
+                             {item[col.accessor]
+                               ? item[col.accessor].split(' ').slice(0, 2).join(' ') + '...'
+                               : '--'}
+                           </span>
+                         </CTooltip>
+                       ) : (
+                         item[col.accessor] || '--'
+                       )}
+                     </CTableDataCell>
+                   ))}
                     <CTableDataCell
                       className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
                     >
