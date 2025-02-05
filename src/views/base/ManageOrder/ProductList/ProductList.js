@@ -485,17 +485,31 @@ const handleEditGroup = async (item) => {
   }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
+  // const filterGroups = () => {
+  //   if (!searchQuery) {
+  //     setFilteredData(data) // No query, show all drivers
+  //   } else {
+  //     const filtered = data.filter((group) =>
+  //       group.salesmanName.toLowerCase().includes(searchQuery.toLowerCase()),
+  //     )
+  //     setFilteredData(filtered)
+  //     setCurrentPage(1)
+  //   }
+  // }
   const filterGroups = () => {
     if (!searchQuery) {
-      setFilteredData(data) // No query, show all drivers
+      setFilteredData(data);
     } else {
-      const filtered = data.filter((group) =>
-        group.salesmanName.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-      setFilteredData(filtered)
-      setCurrentPage(1)
+      const filtered = data.filter((item) =>
+        Object.values(item).some((value) => {
+          if (value === null || value === undefined) return false;
+          return value.toString().toLowerCase().includes(searchQuery.toLowerCase());
+        })
+      );
+      setFilteredData(filtered);
+      setCurrentPage(1);
     }
-  }
+  };
 
   useEffect(() => {
     filterGroups(searchQuery)

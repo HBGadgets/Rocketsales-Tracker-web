@@ -69,6 +69,7 @@ import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 // import { useNavigate } from 'react-router-dom';
 import { ShoppingCart } from '@mui/icons-material';
+import { IoShareSocialOutline } from "react-icons/io5";
 const OrderList = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -905,6 +906,14 @@ const handleEditGroup = async (item) => {
                             className="icon-button icon-button-delete"
                           >
                             <AiFillDelete className="icon-button-icon" />
+                          </IconButton>
+                          <IconButton
+                            aria-label="delete"
+                            onClick={() => haqndleIn(item)}
+                            className="icon-button icon-button-icon"
+                            style={{ backgroundColor: '#307ac4' }}
+                          >
+                            <IoShareSocialOutline className="icon-button-icon" />
                           </IconButton>
                         </CTableDataCell>
                   </CTableRow>
