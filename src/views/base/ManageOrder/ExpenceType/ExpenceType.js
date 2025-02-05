@@ -17,6 +17,7 @@ import {
   Select,
   MenuItem,
   InputAdornment,
+  Autocomplete,
 } from '@mui/material'
 import { RiEdit2Fill } from 'react-icons/ri'
 import { AiFillDelete } from 'react-icons/ai'
@@ -51,19 +52,22 @@ import GroupIcon from '@mui/icons-material/Group'
 import { cilSettings } from '@coreui/icons'
 import '../../../../../src/app.css'
 import { COLUMNS } from './columns'
-import { StyledTablePagination } from '../../../../views/PaginationCssFile/TablePaginationStyles'
+import { StyledTablePagination } from '../../../PaginationCssFile/TablePaginationStyles'
 // import { FaBriefcase   } from 'react-icons/fa';
-import { BsBuildingsFill } from 'react-icons/bs'
-import '../../ReusablecodeforTable/styles.css';
-import ExcelJS from 'exceljs';
+import { FiGitBranch } from 'react-icons/fi'
+import BusinessIcon from '@mui/icons-material/Business'
+import '../../ReusablecodeforTable/styles.css'
+import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
-import { BiMoney } from "react-icons/bi";
+import jwt_decode from 'jwt-decode'
 
 const ExpenceType = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
-  const [formData, setFormData] = useState({})
+  // const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({ companyId: '', branchId: '' })
+  const [branchError, setBranchError] = useState(false)
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -77,6 +81,25 @@ const ExpenceType = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25)
   const columns = COLUMNS()
   const [sortedData, setSortedData] = useState([])
+  const [companyData, setCompanyData] = useState([])
+  const [BranchData, setBranchData] = useState([])
+
+  const [role, setRole] = useState(null)
+
+  useEffect(() => {
+    const fetchRole = () => {
+      const token = Cookies.get('token')
+      if (token) {
+        const decodedToken = jwt_decode(token)
+        setRole(decodedToken.role)
+      } else {
+        setRole(null)
+      }
+    }
+
+    fetchRole() // Call the function to fetch role
+  }, [])
+
   const handleEditModalClose = () => {
     setFormData({})
     setEditModalOpen(false)
@@ -107,60 +130,119 @@ const ExpenceType = () => {
 
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
-    const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/ExpenceType`;
-  console.log("to",accessToken)
+    const accessToken = Cookies.get('token')
+    const url = `https://rocketsales-server.onrender.com/api/expencetype`
+  
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+  
+      console.log('Full Response Data:', response.data)
+  
+      if (response.data.success && Array.isArray(response.data.data)) {
+        // Process data
+        const allData = response.data.data.map((item) => ({
+          ...item,
+          companyName: item.companyId?.companyName || 'N/A', // Extract company name
+          companyId: item.companyId?._id || 'N/A', // Extract company ID
+          branchName: item.branchId?.branchName || 'N/A', // Extract branch name
+          branchId: item.branchId?._id || 'N/A', // Extract branch ID
+          createdAt: item.createdAt ? formatDate(item.createdAt) : 'N/A', // Format createdAt
+        }))
+  
+        console.log('Processed Data:', allData)
+  
+        // Apply search filter if applicable
+        const filteredData = allData.filter((item) =>
+          Object.values(item).some((value) =>
+            value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        )
+  
+        setData(filteredData) // Set filtered data
+        setSortedData(filteredData) // Also set sorted data
+        setLoading(false)
+      } else {
+        console.error('Invalid response structure: Missing or malformed data')
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      setLoading(false)
+    }
+  }
+  
+
+  const fetchCompany = async () => {
+    const accessToken = Cookies.get('token')
+    const url = `https://rocketsales-server.onrender.com/api/company`
+
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: 'Bearer ' + accessToken,
         },
-      });
-  
+      })
+      console.log('my data response', response.data)
       if (response.data) {
-        // Filter the data based on the search query if it is not empty
-        const filteredData = response.data
-          .map((item) => {
-            // Apply the formatDate method to 'created_at' field if it exists
-            if (item.createdAt) {
-              item.createdAt = formatDate(item.createdAt);
-            }
-            return item;
-          })
-          .filter((item) =>
-            Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          );
-  
-        setData(filteredData); // Set the filtered data to `data`
-        setSortedData(filteredData); // Set the filtered data to `sortedData`
-        setLoading(false);
+        // const companydata1 = response.data
+        setCompanyData(response.data)
       }
+      console.log('companies are', response.data)
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
     }
-  };
-  
+  }
+  const fetchBranch = async () => {
+    const accessToken = Cookies.get('token')
+    const url = `https://rocketsales-server.onrender.com/api/branch`
+
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: 'Bearer ' + accessToken,
+        },
+      })
+      console.log('my data response', response.data)
+      const branches = response.data.Branches || []
+      if (response.data) {
+        // const companydata1 = response.data
+        setBranchData(branches || [])
+      }
+      console.log('Branches  are', response.data.Branches)
+    } catch (error) {
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
+    }
+  }
+  useEffect(() => {
+    fetchCompany()
+    fetchBranch()
+  }, [])
   // Format the date into DD-MM-YYYY format
   function formatDate(date) {
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0'); // Add leading zero if single digit
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Add leading zero to month
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
+    const d = new Date(date)
+    const day = String(d.getDate()).padStart(2, '0') // Add leading zero if single digit
+    const month = String(d.getMonth() + 1).padStart(2, '0') // Add leading zero to month
+    const year = d.getFullYear()
+    return `${day}-${month}-${year}`
   }
-  
+
   // Example: parsing the formatted date string back to a Date object if needed
   function parseDate(dateString) {
-    const [day, month, year] = dateString.split('-').map(Number);
-    return new Date(year, month - 1, day);
+    const [day, month, year] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day)
   }
-  
+
   useEffect(() => {
     setLoading(true)
+    // fetchcompany()
     fetchData() // Refetch data when searchQuery changes
   }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
@@ -170,7 +252,7 @@ const ExpenceType = () => {
       setFilteredData(data) // No query, show all drivers
     } else {
       const filtered = data.filter((group) =>
-        group.ExpenceTypeName.toLowerCase().includes(searchQuery.toLowerCase()),
+        group.expenceType.toLowerCase().includes(searchQuery.toLowerCase()),
       )
       setFilteredData(filtered)
       setCurrentPage(1)
@@ -191,30 +273,51 @@ const ExpenceType = () => {
 
   const handleAddSubmit = async (e) => {
     e.preventDefault()
-    console.log(formData)
     try {
       const accessToken = Cookies.get('token')
-      const response = await axios.post(`https://rocketsales-server.onrender.com/api/ExpenceType`, formData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
+      if (!accessToken) {
+        throw new Error('Token is missing')
+      }
+
+      // Decode the token to get role and other details
+      const decodedToken = jwt_decode(accessToken)
+
+      // Determine the user's role and update formData accordingly
+      if (decodedToken.role == 2) {
+        formData.companyId = decodedToken.id // Use companyId from the token
+      } else if (decodedToken.role == 3) {
+        formData.companyId = decodedToken.companyId // Use companyId from the token
+        formData.branchId = decodedToken.id // Use branchId from the token
+      } else if (decodedToken.role == 4) {
+        formData.ExpenceTypeId = decodedToken.id // Use ExpenceTypeId from the token
+        formData.companyId = decodedToken.companyId // Use companyId from the token
+        formData.branchId = decodedToken.branchId // Use branchId from the token
+      }
+
+      // Perform the POST request
+      const response = await axios.post(
+        `https://rocketsales-server.onrender.com/api/ExpenceType`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
         },
-      })
+      )
 
       if (response.status === 201) {
-        toast.success('group is created successfully')
-        fetchData()
-        setFormData({ name: '' })
-        setAddModalOpen(false)
+        toast.success('Expence Type is created successfully')
+        fetchData() // Refresh data
+        setFormData({ name: '' }) // Reset form data
+        setAddModalOpen(false) // Close modal
       }
     } catch (error) {
-      toast.error('An error occured')
+      toast.error('An error occurred')
       throw error.response ? error.response.data : new Error('An error occurred')
     }
   }
 
-  // ###################################################################
-  // ######################### Edit Group #########################
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10)
     setRowsPerPage(newRowsPerPage === -1 ? sortedData.length : newRowsPerPage) // Set to all rows if -1
@@ -224,7 +327,6 @@ const ExpenceType = () => {
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
-  
   const handleEditSubmit = async (e) => {
     e.preventDefault()
     console.log(formData)
@@ -241,7 +343,7 @@ const ExpenceType = () => {
       )
 
       if (response.status === 200) {
-        toast.success('group is edited successfully')
+        toast.success('Expence Type is edited successfully')
         fetchData()
         setFormData({ name: '' })
         setEditModalOpen(false)
@@ -259,14 +361,13 @@ const ExpenceType = () => {
     console.log('this is before edit', formData)
   }
 
- 
   const haqndleDeletesubmit = async (item) => {
     if (!item._id) {
       toast.error('Invalid item selected for deletion.')
       return
     }
 
-    const confirmed = confirm('Do you want to delete this user?')
+    const confirmed = confirm('Do you want to delete this Expence Type?')
     if (!confirmed) return
 
     try {
@@ -278,6 +379,7 @@ const ExpenceType = () => {
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
+        // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
         url: `https://rocketsales-server.onrender.com/api/ExpenceType/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -285,33 +387,34 @@ const ExpenceType = () => {
         },
       })
 
-      // if (response.status === 200) {
-        toast.success('Group deleted successfully')
+      if (response.status === 200) {
+        toast.success('Expence Type deleted successfully')
         fetchData()
-      // }
+      }
     } catch (error) {
       console.error('Error Details:', error.response || error.message)
-      toast.error('An error occurred while deleting the group.')
+      toast.error('An error occurred while deleting the Expence Type')
     }
   }
 
-
-  
   const exportToExcel = ExcelExporter({
-    mytitle:'Branches Data Report',
     columns: COLUMNS(),
     data: filteredData,
     fileName: 'ExpenceType_data.xlsx',
-   
-  });
+    mytitle: 'ExpenceType Data Report',
+  })
 
-const exportToPDF = PDFExporter({
-  title: 'ExpenceType Data Report',
-  columns: COLUMNS(),
-  data: filteredData,
-  fileName: 'ExpenceType_data_report.pdf',
-});
+  const exportToPDF = PDFExporter({
+    title: 'ExpenceType Data Report',
+    columns: COLUMNS(),
+    data: filteredData,
+    fileName: 'ExpenceType_data_report.pdf',
+  })
+  const filteredBranches = formData.companyId
+    ? BranchData.filter((branch) => branch.companyId._id === formData.companyId)
+    : []
 
+    
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -327,59 +430,58 @@ const exportToPDF = PDFExporter({
               fontFamily: "'Poppins', sans-serif",
             }}
           >
-            <BiMoney style={{ fontSize: '24px', color: '#4c637c' }} />
-            Salesman Expence Management
+            <FiGitBranch style={{ fontSize: '24px', color: '#4c637c' }} />
+            Expence Type
           </h2>
         </div>
 
+        <div className="d-flex align-items-center">
+          <div className="me-3 d-none d-md-block">
+            <input
+              type="search"
+              className="form-control"
+              placeholder="🔍 Search here..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                height: '40px', // Ensure consistent height
+                padding: '8px 12px',
+                fontSize: '16px',
+                borderRadius: '8px',
+                border: '1px solid #ccc',
+              }}
+            />
+          </div>
 
-<div className="d-flex align-items-center">
- 
-  <div className="me-3 d-none d-md-block">
-    <input
-      type="search"
-      className="form-control"
-      placeholder="🔍 Search here..."
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      style={{
-        height: "40px", // Ensure consistent height
-        padding: "8px 12px",
-        fontSize: "16px",
-        borderRadius: "8px",
-        border: "1px solid #ccc",
-      }}
-    />
-  </div>
+          {/* Settings Dropdown */}
 
-  {/* Settings Dropdown */}
-
-
-  {/* Add Button */}
-  <div className="add-container d-flex align-items-center" onClick={() => setAddModalOpen(true)}>
-    <div className="add-icon">+</div>
-    <span className="add-text ms-2">ADD</span>
-  </div>
-  <CDropdown className="position-relative me-3">
-    <CDropdownToggle
-      color="secondary"
-      style={{
-        borderRadius: '50%',
-        padding: '10px',
-        height: '48px',
-        width: '48px',
-        marginLeft:'12px'
-      }}
-    >
-      <CIcon icon={cilSettings} />
-    </CDropdownToggle>
-    <CDropdownMenu>
-      <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
-      <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
-    </CDropdownMenu>
-  </CDropdown>
-</div>
-
+          {/* Add Button */}
+          <div
+            className="add-container d-flex align-items-center"
+            onClick={() => setAddModalOpen(true)}
+          >
+            <div className="add-icon">+</div>
+            <span className="add-text ms-2">ADD</span>
+          </div>
+          <CDropdown className="position-relative me-3">
+            <CDropdownToggle
+              color="secondary"
+              style={{
+                borderRadius: '50%',
+                padding: '10px',
+                height: '48px',
+                width: '48px',
+                marginLeft: '12px',
+              }}
+            >
+              <CIcon icon={cilSettings} />
+            </CDropdownToggle>
+            <CDropdownMenu>
+              <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
+              <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
+            </CDropdownMenu>
+          </CDropdown>
+        </div>
       </div>
       <div className="d-md-none mb-2">
         <input
@@ -396,7 +498,6 @@ const exportToPDF = PDFExporter({
         sx={{
           height: 'auto',
           overflowX: 'auto',
-
         }}
       >
         <CTable
@@ -482,7 +583,7 @@ const exportToPDF = PDFExporter({
                   <CTableRow
                     key={index}
                     style={{
-                      backgroundColor: index % 2 === 0 ? 'transparent':  '#f1f8fd', // Grey for even rows, transparent for odd rows
+                      backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd', // Grey for even rows, transparent for odd rows
                       transition: 'background-color 0.3s ease',
                       borderBottom: '1px solid #e0e0e0',
                     }}
@@ -494,7 +595,7 @@ const exportToPDF = PDFExporter({
                         padding: '0px 12px',
                         color: '#242424',
                         fontSize: '13px',
-                        backgroundColor: index % 2 === 0 ? 'transparent':'#f1f8fd'  ,
+                        backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                       }}
                     >
                       {index + 1}
@@ -508,34 +609,32 @@ const exportToPDF = PDFExporter({
                           padding: '0px 12px',
                           color: '#242424',
                           fontSize: '13px',
-                          backgroundColor: index % 2 === 0 ?'transparent' : '#f1f8fd',
+                          backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                         }}
                       >
                         {item[col.accessor] || '--'}
                       </CTableDataCell>
                     ))}
 
-                   
-  <CTableDataCell
-      className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
-    >
-      <IconButton
-        aria-label="edit"
-        onClick={() => handleEditGroup(item)}
-        className="icon-button icon-button-edit"
-      >
-        <RiEdit2Fill className="icon-button-icon" />
-      </IconButton>
+                    <CTableDataCell
+                      className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
+                    >
+                      <IconButton
+                        aria-label="edit"
+                        onClick={() => handleEditGroup(item)}
+                        className="icon-button icon-button-edit"
+                      >
+                        <RiEdit2Fill className="icon-button-icon" />
+                      </IconButton>
 
-      <IconButton
-        aria-label="delete"
-        onClick={() => haqndleDeletesubmit(item)}
-        className="icon-button icon-button-delete"
-      >
-        <AiFillDelete className="icon-button-icon" />
-      </IconButton>
-    </CTableDataCell>
-
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => haqndleDeletesubmit(item)}
+                        className="icon-button icon-button-delete"
+                      >
+                        <AiFillDelete className="icon-button-icon" />
+                      </IconButton>
+                    </CTableDataCell>
                   </CTableRow>
                 ))
             ) : (
@@ -557,8 +656,6 @@ const exportToPDF = PDFExporter({
         </CTable>
       </TableContainer>
 
-     
-
       <StyledTablePagination>
         <TablePagination
           rowsPerPageOptions={[{ label: 'All', value: -1 }, 1, 10, 25, 100, 1000]}
@@ -576,113 +673,426 @@ const exportToPDF = PDFExporter({
           }}
         />
       </StyledTablePagination>
-     
+
       <Modal
-  open={addModalOpen}
-  onClose={handleAddModalClose}
-  aria-labelledby="modal-modal-title"
-  aria-describedby="modal-modal-description"
->
-  <Box sx={style}>
-    <div className="d-flex justify-content-between">
-      <Typography id="modal-modal-title" variant="h6" component="h2">
-        Add New ExpenceType
-      </Typography>
-      <IconButton onClick={handleAddModalClose}>
-        <CloseIcon />
-      </IconButton>
-    </div>
-    <DialogContent>
-      <form onSubmit={handleAddSubmit}>
-        <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {COLUMNS().slice(0,-1).map((column) => (
-            <TextField
-              key={column.accessor}
-              label={column.Header}
-              name={column.accessor}
-              value={formData[column.accessor] || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, [column.accessor]: e.target.value })
-              }
-              // Remove required attribute
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {column.icon}
-                  </InputAdornment>
-                ),
-              }}
-            />
-          ))}
-        </FormControl>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          style={{ marginTop: '20px' }}
-        >
-          Submit
-        </Button>
-      </form>
-    </DialogContent>
-  </Box>
-</Modal>
+        open={addModalOpen}
+        onClose={handleAddModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="d-flex justify-content-between">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Add New ExpenceType
+            </Typography>
+            <IconButton onClick={handleAddModalClose}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <DialogContent>
+            <form onSubmit={handleAddSubmit}>
+              <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {role == 1 ? (
+                  <>
+                    {/* Company Dropdown */}
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-company-select"
+                        options={Array.isArray(companyData) ? companyData : []}
+                        getOptionLabel={(option) => option.companyName || ''}
+                        value={
+                          companyData.find((company) => company._id == formData.companyId) || null
+                        }
+                        onChange={(event, newValue) => {
+                          setFormData({
+                            ...formData,
+                            companyId: newValue?._id || '',
+                            branchId: '', // Reset branch when company changes
+                          })
+                          setBranchError(false) // Clear branch error
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Company Name"
+                            variant="outlined"
+                            name="companyId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <BusinessIcon />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
 
+                    {/* Branch Dropdown */}
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-branch-select"
+                        options={filteredBranches}
+                        getOptionLabel={(option) => option.branchName || ''}
+                        value={
+                          filteredBranches.find((branch) => branch._id == formData.branchId) || null
+                        }
+                        onChange={(event, newValue) => {
+                          if (!formData.companyId) {
+                            setBranchError(true)
+                          } else {
+                            setFormData({ ...formData, branchId: newValue?._id || '' })
+                            setBranchError(false)
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Branch Name"
+                            variant="outlined"
+                            name="branchId"
+                            error={branchError} // Show error state
+                            helperText={
+                              branchError && formData.companyId
+                                ? 'Please select a company first'
+                                : ''
+                            }
+                            placeholder={
+                              !formData.companyId ? 'Select Company First' : 'Select Branch'
+                            }
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                        disabled={!formData.companyId} // Disable if no company is selected
+                      />
+                      {/* Display error when branch is disabled */}
+                      {/* {!formData.companyId && (
+                        <span style={{ color: 'red', fontSize: '12px', marginTop: '5px' }}>
+                          Please select a company first
+                        </span>
+                      )} */}
+                    </FormControl>
+                  </>
+                ) : role == 2 ? (
+                  <>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-branch-select"
+                        options={Array.isArray(BranchData) ? BranchData : []}
+                        getOptionLabel={(option) => option.branchName || ''}
+                        value={
+                          Array.isArray(BranchData)
+                            ? BranchData.find((branch) => branch._id == formData.branchId)
+                            : null
+                        }
+                        onChange={(event, newValue) =>
+                          setFormData({
+                            ...formData,
+                            branchId: newValue?._id || '',
+                          })
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Branch Name"
+                            variant="outlined"
+                            name="branchId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  </>
+                ) : null}
+                {COLUMNS()
+                  .slice(0, -3)
+                  .map((column) => (
+                    <TextField
+                      key={column.accessor}
+                      label={column.Header}
+                      name={column.accessor}
+                      value={formData[column.accessor] || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [column.accessor]: e.target.value })
+                      }
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">{column.icon}</InputAdornment>
+                        ),
+                      }}
+                    />
+                  ))}
+              </FormControl>
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                style={{ marginTop: '20px' }}
+              >
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Box>
+      </Modal>
 
+      <Modal
+        open={editModalOpen}
+        onClose={handleEditModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="d-flex justify-content-between">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Edit ExpenceType
+            </Typography>
+            <IconButton onClick={handleEditModalClose}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <DialogContent>
+            <form onSubmit={handleEditSubmit}>
+              <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {role == 1 ? (
+                  <>
+                    {/* Company Dropdown */}
+                    {/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-company-select"
+                        options={Array.isArray(companyData) ? companyData : []}
+                        getOptionLabel={(option) => option.companyName || ''}
+                        value={
+                          Array.isArray(companyData)
+                            ? companyData.find((company) => company._id == formData.companyId)
+                            : null
+                        }
+                        onChange={(event, newValue) => {
+                          setFormData({ ...formData, companyId: newValue?._id || '' })
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Company Name"
+                            variant="outlined"
+                            name="companyId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <BusinessIcon />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl> */}
 
-    
-<Modal
-  open={editModalOpen}
-  onClose={handleEditModalClose}
-  aria-labelledby="modal-modal-title"
-  aria-describedby="modal-modal-description"
->
-  <Box sx={style}>
-    <div className="d-flex justify-content-between">
-      <Typography id="modal-modal-title" variant="h6" component="h2">
-        Edit ExpenceType
-      </Typography>
-      <IconButton onClick={handleEditModalClose}>
-        <CloseIcon />
-      </IconButton>
-    </div>
-    <DialogContent>
-      <form onSubmit={handleEditSubmit}>
-        <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {COLUMNS().slice(0,-1).map((column) => (
-            <TextField
-              key={column.accessor}
-              label={column.Header}
-              name={column.accessor}
-              value={formData[column.accessor] || ''} // Pre-fill with existing data
-              onChange={(e) =>
-                setFormData({ ...formData, [column.accessor]: e.target.value })
-              }
-              // Remove the required attribute
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {column.icon}
-                  </InputAdornment>
-                ),
-              }}
-            />
-          ))}
-        </FormControl>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          style={{ marginTop: '20px' }}
-        >
-          Submit
-        </Button>
-      </form>
-    </DialogContent>
-  </Box>
-</Modal>
+                    {/* Branch Dropdown */}
+                    {/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-branch-select"
+                        options={Array.isArray(BranchData) ? BranchData : []}
+                        getOptionLabel={(option) => option.branchName || ''}
+                        value={
+                          Array.isArray(BranchData)
+                            ? BranchData.find((branch) => branch._id == formData.branchId)
+                            : null
+                        }
+                        onChange={(event, newValue) => {
+                          setFormData({ ...formData, branchId: newValue?._id || '' })
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Branch Name"
+                            variant="outlined"
+                            name="branchId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl> */}
+                       <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-company-select"
+                        options={Array.isArray(companyData) ? companyData : []}
+                        getOptionLabel={(option) => option.companyName || ''}
+                        value={
+                          companyData.find((company) => company._id == formData.companyId) || null
+                        }
+                        onChange={(event, newValue) => {
+                          setFormData({
+                            ...formData,
+                            companyId: newValue?._id || '',
+                            branchId: '', // Reset branch when company changes
+                          })
+                          setBranchError(false) // Clear branch error
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Company Name"
+                            variant="outlined"
+                            name="companyId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <BusinessIcon />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
 
+                    {/* Branch Dropdown */}
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-branch-select"
+                        options={filteredBranches}
+                        getOptionLabel={(option) => option.branchName || ''}
+                        value={
+                          filteredBranches.find((branch) => branch._id == formData.branchId) || null
+                        }
+                        onChange={(event, newValue) => {
+                          if (!formData.companyId) {
+                            setBranchError(true)
+                          } else {
+                            setFormData({ ...formData, branchId: newValue?._id || '' })
+                            setBranchError(false)
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Branch Name"
+                            variant="outlined"
+                            name="branchId"
+                            error={branchError} // Show error state
+                            helperText={
+                              branchError && formData.companyId
+                                ? 'Please select a company first'
+                                : ''
+                            }
+                            placeholder={
+                              !formData.companyId ? 'Select Company First' : 'Select Branch'
+                            }
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                        disabled={!formData.companyId} // Disable if no company is selected
+                      />
+                      {/* Display error when branch is disabled */}
+                      {/* {!formData.companyId && (
+                        <span style={{ color: 'red', fontSize: '12px', marginTop: '5px' }}>
+                          Please select a company first
+                        </span>
+                      )} */}
+                    </FormControl>
+                  </>
+                ) : role == 2 ? (
+                  <>
+                    {/* Branch Dropdown for Role 2 */}
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-branch-select"
+                        options={Array.isArray(BranchData) ? BranchData : []}
+                        getOptionLabel={(option) => option.branchName || ''}
+                        value={
+                          Array.isArray(BranchData)
+                            ? BranchData.find((branch) => branch._id == formData.branchId)
+                            : null
+                        }
+                        onChange={(event, newValue) => {
+                          setFormData({ ...formData, branchId: newValue?._id || '' })
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Branch Name"
+                            variant="outlined"
+                            name="branchId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  </>
+                ) : null}
 
+                {/* Render other fields */}
+                {COLUMNS()
+                  .slice(0, -3)
+                  .map((column) => (
+                    <TextField
+                      key={column.accessor}
+                      label={column.Header}
+                      name={column.accessor}
+                      value={formData[column.accessor] || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [column.accessor]: e.target.value })
+                      }
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">{column.icon}</InputAdornment>
+                        ),
+                      }}
+                    />
+                  ))}
+              </FormControl>
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                style={{ marginTop: '20px' }}
+              >
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Box>
+      </Modal>
     </div>
   )
 }
