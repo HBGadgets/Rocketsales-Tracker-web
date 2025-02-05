@@ -35,7 +35,8 @@ import { FaFileInvoice, FaClipboardList, FaWarehouse } from 'react-icons/fa';
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { MdOutlineAttachMoney } from "react-icons/md";
 import { BiMoney } from "react-icons/bi";
-
+import { FaShoppingCart } from 'react-icons/fa'; // Import icons
+import { ShoppingCart } from '@mui/icons-material';
 
 const token = Cookies.get("token");
 
@@ -381,6 +382,32 @@ const createNav = () => {
         // },
       ],
     },
+    // {
+    //   component: CNavTitle,
+    //   name: 'Manage Order',
+    // },
+    // {
+    //   component: CNavItem,
+    //   name: 'Manage Order',
+    //   icon: (
+    //     <div style={{ display: 'flex', alignItems: 'center' }}>
+    //       <FiList style={{ marginRight: '15px', fontSize: '20px' }} />
+    //     </div>
+    //   ),
+    //   items: [
+       
+    //     // {
+    //     //   component: CNavItem,
+    //     //   name: 'Absent Report',
+    //     //   to: '/absent-report',
+    //     //   icon: (
+    //     //     <div style={{ display: 'flex', alignItems: 'center' }}>
+    //     //       <TbReport style={{ marginRight: '15px', fontSize: '25px' }} />
+    //     //     </div>
+    //     //   ),
+    //     // },
+    //   ],
+    // },
     {
       component: CNavItem,
       name: 'Management',
@@ -400,6 +427,26 @@ const createNav = () => {
         </div>
       ),
       items: [
+        {
+          component: CNavItem,
+          name: 'Order List',
+          to: '/order-list',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <FaShoppingCart style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+        {
+          component: CNavItem,
+          name: 'Product List',
+          to: '/Product-list',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <FaEdit style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
         {
           component: CNavItem,
           name: 'Salesman Expences',
@@ -430,7 +477,8 @@ const createNav = () => {
               <BiMoney style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
-        },
+        }, 
+        
         
       ],
     },
