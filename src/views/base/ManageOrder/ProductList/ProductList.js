@@ -333,10 +333,15 @@ const handleEditGroup = async (item) => {
             supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
             supervisorId: item.supervisorId ? item.supervisorId._id : 'N/A',
           }))
+          // .filter((item) =>
+          //   Object.values(item).some((value) =>
+          //     value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+          //   ),
+          // )
           .filter((item) =>
             Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
-            ),
+              value !== null && value !== undefined && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+            )
           )
 
         setData(filteredData) // Set the filtered data to `data`
