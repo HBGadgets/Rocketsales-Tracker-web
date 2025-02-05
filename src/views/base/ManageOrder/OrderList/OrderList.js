@@ -1,3 +1,4 @@
+// OrderList.js
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import {
@@ -17,7 +18,6 @@ import {
   Select,
   MenuItem,
   InputAdornment,
-  Autocomplete,
 } from '@mui/material'
 import { RiEdit2Fill } from 'react-icons/ri'
 import { AiFillDelete } from 'react-icons/ai'
@@ -34,6 +34,9 @@ import {
   CTableHeaderCell,
   CTableRow,
 } from '@coreui/react'
+import {
+    Autocomplete,
+  } from '@mui/material'
 import TablePagination from '@mui/material/TablePagination'
 import { useNavigate } from 'react-router-dom'
 import Loader from '../../../../components/Loader/Loader'
@@ -52,32 +55,28 @@ import GroupIcon from '@mui/icons-material/Group'
 import { cilSettings } from '@coreui/icons'
 import '../../../../../src/app.css'
 import { COLUMNS } from './columns'
-import { StyledTablePagination } from '../../../PaginationCssFile/TablePaginationStyles'
+import { StyledTablePagination } from '../../../../views/PaginationCssFile/TablePaginationStyles'
 // import { FaBriefcase   } from 'react-icons/fa';
-import { FiGitBranch } from 'react-icons/fi';
+import { BsFillPersonCheckFill } from 'react-icons/bs'
+import '../../ReusablecodeforTable/styles.css'
+import ExcelJS from 'exceljs'
+import jwt_decode from 'jwt-decode';
 import BusinessIcon from '@mui/icons-material/Business';
-import '../../ReusablecodeforTable/styles.css';
-import ExcelJS from 'exceljs';
+import { FiUser } from "react-icons/fi";
+import { FiGitBranch } from 'react-icons/fi';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
-import jwt_decode from 'jwt-decode';
-import { FiUser } from "react-icons/fi";
-const token=Cookies.get("token");
-// let role=null
-// if(token){
-//   const decodetoken=jwt_decode(token);
-//    role=decodetoken.role;
-// }
-// console.log("n",role)
-const UserManage = () => {
+import { LazyLoadImage } from 'react-lazy-load-image-component'
+// import { useNavigate } from 'react-router-dom';
+import { ShoppingCart } from '@mui/icons-material';
+const OrderList = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [formData, setFormData] = useState({})
-  // const [formData, setFormData] = useState({ companyId: '', branchId: '',supervisorId:'' })
-    const [branchError, setBranchError] = useState(false)
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
+const [branchError, setBranchError] = useState(false)
 
   const [pageCount, setPageCount] = useState()
   // const handleEditModalClose = () => setEditModalOpen(false)
@@ -88,17 +87,191 @@ const UserManage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25)
   const columns = COLUMNS()
   const [sortedData, setSortedData] = useState([])
-  const [companyData, setCompanyData] = useState([]);
-  const [BranchData, setBranchData] = useState([]);
-  const [SupervisorData, setSupervisorData] = useState([]);
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+    const [BranchData, setBranchData] = useState([]);
+
+  
+  const [selectedPeriod, setSelectedPeriod] = useState('today')
+  const [showCustomDates, setShowCustomDates] = useState(false)
+  const [role, setRole] = useState(null);
+    const [companyData, setCompanyData] = useState([]);
+    const [SupervisorData, setSupervisorData] = useState([]);
+    const [SalesmanData, setSalesmanData] = useState([]);
+
+  const navigate = useNavigate()
   const handleEditModalClose = () => {
     setFormData({})
     setEditModalOpen(false)
   }
+  const handleEditSubmit = async (e) => {
+    e.preventDefault()
+    console.log(formData)
+    try {
+      const accessToken = Cookies.get('token')
+      const response = await axios.put(
+        `https://rocketsales-server.onrender.com/api/order/${formData._id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      )
 
+      if (response.status === 200) {
+        toast.success('order is edited successfully')
+        fetchData()
+        setFormData({ name: '' })
+        setEditModalOpen(false)
+      }
+    } catch (error) {
+      toast.error('An error occured')
+      throw error.response ? error.response.data : new Error('An error occurred')
+    }
+  }
+  const styles = {
+    container: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%',
+      gap: '17px',
+    },
+    inputGroup: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px',
+      position: 'relative',
+    },
+    label: {
+      fontSize: '12px',
+      fontWeight: '500',
+      color: 'grey', // White color for the label
+      position: 'absolute',
+      top: '-10px',
+      left: '12px',
+      background: '#f3f4f7', // Match background color
+      padding: '0 4px',
+      zIndex: 1,
+    },
+    input: {
+      padding: '8px 2px',
+      borderRadius: '6px',
+      border: '1px solid #444', // Border color matching the dark theme
+      color: 'black', // White text for input
+      fontSize: '14px',
+      width: '136px',
+    },
+    select: {
+      padding: '8px',
+      fontSize: '14px',
+      borderRadius: '4px',
+      border: '1px solid #ccc',
+    },
+    button: {
+      padding: '7px 15px',
+      fontSize: '16px',
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+    },
+  }
+  useEffect(() => {
+      const fetchRole = () => {
+        const token = Cookies.get("token");
+        if (token) {
+          const decodedToken = jwt_decode(token);
+          setRole(decodedToken.role);
+        } else {
+          setRole(null);
+        }
+      };
+    
+      fetchRole(); // Call the function to fetch role
+    }, []); 
+    const filteredBranches = formData.companyId
+? BranchData.filter((branch) => branch.companyId._id === formData.companyId)
+: []
+const handleEditGroup = async (item) => {
+    console.log(item)
+    setEditModalOpen(true)
+    setFormData({ ...item })
+    console.log('this is before edit', formData)
+  }
   const handleAddModalClose = () => {
     setFormData({})
     setAddModalOpen(false)
+  }
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const accessToken = Cookies.get('token');
+      if (!accessToken) {
+        throw new Error('Token is missing');
+      }
+  
+      // Decode the token to get role and other details
+      const decodedToken = jwt_decode(accessToken);
+  
+      // Determine the user's role and update formData accordingly
+      if (decodedToken.role === 2) {
+        formData.companyId = decodedToken.id; // Use companyId from the token
+      } else if (decodedToken.role === 3) {
+        formData.companyId = decodedToken.companyId; // Use companyId from the token
+        formData.branchId = decodedToken.id; // Use branchId from the token
+      } else if (decodedToken.role === 4) {
+        formData.supervisorId = decodedToken.id; // Use supervisorId from the token
+        formData.companyId = decodedToken.companyId; // Use companyId from the token
+        formData.branchId = decodedToken.branchId; // Use branchId from the token
+      }
+  
+      // Perform the POST request
+      const response = await axios.post(
+        `https://rocketsales-server.onrender.com/api/order`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      if (response.status === 201) {
+        toast.success('Order is created successfully');
+        fetchData(); // Refresh data
+        setFormData({ name: '' }); // Reset form data
+        setAddModalOpen(false); // Close modal
+      }
+    } catch (error) {
+      toast.error('An error occurred');
+      throw error.response ? error.response.data : new Error('An error occurred');
+    }
+  };
+  const formatToUTCString = (dateString) => {
+    if (!dateString) return ''
+    return `${dateString}:00.000Z` // Keeps the entered time and adds `.000Z`
+  }
+
+  const handlePeriodChange = (e) => {
+    const value = e.target.value
+    setSelectedPeriod(value)
+    if (value === 'Custom') {
+      setShowCustomDates(true)
+    } else {
+      setShowCustomDates(false)
+    }
+  }
+
+  const handleApply = () => {
+    const formattedStartDate = formatToUTCString(startDate)
+    const formattedEndDate = formatToUTCString(endDate)
+    // alert(`Start Date: ${formattedStartDate}, End Date: ${formattedEndDate}`)
+    console.log(`Start Date: ${formattedStartDate}, End Date: ${formattedEndDate}`)
+    fetchData(formattedStartDate, formattedEndDate, selectedPeriod)
   }
 
   const style = {
@@ -118,82 +291,58 @@ const UserManage = () => {
     padding: '1rem',
     marginTop: '8px',
   }
-const [role, setRole] = useState(null);
 
-  useEffect(() => {
-    const fetchRole = () => {
-      const token = Cookies.get("token");
-      if (token) {
-        const decodedToken = jwt_decode(token);
-        setRole(decodedToken.role);
-      } else {
-        setRole(null);
-      }
-    };
-  
-    fetchRole(); // Call the function to fetch role
-  }, []); 
-  // ##################### getting data  ###################
-  const fetchData = async (page = 1) => {
-    const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/salesman`;
-  
+  const fetchData = async (startDate, endDate, selectedPeriod, page = 1) => {
+    setLoading(true)
+    const accessToken = Cookies.get('token')
+    let url
+    console.log(selectedPeriod)
+    if (selectedPeriod && selectedPeriod !== 'Custom') {
+      // If the period is not custom, pass the period as a filter
+      url = `https://rocketsales-server.onrender.com/api/order?filter=${selectedPeriod}`
+    } else if (startDate && endDate) {
+      // For "Custom" date range, pass the startDate and endDate as query params
+      url = `https://rocketsales-server.onrender.com/api/order?startDate=${startDate}&endDate=${endDate}`
+    } else {
+      // If "Custom" is selected but no dates are provided, just fetch all data
+      url = `https://rocketsales-server.onrender.com/api/order`
+    }
+    console.log('my url', url)
+    console.log('Access Token:', accessToken)
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: 'Bearer ' + accessToken,
         },
-      });
-  
-      // Log the full response data to inspect its structure
-      console.log("Full Response Data:", response.data);
-  
-      // Process the salesmandata
-      const salesmandata = response.data.salesmandata.map((item) => ({
-        ...item,
-        companyName: item.companyId?.companyName || null, // Extract companyName or set null
-        companyId: item.companyId?._id || null,          // Extract companyId or set null
-        branchName: item.branchId?.branchName || null,   // Extract branchName or set null
-        branchId: item.branchId?._id || null,            // Extract branchId or set null
-        supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
-        supervisorId: item.supervisorId?._id || null,    // Extract supervisorId or set null
-      }));
-  
-      console.log("Processed Data:", salesmandata);
-  
-      if (salesmandata) {
+      })
+      console.log('Response:', response.data)
+      if (response.data) {
         // Filter the data based on the search query if it is not empty
-        const filteredData = salesmandata
-          .map((item) => {
-            // Apply the formatDate method to 'createdAt' field if it exists
-            if (item.createdAt) {
-              item.createdAt = formatDate(item.createdAt); // Use your custom formatDate method
-            }
-  
-            return item;
-          })
+        const filteredData = response.data.data
+          .map((item) => ({
+            ...item,
+            createdAt: item.createdAt ? formatDate(item.createdAt) : null,
+            salesmanName: item.salesmanId ? item.salesmanId.salesmanName : null,
+            companyName: item.companyId ? item.companyId.companyName : 'N/A',
+            branchName: item.branchId ? item.branchId.branchName : 'N/A',
+            supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
+          }))
           .filter((item) =>
             Object.values(item).some((value) =>
-              value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          );
-  
-        setData(filteredData); // Set the filtered data to `data`
-        setSortedData(filteredData); // Set the filtered data to `sortedData`
-        setLoading(false);
-      } else {
-        console.error('Salesman data is missing or incorrectly structured.');
-        setLoading(false);
+              value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+            ),
+          )
+
+        setData(filteredData) // Set the filtered data to `data`
+        setSortedData(filteredData) // Set the filtered data to `sortedData`
+        setLoading(false)
       }
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
     }
-  };
-  
-  
-  
+  }
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token');
     const url = `https://rocketsales-server.onrender.com/api/company`;
@@ -268,30 +417,60 @@ const [role, setRole] = useState(null);
       throw error; // Re-throw the error for further handling if needed
     }
   };
+  const fetchsalesman = async () => {
+    const accessToken = Cookies.get('token');
+    const url = `https://rocketsales-server.onrender.com/api/salesman`;
+  
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: 'Bearer ' + accessToken,
+        },
+      });
+  console.log("my data response",response.data)
+  const salesman = response.data.salesman || []; 
+      if (response.data) {
+      
+        // const companydata1 = response.data
+        setSalesmanData(salesman ||[]);
+       
+      }
+      console.log("salesman  are",SalesmanData);
+    } catch (error) {
+      setLoading(false);
+      console.error('Error fetching data:', error);
+      throw error; // Re-throw the error for further handling if needed
+    }
+  };
+  
+ 
+  
   useEffect(() => {
     fetchCompany();
     fetchBranch();
     fetchsupervisor();
+    fetchsalesman();
   }, []);
+
   // Format the date into DD-MM-YYYY format
   function formatDate(date) {
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0'); // Add leading zero if single digit
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Add leading zero to month
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
+    const d = new Date(date)
+    const day = String(d.getDate()).padStart(2, '0') // Add leading zero if single digit
+    const month = String(d.getMonth() + 1).padStart(2, '0') // Add leading zero to month
+    const year = d.getFullYear()
+    return `${day}-${month}-${year}`
   }
-  
+
   // Example: parsing the formatted date string back to a Date object if needed
   function parseDate(dateString) {
-    const [day, month, year] = dateString.split('-').map(Number);
-    return new Date(year, month - 1, day);
+    const [day, month, year] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day)
   }
-  
+
   useEffect(() => {
     setLoading(true)
-    // fetchcompany()
-    fetchData() // Refetch data when searchQuery changes
+    // fetchData() // Refetch data when searchQuery changes
+    fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
   }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
@@ -319,77 +498,6 @@ const [role, setRole] = useState(null);
     fetchData(page)
   }
 
-  // const handleAddSubmit = async (e) => {
-  //   e.preventDefault()
-  //   console.log(formData)
-  //   try {
-  //     const accessToken = Cookies.get('token')
-  //     const response = await axios.post(`https://rocketsales-server.onrender.com/api/salesman`, formData, {
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //         'Content-Type': 'application/json',
-  //       },
-  //     })
-
-  //     if (response.status === 201) {
-  //       toast.success('Branch is created successfully')
-  //       fetchData()
-  //       setFormData({ name: '' })
-  //       setAddModalOpen(false)
-  //     }
-  //     fetchData();
-  //   } catch (error) {
-  //     toast.error('An error occured')
-  //     throw error.response ? error.response.data : new Error('An error occurred')
-  //   }
-  // }
-  const handleAddSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const accessToken = Cookies.get('token');
-      if (!accessToken) {
-        throw new Error('Token is missing');
-      }
-  
-      // Decode the token to get role and other details
-      const decodedToken = jwt_decode(accessToken);
-  
-      // Determine the user's role and update formData accordingly
-      if (decodedToken.role === 2) {
-        formData.companyId = decodedToken.id; // Use companyId from the token
-      } else if (decodedToken.role === 3) {
-        formData.companyId = decodedToken.companyId; // Use companyId from the token
-        formData.branchId = decodedToken.id; // Use branchId from the token
-      } else if (decodedToken.role === 4) {
-        formData.supervisorId = decodedToken.id; // Use supervisorId from the token
-        formData.companyId = decodedToken.companyId; // Use companyId from the token
-        formData.branchId = decodedToken.branchId; // Use branchId from the token
-      }
-  
-      // Perform the POST request
-      const response = await axios.post(
-        `https://rocketsales-server.onrender.com/api/salesman`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-  
-      if (response.status === 201) {
-        toast.success('Branch is created successfully');
-        fetchData(); // Refresh data
-        setFormData({ name: '' }); // Reset form data
-        setAddModalOpen(false); // Close modal
-      }
-    } catch (error) {
-      toast.error('An error occurred');
-      throw error.response ? error.response.data : new Error('An error occurred');
-    }
-  };
-  
   // ###################################################################
   // ######################### Edit Group #########################
   const handleChangeRowsPerPage = (event) => {
@@ -401,14 +509,70 @@ const [role, setRole] = useState(null);
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
-  const handleEditSubmit = async (e) => {
-    e.preventDefault()
-    console.log(formData)
+
+  // Uncomment and modify the following block if you need deletion functionality
+  const haqndleDeletesubmit = async (item) => {
+    if (!item._id) {
+      toast.error('Invalid item selected for deletion.')
+      return
+    }
+  
+    const confirmed = confirm('Do you want to delete this order?')
+    if (!confirmed) return
+    console.log(`https://rocketsales-server.onrender.com/api/order/${item._id}`)
     try {
       const accessToken = Cookies.get('token')
+      if (!accessToken) {
+        toast.error('Authentication token is missing.')
+        return
+      }
+  
+      const response = await axios({
+        method: 'DELETE', // Explicitly specifying DELETE method
+        url: `https://rocketsales-server.onrender.com/api/order/${item._id}`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+  
+      toast.success('Order deleted successfully')
+      fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
+    } catch (error) {
+      console.error('Error Details:', error.response || error.message)
+      toast.error('An error occurred while deleting the group.')
+    }
+  }
+
+  const exportToExcel = ExcelExporter({
+    mytitle: 'Attendance Data Report',
+    columns: COLUMNS().slice(1),
+    data: filteredData.map(({ [COLUMNS()[0]?.accessor]: _, ...rest }) => rest),
+    fileName: 'Attendance_data.xlsx',
+  })
+
+  const exportToPDF = PDFExporter({
+    title: 'Company Data Report',
+    columns: COLUMNS().slice(1),
+    data: filteredData.map(({ [COLUMNS()[0]?.accessor]: _, ...rest }) => rest),
+    fileName: 'Attendance_report.pdf',
+  })
+
+  const handleStatusClick = async (item) => {
+    try {
+      // Toggle the attendance status between 'Absent' and 'Present'
+      const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent'
+
+      // Prepare the data for the PUT request
+      const updatedData = {
+        attendenceStatus: updatedStatus, // Update the attendenceStatus field
+      }
+
+      // Make the PUT request to update the attendance status
+      const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/salesman/${formData._id}`,
-        formData,
+        `https://rocketsales-server.onrender.com/api/attendence/${item._id}`,
+        updatedData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -417,148 +581,137 @@ const [role, setRole] = useState(null);
       )
 
       if (response.status === 200) {
-        toast.success('group is edited successfully')
-        fetchData()
-        setFormData({ name: '' })
-        setEditModalOpen(false)
+        alert('Attendance status updated successfully!')
       }
+      fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      alert('Failed to update attendance status')
     }
   }
 
-  const handleEditGroup = async (item) => {
-    console.log(item)
-    setEditModalOpen(true)
-    setFormData({ ...item })
-    console.log('this is before edit', formData)
-  }
-
- 
-  const haqndleDeletesubmit = async (item) => {
-    if (!item._id) {
-      toast.error('Invalid item selected for deletion.')
-      return
-    }
-
-    const confirmed = confirm('Do you want to delete this user?')
-    if (!confirmed) return
-
-    try {
-      const accessToken = Cookies.get('token')
-      if (!accessToken) {
-        toast.error('Authentication token is missing.')
-        return
-      }
-
-      const response = await axios({
-        method: 'DELETE', // Explicitly specifying DELETE method
-        // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
-        url: `https://rocketsales-server.onrender.com/api/salesman/${item._id}`,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (response.status === 200) {
-        toast.success('Group deleted successfully')
-        fetchData()
-      }
-    } catch (error) {
-      console.error('Error Details:', error.response || error.message)
-      toast.error('An error occurred while deleting the group.')
-    }
-  }
-
-
-  
-  const exportToExcel = ExcelExporter({
-  
-    columns: COLUMNS(),
-    data: filteredData,
-    fileName: 'UserManage_data.xlsx',
-    mytitle:'UserManage Data Report',
-  });
-
-const exportToPDF = PDFExporter({
-  title: 'UserManage Data Report',
-  columns: COLUMNS(),
-  data: filteredData,
-  fileName: 'UserManage_data_report.pdf',
-});
-const filteredBranches = formData.companyId
-? BranchData.filter((branch) => branch.companyId._id === formData.companyId)
-: []
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
       <div className="d-flex justify-content-between mb-2">
-        <div>
-          <h2
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              color: '#4c637c',
-              fontWeight: '600',
-              fontFamily: "'Poppins', sans-serif",
-            }}
-          >
-            <FiGitBranch  style={{ fontSize: '24px', color: '#4c637c' }} />
-            Manage User
-          </h2>
+        <div style={{ display: 'flex', gap: '42px' }}>
+          <div>
+            <h2
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                color: '#4c637c',
+                fontWeight: '600',
+                fontFamily: "'Poppins', sans-serif",
+              }}
+            >
+              <ShoppingCart style={{ fontSize: '24px', color: '#4c637c' }} />
+              Orders
+            </h2>
+          </div>
+
+          <div style={styles.container}>
+            <div style={styles.inputGroup}>
+              <label htmlFor="period" style={styles.label}>
+                Period:
+              </label>
+              <select
+                id="period"
+                value={selectedPeriod}
+                onChange={handlePeriodChange}
+                style={styles.select}
+              >
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="thisWeek">This Week</option>
+                <option value="lastWeek">Previous Week</option>
+                <option value="thisMonth">This Month</option>
+                <option value="preMonth">Previous Month</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </div>
+
+            {showCustomDates && (
+              <>
+                <div style={styles.inputGroup}>
+                  <label htmlFor="startDate" style={styles.label}>
+                    From
+                  </label>
+                  <input
+                    type="datetime-local"
+                    id="startDate"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    style={styles.input}
+                  />
+                </div>
+
+                <div style={styles.inputGroup}>
+                  <label htmlFor="endDate" style={styles.label}>
+                    To
+                  </label>
+                  <input
+                    type="datetime-local"
+                    id="endDate"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    style={styles.input}
+                  />
+                </div>
+              </>
+            )}
+
+            <button onClick={handleApply} style={styles.button}>
+              Apply
+            </button>
+          </div>
         </div>
 
+        <div className="d-flex align-items-center">
+          <div className="me-3 d-none d-md-block">
+            <input
+              type="search"
+              className="form-control"
+              placeholder="🔍 Search here..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                height: '40px',
+                padding: '8px 12px',
+                fontSize: '16px',
+                borderRadius: '8px',
+                border: '1px solid #ccc',
+              }}
+            />
+          </div>
 
-<div className="d-flex align-items-center">
- 
-  <div className="me-3 d-none d-md-block">
-    <input
-      type="search"
-      className="form-control"
-      placeholder="🔍 Search here..."
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      style={{
-        height: "40px", // Ensure consistent height
-        padding: "8px 12px",
-        fontSize: "16px",
-        borderRadius: "8px",
-        border: "1px solid #ccc",
-      }}
-    />
-  </div>
-
-  {/* Settings Dropdown */}
-
-
-  {/* Add Button */}
-  <div className="add-container d-flex align-items-center" onClick={() => setAddModalOpen(true)}>
-    <div className="add-icon">+</div>
-    <span className="add-text ms-2">ADD</span>
-  </div>
-  <CDropdown className="position-relative me-3">
-    <CDropdownToggle
-      color="secondary"
-      style={{
-        borderRadius: '50%',
-        padding: '10px',
-        height: '48px',
-        width: '48px',
-        marginLeft:'12px'
-      }}
-    >
-      <CIcon icon={cilSettings} />
-    </CDropdownToggle>
-    <CDropdownMenu>
-      <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
-      <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
-    </CDropdownMenu>
-  </CDropdown>
-</div>
-
+          {/* Add Button */}
+          <div
+            className="add-container d-flex align-items-center"
+            onClick={() => setAddModalOpen(true)}
+          >
+            <div className="add-icon">+</div>
+            <span className="add-text ms-2">New Order</span>
+          </div>
+          <CDropdown className="position-relative me-3">
+            <CDropdownToggle
+              color="secondary"
+              style={{
+                borderRadius: '50%',
+                padding: '10px',
+                height: '48px',
+                width: '48px',
+                marginLeft: '12px',
+              }}
+            >
+              <CIcon icon={cilSettings} />
+            </CDropdownToggle>
+            <CDropdownMenu>
+              <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
+              <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
+            </CDropdownMenu>
+          </CDropdown>
+        </div>
       </div>
       <div className="d-md-none mb-2">
         <input
@@ -575,7 +728,6 @@ const filteredBranches = formData.companyId
         sx={{
           height: 'auto',
           overflowX: 'auto',
-
         }}
       >
         <CTable
@@ -584,7 +736,7 @@ const filteredBranches = formData.companyId
             fontSize: '14px',
             borderCollapse: 'collapse',
             width: '100%',
-            border: '1px solid #e0e0e0', // Light border
+            border: '1px solid #e0e0e0',
           }}
           bordered
           align="middle"
@@ -598,9 +750,9 @@ const filteredBranches = formData.companyId
                 className="text-center"
                 style={{
                   backgroundColor: '#1d3d5f',
-                  padding: '5px 12px', // Reduced padding for top and bottom
-                  borderBottom: '1px solid #e0e0e0', // Light border under headers
-                  textAlign: 'center', // Center header text
+                  padding: '5px 12px',
+                  borderBottom: '1px solid #e0e0e0',
+                  textAlign: 'center',
                   verticalAlign: 'middle',
                   color: 'white',
                 }}
@@ -612,9 +764,9 @@ const filteredBranches = formData.companyId
                   key={col.accessor}
                   className="text-center"
                   style={{
-                    padding: '5px 12px', // Reduced padding for top and bottom
-                    borderBottom: '1px solid #e0e0e0', // Light border under headers
-                    textAlign: 'center', // Center header text
+                    padding: '5px 12px',
+                    borderBottom: '1px solid #e0e0e0',
+                    textAlign: 'center',
                     verticalAlign: 'middle',
                     backgroundColor: '#1d3d5f',
                     color: 'white',
@@ -623,19 +775,19 @@ const filteredBranches = formData.companyId
                   {col.Header}
                 </CTableHeaderCell>
               ))}
-              <CTableHeaderCell
-                className="text-center"
-                style={{
-                  padding: '5px 12px', // Reduced padding for top and bottom
-                  borderBottom: '1px solid #e0e0e0', // Light border under headers
-                  textAlign: 'center', // Center header text
-                  verticalAlign: 'middle',
-                  backgroundColor: '#1d3d5f',
-                  color: 'white',
-                }}
-              >
-                Actions
-              </CTableHeaderCell>
+               <CTableHeaderCell
+                              className="text-center"
+                              style={{
+                                padding: '5px 12px', // Reduced padding for top and bottom
+                                borderBottom: '1px solid #e0e0e0', // Light border under headers
+                                textAlign: 'center', // Center header text
+                                verticalAlign: 'middle',
+                                backgroundColor: '#1d3d5f',
+                                color: 'white',
+                              }}
+                            >
+                              Actions
+                            </CTableHeaderCell>
             </CTableRow>
           </CTableHead>
 
@@ -661,7 +813,7 @@ const filteredBranches = formData.companyId
                   <CTableRow
                     key={index}
                     style={{
-                      backgroundColor: index % 2 === 0 ? 'transparent':  '#f1f8fd', // Grey for even rows, transparent for odd rows
+                      backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                       transition: 'background-color 0.3s ease',
                       borderBottom: '1px solid #e0e0e0',
                     }}
@@ -673,7 +825,7 @@ const filteredBranches = formData.companyId
                         padding: '0px 12px',
                         color: '#242424',
                         fontSize: '13px',
-                        backgroundColor: index % 2 === 0 ? 'transparent':'#f1f8fd'  ,
+                        backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                       }}
                     >
                       {index + 1}
@@ -681,40 +833,72 @@ const filteredBranches = formData.companyId
 
                     {columns.map((col) => (
                       <CTableDataCell
-                        key={col.accessor}
+                        
                         className="text-center"
                         style={{
                           padding: '0px 12px',
                           color: '#242424',
                           fontSize: '13px',
-                          backgroundColor: index % 2 === 0 ?'transparent' : '#f1f8fd',
+                          backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                         }}
                       >
-                        {item[col.accessor] || '--'}
+                        {col.accessor === 'attendenceStatus' ? (
+                          <button
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: item[col.accessor] === 'Absent' ? 'red' : 'green',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '5px',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                            }}
+                            onClick={() => handleStatusClick(item)}
+                          >
+                            {item[col.accessor]}
+                          </button>
+                        ) : col.accessor === 'profileImgUrl' ? (
+                          item[col.accessor] ? (
+                            <>
+                              {console.log('mm')}
+                              <img
+                                src={`data:image/png;base64,${item[col.accessor]}`}
+                                alt="Profile"
+                                style={{
+                                  width: '80px',
+                                  height: '80px',
+                                  borderRadius: '50%',
+                                  padding: '9px',
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <span>No Image</span>
+                          )
+                        ) : (
+                          item[col.accessor] || '--'
+                        )}
                       </CTableDataCell>
                     ))}
-
-                   
-  <CTableDataCell
-      className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
-    >
-      <IconButton
-        aria-label="edit"
-        onClick={() => handleEditGroup(item)}
-        className="icon-button icon-button-edit"
-      >
-        <RiEdit2Fill className="icon-button-icon" />
-      </IconButton>
-
-      <IconButton
-        aria-label="delete"
-        onClick={() => haqndleDeletesubmit(item)}
-        className="icon-button icon-button-delete"
-      >
-        <AiFillDelete className="icon-button-icon" />
-      </IconButton>
-    </CTableDataCell>
-
+                     <CTableDataCell
+                          className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
+                        >
+                          <IconButton
+                            aria-label="edit"
+                            onClick={() => handleEditGroup(item)}
+                            className="icon-button icon-button-edit"
+                          >
+                            <RiEdit2Fill className="icon-button-icon" />
+                          </IconButton>
+                    
+                          <IconButton
+                            aria-label="delete"
+                            onClick={() => haqndleDeletesubmit(item)}
+                            className="icon-button icon-button-delete"
+                          >
+                            <AiFillDelete className="icon-button-icon" />
+                          </IconButton>
+                        </CTableDataCell>
                   </CTableRow>
                 ))
             ) : (
@@ -736,8 +920,6 @@ const filteredBranches = formData.companyId
         </CTable>
       </TableContainer>
 
-     
-
       <StyledTablePagination>
         <TablePagination
           rowsPerPageOptions={[{ label: 'All', value: -1 }, 1, 10, 25, 100, 1000]}
@@ -755,7 +937,6 @@ const filteredBranches = formData.companyId
           }}
         />
       </StyledTablePagination>
-     
       <Modal
   open={addModalOpen}
   onClose={handleAddModalClose}
@@ -791,7 +972,8 @@ const filteredBranches = formData.companyId
         companyId: newValue?._id || '',
         branchId: '', // Reset branch when company changes
         supervisorId: '', // Reset supervisor when company changes
-      })
+        // salesmanId: '', // Reset salesman when company changes
+    })
       setBranchError(false) // Clear branch error
     }}
     renderInput={(params) => (
@@ -827,7 +1009,8 @@ const filteredBranches = formData.companyId
         setFormData({ 
           ...formData, 
           branchId: newValue?._id || '', 
-          supervisorId: '' // Reset supervisor when branch changes
+          supervisorId: '', // Reset supervisor when branch changes
+        //   salesmanId: '' ,// Reset salesman when branch changes  
         })
         setBranchError(false)
       }
@@ -879,6 +1062,7 @@ const filteredBranches = formData.companyId
       setFormData({
         ...formData,
         supervisorId: newValue?._id || '',
+        // salesmanId: '', // Reset salesman when supervisor changes
       })
     }
     renderInput={(params) => (
@@ -908,6 +1092,58 @@ const filteredBranches = formData.companyId
     disabled={!formData.branchId} // Disable if branch is not selected
   />
 </FormControl>
+{/* Salesman Dropdown */}
+{/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+  <Autocomplete
+    id="searchable-salesman-select"
+    options={
+      formData.companyId && formData.branchId && formData.supervisorId
+        ? SalesmanData.filter(
+            (salesman) =>
+              salesman.companyId?._id === formData.companyId &&
+              salesman.branchId?._id === formData.branchId &&
+              salesman.supervisorId?._id === formData.supervisorId
+          )
+        : []
+    }
+    getOptionLabel={(option) => option.salesmanName || ''}
+    value={
+      SalesmanData.find((salesman) => salesman._id === formData.salesmanId) || null
+    }
+    onChange={(event, newValue) =>
+      setFormData({
+        ...formData,
+        salesmanId: newValue?._id || '',
+      })
+    }
+    disabled={!formData.companyId || !formData.branchId || !formData.supervisorId}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Salesman"
+        variant="outlined"
+        name="salesmanId"
+        placeholder={
+          !formData.companyId
+            ? 'Select Company First'
+            : !formData.branchId
+            ? 'Select Branch First'
+            : !formData.supervisorId
+            ? 'Select Supervisor First'
+            : 'Select Salesman'
+        }
+        InputProps={{
+          ...params.InputProps,
+          startAdornment: (
+            <InputAdornment position="start">
+              <FiUser />
+            </InputAdornment>
+          ),
+        }}
+      />
+    )}
+  />
+</FormControl> */}
 
 
 
@@ -1034,7 +1270,7 @@ const filteredBranches = formData.companyId
           </>
 
           ): null}
-          {COLUMNS().slice(0, -3).map((column) => (
+          {COLUMNS().slice(0, -5).map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}
@@ -1068,10 +1304,6 @@ const filteredBranches = formData.companyId
     </DialogContent>
   </Box>
 </Modal>
-
-
-
-    
 <Modal
   open={editModalOpen}
   onClose={handleEditModalClose}
@@ -1224,74 +1456,7 @@ const filteredBranches = formData.companyId
             </>
           ) : role == 2 ? (
             <>
-              {/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-                <Autocomplete
-                  id="searchable-branch-select"
-                  options={Array.isArray(BranchData) ? BranchData : []}
-                  getOptionLabel={(option) => option.branchName || ''}
-                  value={
-                    Array.isArray(BranchData)
-                      ? BranchData.find((branch) => branch._id == formData.branchId)
-                      : null
-                  }
-                  onChange={(event, newValue) =>
-                    setFormData({
-                      ...formData,
-                      branchId: newValue?._id || '',
-                    })
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Branch Name"
-                      variant="outlined"
-                      name="branchId"
-                      InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <FiGitBranch />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-              </FormControl>
-              <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-supervisor-select"
-    options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
-    getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
-    value={
-      Array.isArray(SupervisorData)
-        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
-        : null
-    } // Safely find the selected supervisor
-    onChange={(event, newValue) =>
-      setFormData({
-        ...formData,
-        supervisorId: newValue?._id || '', // Update the supervisorId in formData
-      })
-    }
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Supervisor"
-        variant="outlined"
-        name="supervisorId"
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiGitBranch />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-  />
-</FormControl> */}
+             
 <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
   <Autocomplete
     id="searchable-branch-select"
@@ -1411,7 +1576,7 @@ const filteredBranches = formData.companyId
 
           ): null}
          
-          {COLUMNS().slice(0, -3).map((column) => (
+          {COLUMNS().slice(0, -5).map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}
@@ -1444,10 +1609,10 @@ const filteredBranches = formData.companyId
     </DialogContent>
   </Box>
 </Modal>
-
-
     </div>
+    
   )
+  
 }
 
-export default UserManage
+export default OrderList 

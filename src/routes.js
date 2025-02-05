@@ -37,6 +37,9 @@ const DeniedRequest=React.lazy(()=>import('./views/base/ManageAttend/DeniedReque
 const SalesmanExpenceManagement=React.lazy(()=>import('./views/base/ManageOrder/SalesmanExpenceManagement/SalesmanExpenceManagement'))
 // const Company=React.lazy(()=>import('./views/base/Management/Company'))
 // const Company=React.lazy(()=>import('./views/base/Management/Company'))
+const OrderList=React.lazy(()=>import('./views/base/ManageOrder/OrderList/OrderList'))
+const ProductList=React.lazy(()=>import('./views/base/ManageOrder/ProductList/ProductList'))
+
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   
@@ -48,7 +51,9 @@ const routes = [
   { path: '/salesman', name: 'IndividualTrack', element: IndividualTrack },
 
   { path: '/attendance', name: 'Attendance1', element: Attendance },
-  { path: '/manual-attendance', name: 'Manual Attendance', element: Manual },
+  { path: '/order-list', name: 'order List', element: OrderList },
+  { path: '/product-list', name: 'product List', element: ProductList },
+
   { path: '/leave-application', name: 'Leave Application', element: LeaveApplication },
   { path: '/visit-shop', name: 'Visit Shop', element: VisitShop },
 

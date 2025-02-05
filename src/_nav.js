@@ -32,6 +32,7 @@ import jwt_decode from 'jwt-decode';
 import { FaTasks, FaUsers, FaBuilding, FaLayerGroup, FaMapMarkerAlt } from 'react-icons/fa';
 import { FaEdit, FaRegCalendarAlt, FaStore,FaClock ,FaThumbsUp,FaThumbsDown } from 'react-icons/fa';
 import { FaFileInvoice, FaClipboardList, FaWarehouse } from 'react-icons/fa';
+import { ShoppingCart } from '@mui/icons-material';
 
 const token = Cookies.get("token");
 
@@ -373,6 +374,51 @@ const createNav = () => {
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <FaThumbsDown style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+        // {
+        //   component: CNavItem,
+        //   name: 'Absent Report',
+        //   to: '/absent-report',
+        //   icon: (
+        //     <div style={{ display: 'flex', alignItems: 'center' }}>
+        //       <TbReport style={{ marginRight: '15px', fontSize: '25px' }} />
+        //     </div>
+        //   ),
+        // },
+      ],
+    },
+    // {
+    //   component: CNavTitle,
+    //   name: 'Manage Order',
+    // },
+    {
+      component: CNavItem,
+      name: 'Manage Order',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FiList style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+      items: [
+        {
+          component: CNavItem,
+          name: 'Order List',
+          to: '/order-list',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <ShoppingCart style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+        {
+          component: CNavItem,
+          name: 'Product List',
+          to: '/Product-list',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <FaEdit style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
