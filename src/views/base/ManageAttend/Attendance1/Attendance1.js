@@ -59,6 +59,7 @@ import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
+import emptyimage from '../../images/emptyimage.jpg'
 // import { DialogContent } from "@mui/material";
 // import { useNavigate } from 'react-router-dom';
 const Attendance1 = () => {
@@ -325,47 +326,61 @@ const Attendance1 = () => {
 
   const handleStatusClick = async (item) => {
     try {
+      // Show a confirmation message
+      const confirmChange = window.confirm("Do you want to change the attendance status?");
+      
+      if (!confirmChange) {
+        return; // If user cancels, exit function
+      }
+  
       // Toggle the attendance status between 'Absent' and 'Present'
-      const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent'
-
+      const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent';
+  
       // Prepare the data for the PUT request
       const updatedData = {
-        // ...item, // Include the existing item data
         attendenceStatus: updatedStatus, // Update the attendenceStatus field
-      }
-
-      // Make the PUT request to update the attendance status
-      const accessToken = Cookies.get('token')
-
+      };
+  
+      // Get access token from cookies
+      const accessToken = Cookies.get('token');
+  
       // Make the PUT request to update the attendance status
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/attendence/${item._id}`, // Replace with your API endpoint and item ID
+        `https://rocketsales-server.onrender.com/api/attendence/${item._id}`, 
         updatedData,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`, // Include the Bearer token in the header
+            Authorization: `Bearer ${accessToken}`, // Include Bearer token in the header
           },
-        },
-      )
-
+        }
+      );
+  
       // Handle the response
       if (response.status === 200) {
-        // If the update is successful, you may want to update the state or re-fetch the data
-        alert('Attendance status updated successfully!')
-        // Optionally, you could trigger a state update here or refetch the data
+        alert("Attendance status updated successfully!");
+        // Refresh data after update
+        fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
       }
-      fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
     } catch (error) {
-      // console.error('Error updating attendance status:', error);
-      alert('Failed to update attendance status')
+      alert("Failed to update attendance status");
     }
-  }
-  const [open, setOpen] = useState(false);
+  };
+  
+  
+  // Function to handle image click
+  const [isOpen, setIsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // Function to handle image click
   const handleImageClick = (imageUrl) => {
     setSelectedImage(imageUrl);
-    setOpen(true);
+    setIsOpen(true);
+  };
+
+  // Function to close image popup
+  const closePopup = () => {
+    setIsOpen(false);
+    setSelectedImage(null);
   };
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
@@ -624,7 +639,7 @@ const Attendance1 = () => {
                           backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                         }}
                       >
-                      {col.accessor === "attendenceStatus" ? (
+                    {col.accessor === "attendenceStatus" ? (
         <button
           style={{
             padding: "6px 12px",
@@ -649,52 +664,100 @@ const Attendance1 = () => {
               height: "80px",
               borderRadius: "50%",
               padding: "9px",
-              cursor: "pointer", // Make image clickable
+              cursor: "pointer",
             }}
             onClick={() =>
               handleImageClick(`data:image/png;base64,${item[col.accessor]}`)
             }
           />
         ) : (
-          <span>No Image</span>
+          <div style={{ textAlign: 'center' }}>
+            <img
+              src={emptyimage}
+              alt="Empty"
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                padding: '9px',
+              }}
+              onClick={() =>
+                handleImageClick(`${emptyimage}`)
+              }
+            />
+          </div>
         )
       ) : (
         item[col.accessor] || "--"
       )}
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogContent style={{ position: "relative", padding: "20px" }}>
-          {/* Close Button */}
-          <IconButton
-            onClick={() => setOpen(false)}
+
+      {/* Custom Image Popup */}
+      {isOpen && (
+        <div
+          onClick={closePopup} // Clicking outside closes the popup
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "transparent",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside
             style={{
-              position: "absolute",
-              top: "10px",
-              right: "10px",
-              background: "white",
-              borderRadius: "50%",
-              boxShadow: "0px 0px 10px rgba(155, 148, 148, 0.2)",
+              position: "relative",
+              width: "500px",
+              height: "500px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "white",
+              borderRadius: "10px",
+              overflow: "hidden",
             }}
           >
-            <CloseIcon />
-          </IconButton>
+            {/* Close Button */}
+            <button
+              onClick={closePopup}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "white",
+                border: "none",
+                borderRadius: "50%",
+                width: "30px",
+                height: "30px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+                boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)",
+              }}
+            >
+              <CloseIcon />
+            </button>
 
-          {/* Full-Size Image */}
-          {selectedImage && (
+            {/* Fixed Size Image */}
             <img
               src={selectedImage}
-              alt="Full Size Profile"
+              alt="Profile"
               style={{
                 width: "100%",
-                height: "auto",
-                borderRadius: "10px",
-                maxWidth: "500px",
-                display: "block",
-                margin: "auto",
+                height: "100%",
+                objectFit: "cover",
               }}
             />
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
+   
                       </CTableDataCell>
                     ))}
 

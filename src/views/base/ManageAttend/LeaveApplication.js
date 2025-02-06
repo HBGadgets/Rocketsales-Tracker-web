@@ -47,8 +47,103 @@ const LeaveApplication = () => {
   const [confirmationDialog, setConfirmationDialog] = useState({ open: false, action: null })
   const [showSearch, setShowSearch] = useState(false) // To toggle search bar
   const [searchQuery, setSearchQuery] = useState('') // To handle the search input
-
+ const [sortedData, setSortedData] = useState([])
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [selectedPeriod, setSelectedPeriod] = useState('today')
+  const [showCustomDates, setShowCustomDates] = useState(false)
   // Function to handle image click
+  const styles = {
+    container: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%',
+      gap: '17px',
+    },
+    inputGroup: {
+      marginRight: '10px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    label: {
+      display: 'block',
+      fontWeight: 'bold',
+      fontSize: '14px',
+    },
+    input: {
+      width: '120px',
+      padding: '8px',
+      fontSize: '14px',
+      borderRadius: '4px',
+      border: '1px solid #ccc',
+    },
+    select: {
+      padding: '8px',
+      fontSize: '14px',
+      borderRadius: '4px',
+      border: '1px solid #ccc',
+    },
+    button: {
+      padding: '7px 15px',
+      fontSize: '16px',
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+    },
+    inputGroup: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px',
+      // marginBottom: '16px',
+      position: 'relative',
+    },
+    label: {
+      fontSize: '12px',
+      fontWeight: '500',
+      color: 'grey', // White color for the label
+      position: 'absolute',
+      top: '-10px',
+      left: '12px',
+      background: '#f3f4f7', // Match background color
+      padding: '0 4px',
+      zIndex: 1,
+    },
+    input: {
+      padding: '8px 2px',
+      borderRadius: '6px',
+      border: '1px solid #444', // Border color matching the dark theme
+      // background: '#2b2b2b', // Input background color
+      color: 'black', // White text for input
+      fontSize: '14px',
+      width: '136px',
+    },
+  }
+  const formatToUTCString = (dateString) => {
+    if (!dateString) return ''
+    return `${dateString}:00.000Z` // Keeps the entered time and adds `.000Z`
+  }
+
+  const handlePeriodChange = (e) => {
+    const value = e.target.value
+    setSelectedPeriod(value)
+    if (value === 'Custom') {
+      setShowCustomDates(true)
+    } else {
+      setShowCustomDates(false)
+    }
+  }
+  const handleApply = () => {
+    const formattedStartDate = formatToUTCString(startDate)
+    const formattedEndDate = formatToUTCString(endDate)
+    // alert(`Start Date: ${formattedStartDate}, End Date: ${formattedEndDate}`)
+    console.log(`Start Date: ${formattedStartDate}, End Date: ${formattedEndDate}`)
+    fetchData(formattedStartDate, formattedEndDate, selectedPeriod)
+  }
+
   const handleImageClick = (image) => {
     setSelectedImage(image)
     setOpen(true)
