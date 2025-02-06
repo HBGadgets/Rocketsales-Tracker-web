@@ -80,7 +80,102 @@ const SalesmanLeaveRequest = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25)
   const columns = COLUMNS()
   const [sortedData, setSortedData] = useState([])
-  const handleEditModalClose = () => {
+   const [startDate, setStartDate] = useState('')
+    const [endDate, setEndDate] = useState('')
+    const [selectedPeriod, setSelectedPeriod] = useState('all')
+    const [showCustomDates, setShowCustomDates] = useState(false)
+  
+    const styles = {
+      container: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        gap: '17px',
+      },
+      inputGroup: {
+        marginRight: '10px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      label: {
+        display: 'block',
+        fontWeight: 'bold',
+        fontSize: '14px',
+      },
+      input: {
+        width: '120px',
+        padding: '8px',
+        fontSize: '14px',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+      },
+      select: {
+        padding: '8px',
+        fontSize: '14px',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+      },
+      button: {
+        padding: '7px 15px',
+        fontSize: '16px',
+        backgroundColor: '#4CAF50',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+      },
+      inputGroup: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+        // marginBottom: '16px',
+        position: 'relative',
+      },
+      label: {
+        fontSize: '12px',
+        fontWeight: '500',
+        color: 'grey', // White color for the label
+        position: 'absolute',
+        top: '-10px',
+        left: '12px',
+        background: '#f3f4f7', // Match background color
+        padding: '0 4px',
+        zIndex: 1,
+      },
+      input: {
+        padding: '8px 2px',
+        borderRadius: '6px',
+        border: '1px solid #444', // Border color matching the dark theme
+        // background: '#2b2b2b', // Input background color
+        color: 'black', // White text for input
+        fontSize: '14px',
+        width: '136px',
+      },
+    }
+    const formatToUTCString = (dateString) => {
+      if (!dateString) return ''
+      return `${dateString}:00.000Z` // Keeps the entered time and adds `.000Z`
+    }
+  
+    const handlePeriodChange = (e) => {
+      const value = e.target.value
+      setSelectedPeriod(value)
+      if (value === 'Custom') {
+        setShowCustomDates(true)
+      } else {
+        setShowCustomDates(false)
+      }
+    }
+    const handleApply = () => {
+      const formattedStartDate = formatToUTCString(startDate)
+      const formattedEndDate = formatToUTCString(endDate)
+      // alert(`Start Date: ${formattedStartDate}, End Date: ${formattedEndDate}`)
+      console.log(`Start Date: ${formattedStartDate}, End Date: ${formattedEndDate}`)
+      fetchData(formattedStartDate, formattedEndDate, selectedPeriod)
+    }
+    const handleEditModalClose = () => {
     setFormData({})
     setEditModalOpen(false)
   }
@@ -107,10 +202,21 @@ const SalesmanLeaveRequest = () => {
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/leaverequest`;
-
     console.log("Token:", accessToken);
+    let url
+    console.log(selectedPeriod)
 
+    if (selectedPeriod && selectedPeriod !== 'Custom') {
+      // If the period is not custom, pass the period as a filter
+      url = `https://rocketsales-server.onrender.com/api/leaverequest?filter=${selectedPeriod}`
+    } else if (startDate && endDate) {
+      // For "Custom" date range, pass the startDate and endDate as query params
+      url = `https://rocketsales-server.onrender.com/api/leaverequest?startDate=${startDate}&endDate=${endDate}`
+    } else {
+      // If "Custom" is selected but no dates are provided, fetch all expenses
+      url = `https://rocketsales-server.onrender.com/api/leaverequest`
+    }
+    console.log("myurl",url);
     try {
         const response = await axios.get(url, {
             headers: {
@@ -335,22 +441,85 @@ const rejectButtonStyle = {
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
       <div className="d-flex justify-content-between mb-2">
-        <div>
-          <h2
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              color: '#4c637c',
-              fontWeight: '600',
-              fontFamily: "'Poppins', sans-serif",
-            }}
-          >
-            <FaClock  style={{ fontSize: '24px', color: '#4c637c' }} />
-            Salesman Leave Request
-          </h2>
-        </div>
-
+      <div style={{ display: 'flex', gap: selectedPeriod !== 'Custom' ? '0px' : '42px' }}>
+               <div>
+                 <h5
+                   style={{
+                     display: 'flex',
+                     alignItems: 'center',
+                     gap: '10px',
+                     color: '#4c637c',
+                     fontWeight: '600',
+                     fontFamily: "'Poppins', sans-serif",
+                   }}
+                 >
+                   <FaClock style={{ fontSize: '58px', color: '#4c637c' }} />
+                   Salesman Leave Request
+                 </h5>
+               </div>
+     
+               <div
+                 style={{
+                   ...styles.container,
+                   justifyContent: selectedPeriod !== 'Custom' ? 'center' : 'space-between',
+                   gap: selectedPeriod !== 'Custom' ? '10px' : '0px',
+                 }}
+               >
+                 <div style={styles.inputGroup}>
+                   <label htmlFor="period" style={styles.label}>
+                     Period:
+                   </label>
+                   <select
+                     id="period"
+                     value={selectedPeriod}
+                     onChange={handlePeriodChange}
+                     style={styles.select}
+                   >
+                     <option value="today">Today</option>
+                     <option value="yesterday">Yesterday</option>
+                     <option value="thisWeek">This Week</option>
+                     <option value="lastWeek">Previous Week</option>
+                     <option value="thisMonth">This Month</option>
+                     <option value="preMonth">Previous Month</option>
+                     <option value="Custom">Custom</option>
+                   </select>
+                 </div>
+     
+                 {showCustomDates && (
+                   <>
+                     <div style={styles.inputGroup}>
+                       <label htmlFor="startDate" style={styles.label}>
+                         From
+                       </label>
+                       <input
+                         type="datetime-local"
+                         id="startDate"
+                         value={startDate}
+                         onChange={(e) => setStartDate(e.target.value)}
+                         style={styles.input}
+                       />
+                     </div>
+     
+                     <div style={styles.inputGroup}>
+                       <label htmlFor="endDate" style={styles.label}>
+                         To
+                       </label>
+                       <input
+                         type="datetime-local"
+                         id="endDate"
+                         value={endDate}
+                         onChange={(e) => setEndDate(e.target.value)}
+                         style={styles.input}
+                       />
+                     </div>
+                   </>
+                 )}
+     
+                 <button onClick={handleApply} style={styles.button}>
+                   Apply
+                 </button>
+               </div>
+             </div>
 
 <div className="d-flex align-items-center">
  
