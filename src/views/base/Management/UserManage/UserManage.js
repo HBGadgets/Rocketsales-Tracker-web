@@ -1034,7 +1034,7 @@ const filteredBranches = formData.companyId
           </>
 
           ): null}
-          {COLUMNS().slice(0, -3).map((column) => (
+          {COLUMNS().slice(0, -4).map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}
@@ -1411,7 +1411,7 @@ const filteredBranches = formData.companyId
 
           ): null}
          
-          {COLUMNS().slice(0, -3).map((column) => (
+          {COLUMNS().slice(0, -4).map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}

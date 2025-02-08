@@ -1067,7 +1067,7 @@ const handleEditGroup = async (item) => {
   />
 </FormControl>
 
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+{/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
   <Autocomplete
     id="searchable-supervisor-select"
     options={
@@ -1116,7 +1116,7 @@ const handleEditGroup = async (item) => {
     )}
     disabled={!formData.branchId} // Disable if branch is not selected
   />
-</FormControl>
+</FormControl> */}
 {/* Salesman Dropdown */}
 {/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
   <Autocomplete
@@ -1211,7 +1211,7 @@ const handleEditGroup = async (item) => {
   />
 </FormControl>
 
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+{/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
   <Autocomplete
     id="searchable-supervisor-select"
     options={
@@ -1250,7 +1250,7 @@ const handleEditGroup = async (item) => {
       />
     )}
   />
-</FormControl>
+</FormControl> */}
 
 
 
@@ -1258,7 +1258,7 @@ const handleEditGroup = async (item) => {
           ) :role==3?(
             <>
          
-            <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+            {/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
 <Autocomplete
   id="searchable-supervisor-select"
   options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
@@ -1291,7 +1291,7 @@ const handleEditGroup = async (item) => {
     />
   )}
 />
-</FormControl>
+</FormControl> */}
           </>
 
           ): null}
@@ -1429,7 +1429,7 @@ const handleEditGroup = async (item) => {
   />
 </FormControl>
 
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+{/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
   <Autocomplete
     id="searchable-supervisor-select"
     options={
@@ -1477,7 +1477,7 @@ const handleEditGroup = async (item) => {
     )}
     disabled={!formData.branchId} // Disable if branch is not selected
   />
-</FormControl>
+</FormControl> */}
             </>
           ) : role == 2 ? (
             <>
@@ -1518,7 +1518,7 @@ const handleEditGroup = async (item) => {
   />
 </FormControl>
 
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+{/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
   <Autocomplete
     id="searchable-supervisor-select"
     options={
@@ -1557,13 +1557,13 @@ const handleEditGroup = async (item) => {
       />
     )}
   />
-</FormControl>
+</FormControl> */}
 
             </>
           ) :role==3?(
             <>
          
-            <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+            {/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
 <Autocomplete
   id="searchable-supervisor-select"
   options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
@@ -1596,7 +1596,7 @@ const handleEditGroup = async (item) => {
     />
   )}
 />
-</FormControl>
+</FormControl> */}
           </>
 
           ): null}

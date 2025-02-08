@@ -67,7 +67,7 @@
   import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
   import RoomIcon from '@mui/icons-material/Room';
   import { Checkbox, FormControlLabel } from '@mui/material';
-
+  import VisibilityIcon from '@mui/icons-material/Visibility';
   const token = Cookies.get('token')
   // let role=null
   // if(token){
@@ -664,7 +664,11 @@
       columns: COLUMNS(),
       data: filteredData,
       fileName: 'UserManage_data_report.pdf',
+      
     })
+   
+    
+    
 
     return (
       <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
@@ -809,7 +813,7 @@
                 >
                   Tasks
                 </CTableHeaderCell>
-                <CTableHeaderCell
+                {/* <CTableHeaderCell
                   className="text-center"
                   style={{
                     padding: '5px 12px', // Reduced padding for top and bottom
@@ -821,7 +825,7 @@
                   }}
                 >
                   Actions
-                </CTableHeaderCell>
+                </CTableHeaderCell> */}
               </CTableRow>
             </CTableHead>
 
@@ -850,7 +854,9 @@
                         backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd', // Grey for even rows, transparent for odd rows
                         transition: 'background-color 0.3s ease',
                         borderBottom: '1px solid #e0e0e0',
+                        
                       }}
+                      onClick={() => handleRowClick(item)}
                       hover
                     >
                       <CTableDataCell
@@ -900,19 +906,19 @@
                       >
                         <IconButton
                           aria-label="edit"
-                          onClick={() => handleEditGroup(item)}
+                          // onClick={() => handleEditGroup(item)}
                           className="icon-button icon-button-edit"
                         >
-                          <RiEdit2Fill className="icon-button-icon" />
+                          <VisibilityIcon className="icon-button-icon" />
                         </IconButton>
 
-                        <IconButton
+                        {/* <IconButton
                           aria-label="delete"
                           onClick={() => haqndleDeletesubmit(item)}
                           className="icon-button icon-button-delete"
                         >
                           <AiFillDelete className="icon-button-icon" />
-                        </IconButton>
+                        </IconButton> */}
                       </CTableDataCell>
                     </CTableRow>
                   ))

@@ -86,16 +86,16 @@ const createNav = () => {
           </div>
         ),
       },
-      {
-        component: CNavItem,
-        name: 'Branch Group',
-        to: '/Branch-Group',
-        icon: (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaLayerGroup style={{ marginRight: '15px', fontSize: '20px' }} />
-          </div>
-        ),
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Branch Group',
+      //   to: '/Branch-Group',
+      //   icon: (
+      //     <div style={{ display: 'flex', alignItems: 'center' }}>
+      //       <FaLayerGroup style={{ marginRight: '15px', fontSize: '20px' }} />
+      //     </div>
+      //   ),
+      // },
       {
         component: CNavItem,
         name: 'Branches',
@@ -468,16 +468,16 @@ const createNav = () => {
           ),
         },
       
-        {
-          component: CNavItem,
-          name: 'Chat Bot',
-          to: '/chatBot',
-          icon: (
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <BiMoney style={{ marginRight: '15px', fontSize: '25px' }} />
-            </div>
-          ),
-        }, 
+        // {
+        //   component: CNavItem,
+        //   name: 'Chat Bot',
+        //   to: '/chatBot',
+        //   icon: (
+        //     <div style={{ display: 'flex', alignItems: 'center' }}>
+        //       <BiMoney style={{ marginRight: '15px', fontSize: '25px' }} />
+        //     </div>
+        //   ),
+        // }, 
         
         
       ],
