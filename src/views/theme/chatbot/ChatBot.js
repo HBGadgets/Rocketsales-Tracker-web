@@ -1,131 +1,111 @@
-import { useState,useEffect } from 'react'
-import './ChatBot.css'
+import { useState, useEffect, useRef } from 'react';
+import './ChatBot.css';
 import jwt_decode from "jwt-decode";
 import Cookies from 'js-cookie';
-
 import io from "socket.io-client";
 import axios from 'axios';
 
-
-const socket = io(import.meta.env.VITE_SERVER_URL); 
-
-
+const socket = io(import.meta.env.VITE_SERVER_URL);
 
 export default function Component() {
-
-
   const accessToken = Cookies.get('token');
   if (!accessToken) {
     throw new Error('Token is missing');
   }
 
   const decodedToken = jwt_decode(accessToken);
-
-    const userName = decodedToken.username;
-    const chatusername = decodedToken.chatusername;
-
+  const userName = decodedToken.username;
+  const chatusername = decodedToken.chatusername;
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [roomId, setRoomId] = useState("");
-  const [data, setData] = useState([])
-  const [loading, setLoading] = useState(true)
- 
-  const [selectedUsername, setSelectedUsername] = useState(null)
-  const[chatAdmin,setchatAdmin]=useState(null)
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedUsername, setSelectedUsername] = useState(null);
+  const [chatAdmin, setchatAdmin] = useState(null);
+  const [selectedUser, setNameofSelectedUser] = useState(null);
 
+  const messagesEndRef = useRef(null);
 
-  const [newMessage, setNewMessage] = useState('')
+  useEffect(() => {
+    if (userName && (selectedUsername || chatAdmin)) {
+      const room = generateRoomId(userName, selectedUsername || chatAdmin);
+      setRoomId(room);
 
-              // new code start from here
+      socket.emit("joinRoom", {
+        room,
+        username: userName
+      });
+    }
+  }, [userName, chatAdmin, selectedUsername]);
 
-              useEffect(() => {        
-                if (userName && (selectedUsername || chatAdmin)) { 
-                    const room = generateRoomId(userName, selectedUsername || chatAdmin);
-                    setRoomId(room);
-                    
-                    socket.emit("joinRoom", { 
-                        room, 
-                        username: userName 
-                    });
-                }
-            }, [userName, chatAdmin, selectedUsername]); 
-              useEffect(() => {
+  useEffect(() => {
+    const handleReceiveMessage = (data) => {
+      setMessages((prevMessages) => [...prevMessages, data]);
+    };
 
-                // Create a function to handle incoming messages
-                const handleReceiveMessage = (data) => {
-                  setMessages((prevMessages) => [...prevMessages, data]);
-                };
-              
-               
-                socket.on("receiveMessage", handleReceiveMessage);
-              
-                
-                return () => {
-                  socket.off("receiveMessage", handleReceiveMessage);
-                };
-              }, []); 
-              
-          
+    socket.on("receiveMessage", handleReceiveMessage);
 
-              const generateRoomId = (user1, user2) => {
-                return [user1, user2].sort().join("_");
-              };
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+    };
+  }, []);
 
-              const handleSendMessage = () => {
-                if (message.trim()) {
-                  socket.emit("sendMessage", { room: roomId, message, sender: userName,receiver:chatAdmin || selectedUsername });
-                  setMessage(""); // Clear the input
-                }
-              };
+  const generateRoomId = (user1, user2) => {
+    return [user1, user2].sort().join("_");
+  };
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-               const fetchData = async () => {
-                const accessToken = Cookies.get('token')
-                console.log('accessToken:', accessToken)
-                const url = `${import.meta.env.VITE_SERVER_URL}/api/chatboxuser`
-          
-                try {
-                  const response = await axios.get(url, {
-                    headers: {
-                      Authorization: 'Bearer ' + accessToken,
-                    },
-                  })
-                  setLoading(false)
-                  console.log('Full Response Data:', response.data)
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      socket.emit("sendMessage", { room: roomId, message, sender: userName, receiver: chatAdmin || selectedUsername });
+      setMessage(""); // Clear the input
+    }
+  };
 
-                  setData(response.data);
-          
-                } catch (error) {
-                  setLoading(false)
-                  console.error('Error fetching data:', error)
-                  throw error 
-                }
-              }
-          
- useEffect(() => {
-      setLoading(true)
-     
-      fetchData() 
-    }, [])
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]); // This will trigger whenever `messages` changes
 
+  const fetchData = async () => {
+    const accessToken = Cookies.get('token');
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/chatboxuser`;
 
-  const handleSalesmanClick = (username) => {
-   setSelectedUsername(username);
-         setMessages([]);
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: 'Bearer ' + accessToken,
+        },
+      });
+      setLoading(false);
+      setData(response.data);
+    } catch (error) {
+      setLoading(false);
+      console.error('Error fetching data:', error);
+      throw error;
+    }
+  };
 
-     };
+  useEffect(() => {
+    setLoading(true);
+    fetchData();
+  }, []);
+
+  const handleSalesmanClick = (username,name) => {
+    setSelectedUsername(username);
+    setNameofSelectedUser(name);
+    setMessages([]);
+  };
 
   const handleAdminClick = (username) => {
     setSelectedUsername(null);
     setchatAdmin(username);
     setMessages([]);
-    
   };
-  
-
-
-                   // new code end here
 
   return (
     <>
@@ -150,112 +130,115 @@ export default function Component() {
                 className="overflow-y-scroll"
                 style={{ height: '70vh' }}
               >
-              <div>
-              <a href="#!" className="d-flex justify-content-between text-decoration-none">
-                <div className="d-flex flex-row">
-                  <div>
-                    <img
-                      src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                      alt="avatar"
-                      className="d-flex align-self-center me-3"
-                      width={60}
-                    />
-                    <span className="badge bg-success badge-dot" />
-                  </div>
-                  <div className="pt-1">
-                    <p className="fw-bold mb-0" onClick={() => handleAdminClick(chatusername)}>Admin</p>
-                    <p className="small text-muted">Hello, Are you there?</p>
-                  </div>
+                <div>
+                  <a href="#!" className="d-flex justify-content-between text-decoration-none">
+                    <div className="d-flex flex-row">
+                      <div>
+                        <img
+                          src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
+                          alt="avatar"
+                          className="d-flex align-self-center me-3"
+                          width={60}
+                        />
+                        <span className="badge bg-success badge-dot" />
+                      </div>
+                      <div className="pt-1">
+                        <p className="fw-bold mb-0" onClick={() => handleAdminClick(chatusername)}>Admin</p>
+                      </div>
+                    </div>
+                  </a>
                 </div>
-                {/* <div className="pt-1">
-                  <p className="small text-muted mb-1">Just now</p>
-                  <span className="badge bg-danger rounded-pill float-end">3</span>
-                </div> */}
-              </a>
-              </div>
 
-             {data.map((user)=>( <ul className="list-unstyled mb-0">
-              <li key={user.id}  onClick={() => handleSalesmanClick(user.username)}  className="p-2 border-bottom">
-              <a href="#!" className="d-flex justify-content-between text-decoration-none">
-                <div className="d-flex flex-row">
-                  <div>
-                    <img
-                      src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                      alt="avatar"
-                      className="d-flex align-self-center me-3"
-                      width={60}
-                    />
-                    <span className="badge bg-success badge-dot" />
-                  </div>
-                  <div className="pt-1">
-                    <p className="fw-bold mb-0">{user.companyName || user.branchName ||user.supervisorName ||user.salesmanName}</p>
-                    <p className="small text-muted">Hello, Are you there?</p>
-                  </div>
-                </div>
-                {/* <div className="pt-1">
-                  <p className="small text-muted mb-1">Just now</p>
-                  <span className="badge bg-danger rounded-pill float-end">3</span>
-                </div> */}
-              </a>
-            </li>
-      
-                </ul>))}
+                {data.map((user) => (
+                  <ul className="list-unstyled mb-0">
+                    <li key={user.id} onClick={() => handleSalesmanClick(user.username,user.companyName || user.branchName || user.supervisorName || user.salesmanName)} className="p-2 border-bottom">
+                      <a href="#!" className="d-flex justify-content-between text-decoration-none">
+                        <div className="d-flex flex-row">
+                          <div>
+                            <img
+                              src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
+                              alt="avatar"
+                              className="d-flex align-self-center me-3"
+                              width={60}
+                            />
+                            <span className="badge bg-success badge-dot" />
+                          </div>
+                          <div className="pt-1">
+                            <p className="fw-bold mb-0">{user.companyName || user.branchName || user.supervisorName || user.salesmanName}</p>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                  </ul>
+                ))}
               </div>
             </div>
           </div>
 
-
-          
-          <div className="col-md-6 col-lg-7 col-xl-8">
-            {selectedUsername ||chatAdmin ?<div className="flex flex-column ">
+        <div
+            className="col-md-6 col-lg-7 col-xl-8"
+            style={{ height: '70vh' }} // Parent container with fixed height
+          >
+          {(selectedUsername || chatAdmin) && (
+            <div className="d-flex flex-column h-100">
+              {/* Chat header */}
               <div className="d-flex flex-row bg-body-tertiary p-3">
                 <img
                   src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
                   alt="avatar 1"
                   style={{ width: 45, height: '100%' }}
                 />
-                
                 <div>
-                  <p className="fw-bold p-2 ms-3 mb-1 ">{selectedUsername || "Admin"}</p>
+                  <p className="fw-bold p-2 ms-3 mb-1">
+                    {selectedUser || "Admin"}
+                  </p>
                 </div>
               </div>
-              <div>
-              {messages.map((msg, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              justifyContent: msg.sender === userName ? "flex-end" : "flex-start", // Right for sender, left for receiver
-              width: "100%",
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: msg.sender === userName ? "#007bff" : "#ccc",
-                color: msg.sender === "me" ? "white" : "black",
-                padding: "10px",
-                borderRadius: "10px",
-                maxWidth: "60%",
-                margin: "5px 0",
-                textAlign: "left",
-              }}
-            >
-              {msg.message} <br /> 
-              <div className='d-flex justify-content-between gap-3'>
-              <p>{msg.sender} </p>
-              {new Date(msg.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+
+              {/* Messages container */}
+              <div className="flex-grow-1 overflow-auto">
+                {messages.map((msg, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: "flex",
+                      justifyContent: msg.sender === userName ? "flex-end" : "flex-start",
+                      width: "100%",
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: msg.sender === userName ? "#007bff" : "#ccc",
+                        color: msg.sender === "me" ? "white" : "black",
+                        padding: "10px",
+                        borderRadius: "10px",
+                        maxWidth: "60%",
+                        margin: "5px 0",
+                        textAlign: "left",
+                      }}
+                    >
+                      {msg.message}
+                      <br />
+                      <div className="d-flex justify-content-between gap-3">
+                        {/* <p>{msg.sender}</p> */}
+                        {/* {new Date(msg.createdAt).toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })} */}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} /> {/* Scroll ref */}
               </div>
 
-            </div>
-          </div>
-        ))}
-           </div>
-
+              {/* Input area (always at the bottom) */}
               <div className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2">
                 <img
                   src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
                   alt="avatar 3"
-                  style={{ width: 40, height: '100%' }}
+                  style={{ width: 40, height: "100%" }}
                 />
                 <input
                   type="text"
@@ -271,23 +254,13 @@ export default function Component() {
                 >
                   Send
                 </button>
-
-                <a className="ms-1 text-muted" href="#!">
-                  <i className="fas fa-paperclip" />
-                </a>
-                <a className="ms-3 text-muted" href="#!">
-                  <i className="fas fa-smile" />
-                </a>
-                <a className="ms-3" href="#!">
-                  <i className="fas fa-paper-plane" />
-                </a>
               </div>
-            </div>:""}
-          </div>
+            </div>
+          )}
+        </div>
+
         </div>
       </div>
     </>
-  )
-
-  
+  );
 }
