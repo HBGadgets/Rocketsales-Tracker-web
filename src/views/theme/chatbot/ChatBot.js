@@ -142,6 +142,8 @@ const [loadingChatUser, setLoadingChatUser] = useState(true);
       setLoading(true);
       setLoadingPreMessage(true);
       fetchPreMessage();
+    setMessages([]);
+
     }
   }, [userName, roomId]); 
   
@@ -150,7 +152,7 @@ const [loadingChatUser, setLoadingChatUser] = useState(true);
     setNameofSelectedUser(name);
     setNameofSelectedUserImg(Img);
 
-    setMessages([]);
+    // setMessages([]);
 
   };
 
