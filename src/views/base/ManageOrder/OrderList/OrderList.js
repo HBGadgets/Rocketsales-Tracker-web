@@ -667,7 +667,7 @@ const OrderList = () => {
               }}
             >
               <ShoppingCart style={{ fontSize: '24px', color: '#4c637c' }} />
-              Pending Orders
+              Orders
             </h2>
           </div>
 
@@ -690,6 +690,7 @@ const OrderList = () => {
                 <option value="preMonth">Previous Month</option>
                 <option value="Custom">Custom</option>
               </select>
+              
             </div>
 
             {showCustomDates && (
@@ -721,7 +722,7 @@ const OrderList = () => {
                 </div>
               </>
             )}
-
+            
             <button onClick={handleApply} style={styles.button}>
               Apply
             </button>

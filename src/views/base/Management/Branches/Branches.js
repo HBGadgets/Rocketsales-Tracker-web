@@ -391,8 +391,12 @@ const handleSearchChange = (e) => {
       }
     } catch (error) {
       console.error('Error:', error);
-      toast.error('An error occurred');
-      throw error.response ? error.response.data : new Error('An error occurred');
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   };
   
@@ -421,14 +425,20 @@ const handleSearchChange = (e) => {
       )
 
       if (response.status === 200) {
-        toast.success('group is edited successfully')
+        toast.success('Branch is edited successfully')
         fetchData()
         setFormData({ name: '' })
         setEditModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -808,6 +818,8 @@ const exportToPDF = PDFExporter({
             label="Company Name"
             variant="outlined"
             name="companyId"
+            required
+            placeholder="Select Company" // Dynamic placeholder
             InputProps={{
               ...params.InputProps,
               startAdornment: (
@@ -815,6 +827,13 @@ const exportToPDF = PDFExporter({
                   <BusinessIcon />
                 </InputAdornment>
               ),
+            }}
+            sx={{
+              "& .MuiFormLabel-asterisk": {
+                color: "red",
+                fontSize: "1.4rem",
+                // fontWeight: "bold",
+              },
             }}
           />
         )}
@@ -830,16 +849,25 @@ const exportToPDF = PDFExporter({
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''}
+              required={column.accessor === 'branchName'||column.accessor === 'username' || column.accessor === 'password'}
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
               // Remove required attribute
+              placeholder={`Enter ${column.Header}`} // Dynamic placeholder
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}
@@ -910,6 +938,7 @@ const exportToPDF = PDFExporter({
             label="Company Name"
             variant="outlined"
             name="companyId"
+            required
             InputProps={{
               ...params.InputProps,
               startAdornment: (
@@ -917,6 +946,13 @@ const exportToPDF = PDFExporter({
                   <BusinessIcon />
                 </InputAdornment>
               ),
+            }}
+            sx={{
+              "& .MuiFormLabel-asterisk": {
+                color: "red",
+                fontSize: "1.4rem",
+                // fontWeight: "bold",
+              },
             }}
           />
         )}
@@ -931,6 +967,7 @@ const exportToPDF = PDFExporter({
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''} // Pre-fill with existing data
+              required={column.accessor === 'branchName'||column.accessor === 'username' || column.accessor === 'password'}              
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -941,6 +978,13 @@ const exportToPDF = PDFExporter({
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}

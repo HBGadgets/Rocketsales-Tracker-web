@@ -322,8 +322,14 @@ const Supervisor = () => {
         setAddModalOpen(false) // Close modal
       }
     } catch (error) {
-      toast.error('An error occurred')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occurred')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -358,8 +364,14 @@ const Supervisor = () => {
         setEditModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -397,7 +409,7 @@ const Supervisor = () => {
       })
 
       if (response.status === 200) {
-        toast.success('Group deleted successfully')
+        toast.success('Supervisor deleted successfully')
         fetchData()
       }
     } catch (error) {
@@ -726,6 +738,8 @@ const Supervisor = () => {
                             label="Company Name"
                             variant="outlined"
                             name="companyId"
+                            required
+                            placeholder="Select Company" 
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -733,6 +747,13 @@ const Supervisor = () => {
                                   <BusinessIcon />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -762,6 +783,7 @@ const Supervisor = () => {
                             label="Branch Name"
                             variant="outlined"
                             name="branchId"
+                            required
                             error={branchError} // Show error state
                             helperText={
                               branchError && formData.companyId
@@ -778,6 +800,13 @@ const Supervisor = () => {
                                   <FiGitBranch />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -815,6 +844,8 @@ const Supervisor = () => {
                             label="Branch Name"
                             variant="outlined"
                             name="branchId"
+                            required
+
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -822,6 +853,13 @@ const Supervisor = () => {
                                   <FiGitBranch />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -837,6 +875,7 @@ const Supervisor = () => {
                       label={column.Header}
                       name={column.accessor}
                       value={formData[column.accessor] || ''}
+                      required={column.accessor === 'supervisorName'||column.accessor === 'username' || column.accessor === 'password'}
                       onChange={(e) =>
                         setFormData({ ...formData, [column.accessor]: e.target.value })
                       }
@@ -844,6 +883,13 @@ const Supervisor = () => {
                         startAdornment: (
                           <InputAdornment position="start">{column.icon}</InputAdornment>
                         ),
+                      }}
+                      sx={{
+                        "& .MuiFormLabel-asterisk": {
+                          color: "red",
+                          fontSize: "1.4rem",
+                          // fontWeight: "bold",
+                        },
                       }}
                     />
                   ))}
@@ -968,6 +1014,7 @@ const Supervisor = () => {
                             label="Company Name"
                             variant="outlined"
                             name="companyId"
+                            required
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -975,6 +1022,13 @@ const Supervisor = () => {
                                   <BusinessIcon />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -1004,6 +1058,7 @@ const Supervisor = () => {
                             label="Branch Name"
                             variant="outlined"
                             name="branchId"
+                            required
                             error={branchError} // Show error state
                             helperText={
                               branchError && formData.companyId
@@ -1020,6 +1075,13 @@ const Supervisor = () => {
                                   <FiGitBranch />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -1055,6 +1117,7 @@ const Supervisor = () => {
                             label="Branch Name"
                             variant="outlined"
                             name="branchId"
+                            required
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -1062,6 +1125,13 @@ const Supervisor = () => {
                                   <FiGitBranch />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -1079,6 +1149,7 @@ const Supervisor = () => {
                       label={column.Header}
                       name={column.accessor}
                       value={formData[column.accessor] || ''}
+                      required={column.accessor === 'supervisorName'||column.accessor === 'username' || column.accessor === 'password'}
                       onChange={(e) =>
                         setFormData({ ...formData, [column.accessor]: e.target.value })
                       }
@@ -1086,6 +1157,13 @@ const Supervisor = () => {
                         startAdornment: (
                           <InputAdornment position="start">{column.icon}</InputAdornment>
                         ),
+                      }}
+                      sx={{
+                        "& .MuiFormLabel-asterisk": {
+                          color: "red",
+                          fontSize: "1.4rem",
+                          // fontWeight: "bold",
+                        },
                       }}
                     />
                   ))}
