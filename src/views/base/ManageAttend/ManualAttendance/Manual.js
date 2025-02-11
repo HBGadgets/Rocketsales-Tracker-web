@@ -320,7 +320,8 @@ import { COLUMNS } from './columns'
 import { StyledTablePagination } from '../../../../views/PaginationCssFile/TablePaginationStyles'
 // import { FaBriefcase   } from 'react-icons/fa';
 import { BsBuildingsFill } from 'react-icons/bs'
-import '../../ReusablecodeforTable/styles.css';
+// import '../../ReusablecodeforTable/styles.css';
+import '../../ReusablecodeforTable/Styles.css'
 import ExcelJS from 'exceljs';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
@@ -370,7 +371,7 @@ const Manual = () => {
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/manualattendence`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/manualattendence`;
 
     console.log("Token:", accessToken);
 
@@ -513,7 +514,7 @@ console.log("MYAA",absentData)
     const accessToken = Cookies.get('token');
 
     const response = await axios.post(
-      'https://rocketsales-server.onrender.com/api/attendence',
+      '${import.meta.env.VITE_SERVER_URL}/api/attendence',
       absentData,
       {
         headers: {
@@ -554,7 +555,7 @@ console.log("MYAA",absentData)
     const accessToken = Cookies.get('token');
 
     const response = await axios.post(
-      'https://rocketsales-server.onrender.com/api/attendence',
+      '${import.meta.env.VITE_SERVER_URL}/api/attendence',
       absentData,
       {
         headers: {

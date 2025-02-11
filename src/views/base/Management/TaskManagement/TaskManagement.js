@@ -616,10 +616,12 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
         throw error // Re-throw the error for further handling if needed
       }
     }
+   
     useEffect(() => {
       fetchCompany()
       fetchBranch()
       fetchsupervisor()
+      
     }, [])
     // Format the date into DD-MM-YYYY format
     function formatDate(date) {

@@ -107,7 +107,8 @@ const Company = () => {
   // ##################### getting data  ###################
   const fetchData = async () => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/company`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`;
+  console.log("to",accessToken)
     try {
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -214,7 +215,7 @@ const Company = () => {
     console.log(formData)
     try {
       const accessToken = Cookies.get('token')
-      const response = await axios.post(`https://rocketsales-server.onrender.com/api/company`, formData, {
+      const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/company`, formData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -251,7 +252,7 @@ const Company = () => {
     try {
       const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/company/${formData._id}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/company/${formData._id}`,
         formData,
         {
           headers: {
@@ -298,7 +299,7 @@ const Company = () => {
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        url: `https://rocketsales-server.onrender.com/api/company/${item._id}`,
+        url: `${import.meta.env.VITE_SERVER_URL}/api/company/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',

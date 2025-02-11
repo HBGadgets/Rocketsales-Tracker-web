@@ -203,13 +203,13 @@ const DeniedRequest = () => {
   
     if (selectedPeriod && selectedPeriod !== 'Custom') {
       // If the period is not custom, pass the period as a filter
-      url = `https://rocketsales-server.onrender.com/api/leaverequest?status=Reject&filter=${selectedPeriod}`;
+      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?status=Reject&filter=${selectedPeriod}`;
     } else if (startDate && endDate) {
       // For "Custom" date range, pass the startDate and endDate as query params
-      url = `https://rocketsales-server.onrender.com/api/leaverequest?status=Reject&startDate=${startDate}&endDate=${endDate}`;
+      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?status=Reject&startDate=${startDate}&endDate=${endDate}`;
     } else {
       // If "Custom" is selected but no dates are provided, just fetch all data
-      url = `https://rocketsales-server.onrender.com/api/leaverequest?status=Reject`;
+      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?status=Reject`;
     }
   
     console.log('my url', url);

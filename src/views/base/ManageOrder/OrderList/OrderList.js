@@ -18,6 +18,7 @@ import {
   Select,
   MenuItem,
   InputAdornment,
+  Grid,
 } from '@mui/material'
 import { RiEdit2Fill } from 'react-icons/ri'
 import { AiFillDelete } from 'react-icons/ai'
@@ -34,9 +35,7 @@ import {
   CTableHeaderCell,
   CTableRow,
 } from '@coreui/react'
-import {
-    Autocomplete,
-  } from '@mui/material'
+import { Autocomplete } from '@mui/material'
 import TablePagination from '@mui/material/TablePagination'
 import { useNavigate } from 'react-router-dom'
 import Loader from '../../../../components/Loader/Loader'
@@ -60,25 +59,29 @@ import { StyledTablePagination } from '../../../../views/PaginationCssFile/Table
 import { BsFillPersonCheckFill } from 'react-icons/bs'
 import '../../ReusablecodeforTable/styles.css'
 import ExcelJS from 'exceljs'
-import jwt_decode from 'jwt-decode';
-import BusinessIcon from '@mui/icons-material/Business';
-import { FiUser } from "react-icons/fi";
-import { FiGitBranch } from 'react-icons/fi';
+import jwt_decode from 'jwt-decode'
+import BusinessIcon from '@mui/icons-material/Business'
+import { FiUser } from 'react-icons/fi'
+import { FiGitBranch } from 'react-icons/fi'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 // import { useNavigate } from 'react-router-dom';
-import { ShoppingCart } from '@mui/icons-material';
-import { IoShareSocialOutline } from "react-icons/io5";
+import { ShoppingCart } from '@mui/icons-material'
+import { IoShareSocialOutline } from 'react-icons/io5'
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import DeleteIcon from "@mui/icons-material/Delete";
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 const OrderList = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({
+    products: [{ productName: '', quantity: '', pricePerPiece: '' }],
+  })
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
-const [branchError, setBranchError] = useState(false)
+  const [branchError, setBranchError] = useState(false)
 
   const [pageCount, setPageCount] = useState()
   // const handleEditModalClose = () => setEditModalOpen(false)
@@ -91,16 +94,16 @@ const [branchError, setBranchError] = useState(false)
   const [sortedData, setSortedData] = useState([])
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-    const [BranchData, setBranchData] = useState([]);
+  const [BranchData, setBranchData] = useState([])
 
-  
   const [selectedPeriod, setSelectedPeriod] = useState('today')
   const [showCustomDates, setShowCustomDates] = useState(false)
-  const [role, setRole] = useState(null);
-    const [companyData, setCompanyData] = useState([]);
-    const [SupervisorData, setSupervisorData] = useState([]);
-    const [SalesmanData, setSalesmanData] = useState([]);
-    const [expandedRows, setExpandedRows] = useState([]);  
+  const [role, setRole] = useState(null)
+  const [companyData, setCompanyData] = useState([])
+  const [SupervisorData, setSupervisorData] = useState([])
+  const [SalesmanData, setSalesmanData] = useState([])
+  const [ProductData, setProductData] = useState([])   
+   const [expandedRows, setExpandedRows] = useState([]);  
     const toggleRowExpansion = (id) => {
       setExpandedRows(prev => 
         prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
@@ -117,7 +120,7 @@ const [branchError, setBranchError] = useState(false)
     try {
       const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/order/${formData._id}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/order/${formData._id}`,
         formData,
         {
           headers: {
@@ -187,22 +190,22 @@ const [branchError, setBranchError] = useState(false)
     },
   }
   useEffect(() => {
-      const fetchRole = () => {
-        const token = Cookies.get("token");
-        if (token) {
-          const decodedToken = jwt_decode(token);
-          setRole(decodedToken.role);
-        } else {
-          setRole(null);
-        }
-      };
-    
-      fetchRole(); // Call the function to fetch role
-    }, []); 
-    const filteredBranches = formData.companyId
-? BranchData.filter((branch) => branch.companyId._id === formData.companyId)
-: []
-const handleEditGroup = async (item) => {
+    const fetchRole = () => {
+      const token = Cookies.get('token')
+      if (token) {
+        const decodedToken = jwt_decode(token)
+        setRole(decodedToken.role)
+      } else {
+        setRole(null)
+      }
+    }
+
+    fetchRole() // Call the function to fetch role
+  }, [])
+  const filteredBranches = formData.companyId
+    ? BranchData.filter((branch) => branch.companyId._id === formData.companyId)
+    : []
+  const handleEditGroup = async (item) => {
     console.log(item)
     setEditModalOpen(true)
     setFormData({ ...item })
@@ -213,51 +216,47 @@ const handleEditGroup = async (item) => {
     setAddModalOpen(false)
   }
   const handleAddSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     try {
-      const accessToken = Cookies.get('token');
+      const accessToken = Cookies.get('token')
       if (!accessToken) {
-        throw new Error('Token is missing');
+        throw new Error('Token is missing')
       }
-  
+
       // Decode the token to get role and other details
-      const decodedToken = jwt_decode(accessToken);
-  
+      const decodedToken = jwt_decode(accessToken)
+
       // Determine the user's role and update formData accordingly
       if (decodedToken.role === 2) {
-        formData.companyId = decodedToken.id; // Use companyId from the token
+        formData.companyId = decodedToken.id // Use companyId from the token
       } else if (decodedToken.role === 3) {
-        formData.companyId = decodedToken.companyId; // Use companyId from the token
-        formData.branchId = decodedToken.id; // Use branchId from the token
+        formData.companyId = decodedToken.companyId // Use companyId from the token
+        formData.branchId = decodedToken.id // Use branchId from the token
       } else if (decodedToken.role === 4) {
-        formData.supervisorId = decodedToken.id; // Use supervisorId from the token
-        formData.companyId = decodedToken.companyId; // Use companyId from the token
-        formData.branchId = decodedToken.branchId; // Use branchId from the token
+        formData.supervisorId = decodedToken.id // Use supervisorId from the token
+        formData.companyId = decodedToken.companyId // Use companyId from the token
+        formData.branchId = decodedToken.branchId // Use branchId from the token
       }
-  
+
       // Perform the POST request
-      const response = await axios.post(
-        `https://rocketsales-server.onrender.com/api/order`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-  
+      const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/order`, formData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
       if (response.status === 201) {
-        toast.success('Order is created successfully');
-        fetchData(); // Refresh data
-        setFormData({ name: '' }); // Reset form data
-        setAddModalOpen(false); // Close modal
+        toast.success('Order is created successfully')
+        fetchData() // Refresh data
+        setFormData({ name: '' }) // Reset form data
+        setAddModalOpen(false) // Close modal
       }
     } catch (error) {
-      toast.error('An error occurred');
-      throw error.response ? error.response.data : new Error('An error occurred');
+      toast.error('An error occurred')
+      throw error.response ? error.response.data : new Error('An error occurred')
     }
-  };
+  }
   const formatToUTCString = (dateString) => {
     if (!dateString) return ''
     return `${dateString}:00.000Z` // Keeps the entered time and adds `.000Z`
@@ -287,7 +286,7 @@ const handleEditGroup = async (item) => {
     borderRadius: '10px',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: '35%',
+    width: '40%',
     maxHeight: '90vh',
     bgcolor: 'background.paper',
     boxShadow: 24,
@@ -306,13 +305,13 @@ const handleEditGroup = async (item) => {
     console.log(selectedPeriod)
     if (selectedPeriod && selectedPeriod !== 'Custom') {
       // If the period is not custom, pass the period as a filter
-      url = `https://rocketsales-server.onrender.com/api/order?filter=${selectedPeriod}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/order?filter=${selectedPeriod}`
     } else if (startDate && endDate) {
       // For "Custom" date range, pass the startDate and endDate as query params
-      url = `https://rocketsales-server.onrender.com/api/order?startDate=${startDate}&endDate=${endDate}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/order?startDate=${startDate}&endDate=${endDate}`
     } else {
       // If "Custom" is selected but no dates are provided, just fetch all data
-      url = `https://rocketsales-server.onrender.com/api/order`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/order`
     }
     console.log('my url', url)
     console.log('Access Token:', accessToken)
@@ -343,9 +342,12 @@ const handleEditGroup = async (item) => {
           //   ),
           // )
           .filter((item) =>
-            Object.values(item).some((value) =>
-              value !== null && value !== undefined && value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-            )
+            Object.values(item).some(
+              (value) =>
+                value !== null &&
+                value !== undefined &&
+                value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+            ),
           )
 
         setData(filteredData) // Set the filtered data to `data`
@@ -359,113 +361,126 @@ const handleEditGroup = async (item) => {
     }
   }
   const fetchCompany = async () => {
-    const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/company`;
-  
+    const accessToken = Cookies.get('token')
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`
+
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: 'Bearer ' + accessToken,
         },
-      });
-  console.log("my data response",response.data)
+      })
+      console.log('my data response', response.data)
       if (response.data) {
-      
         // const companydata1 = response.data
-        setCompanyData( response.data);
-       
+        setCompanyData(response.data)
       }
-      console.log("companies are",companyData);
+      console.log('companies are', companyData)
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
     }
-  };
+  }
   const fetchBranch = async () => {
-    const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/branch`;
-  
+    const accessToken = Cookies.get('token')
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`
+
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: 'Bearer ' + accessToken,
         },
-      });
-  console.log("my data response",response.data)
-  const branches = response.data.Branches || []; 
+      })
+      console.log('my data response', response.data)
+      const branches = response.data.Branches || []
       if (response.data) {
-      
         // const companydata1 = response.data
-        setBranchData(branches ||[]);
-       
+        setBranchData(branches || [])
       }
-      console.log("Branches  are",BranchData);
+      console.log('Branches  are', BranchData)
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
     }
-  };
+  }
   const fetchsupervisor = async () => {
-    const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/supervisor`;
-  
+    const accessToken = Cookies.get('token')
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/supervisor`
+
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: 'Bearer ' + accessToken,
         },
-      });
-  console.log("my data response",response.data)
-  const supervisor = response.data.supervisors || []; 
+      })
+      console.log('my data response', response.data)
+      const supervisor = response.data.supervisors || []
       if (response.data) {
-      
         // const companydata1 = response.data
-        setSupervisorData(supervisor ||[]);
-       
+        setSupervisorData(supervisor || [])
       }
-      console.log("supervisor  are",SupervisorData);
+      console.log('supervisor  are', SupervisorData)
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
     }
-  };
+  }
   const fetchsalesman = async () => {
-    const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/salesman`;
-  
+    const accessToken = Cookies.get('token')
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`
+
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: 'Bearer ' + accessToken,
         },
-      });
-  console.log("my data response",response.data)
-  const salesman = response.data.salesman || []; 
+      })
+      console.log('my data response', response.data)
+      const salesman = response.data.salesman || []
       if (response.data) {
-      
         // const companydata1 = response.data
-        setSalesmanData(salesman ||[]);
-       
+        setSalesmanData(salesman || [])
       }
-      console.log("salesman  are",SalesmanData);
+      console.log('salesman  are', SalesmanData)
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
     }
-  };
-  
- 
-  
+  }
+  const fetchproduct = async () => {
+    const accessToken = Cookies.get('token')
+    const url = `https://rocketsales-server.onrender.com/api/product`
+
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: 'Bearer ' + accessToken,
+        },
+      })
+      console.log('my data for product', response.data.data)
+      if (response.data) {
+        // const companydata1 = response.data
+        setProductData(response.data.data)
+      }
+      console.log('products are', companyData)
+    } catch (error) {
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
+    }
+  }
+
   useEffect(() => {
-    fetchCompany();
-    fetchBranch();
-    fetchsupervisor();
-    fetchsalesman();
-  }, []);
+    fetchCompany()
+    fetchBranch()
+    fetchsupervisor()
+    fetchsalesman()
+    fetchproduct()
+  }, [])
 
   // Format the date into DD-MM-YYYY format
   function formatDate(date) {
@@ -531,26 +546,26 @@ const handleEditGroup = async (item) => {
       toast.error('Invalid item selected for deletion.')
       return
     }
-  
+
     const confirmed = confirm('Do you want to delete this order?')
     if (!confirmed) return
-    console.log(`https://rocketsales-server.onrender.com/api/order/${item._id}`)
+    console.log(`${import.meta.env.VITE_SERVER_URL}/api/order/${item._id}`)
     try {
       const accessToken = Cookies.get('token')
       if (!accessToken) {
         toast.error('Authentication token is missing.')
         return
       }
-  
+
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        url: `https://rocketsales-server.onrender.com/api/order/${item._id}`,
+        url: `${import.meta.env.VITE_SERVER_URL}/api/order/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       })
-  
+
       toast.success('Order deleted successfully')
       fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
     } catch (error) {
@@ -586,7 +601,7 @@ const handleEditGroup = async (item) => {
       // Make the PUT request to update the attendance status
       const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/attendence/${item._id}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/attendence/${item._id}`,
         updatedData,
         {
           headers: {
@@ -603,7 +618,38 @@ const handleEditGroup = async (item) => {
       alert('Failed to update attendance status')
     }
   }
+  // const [ProductData, setProductData] = useState([]); // Populate this with your fetched product data
 
+  const handleProductChange = (index, newValue) => {
+    const updatedProducts = [...formData.products]
+    updatedProducts[index].productName = newValue?.productName || ''
+    setFormData({ ...formData, products: updatedProducts })
+  }
+
+  const handleQuantityChange = (index, value) => {
+    const updatedProducts = [...formData.products]
+    updatedProducts[index].quantity = value
+    setFormData({ ...formData, products: updatedProducts })
+  }
+
+  const handlePriceChange = (index, value) => {
+    const updatedProducts = [...formData.products]
+    updatedProducts[index].pricePerPiece = value
+    setFormData({ ...formData, products: updatedProducts })
+  }
+
+  const addProductRow = () => {
+    setFormData({
+      ...formData,
+      products: [...formData.products, { productName: '', quantity: '', pricePerPiece: '' }],
+    })
+  }
+  const deleteProductRow = (index) => {
+    const updatedProducts = [...formData.products];
+    updatedProducts.splice(index, 1);
+    setFormData({ ...formData, products: updatedProducts });
+  };
+  
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -803,19 +849,19 @@ const handleEditGroup = async (item) => {
                   {col.Header}
                 </CTableHeaderCell>
               ))}
-               <CTableHeaderCell
-                              className="text-center"
-                              style={{
-                                padding: '5px 12px', // Reduced padding for top and bottom
-                                borderBottom: '1px solid #e0e0e0', // Light border under headers
-                                textAlign: 'center', // Center header text
-                                verticalAlign: 'middle',
-                                backgroundColor: '#1d3d5f',
-                                color: 'white',
-                              }}
-                            >
-                              Actions
-                            </CTableHeaderCell>
+              <CTableHeaderCell
+                className="text-center"
+                style={{
+                  padding: '5px 12px', // Reduced padding for top and bottom
+                  borderBottom: '1px solid #e0e0e0', // Light border under headers
+                  textAlign: 'center', // Center header text
+                  verticalAlign: 'middle',
+                  backgroundColor: '#1d3d5f',
+                  color: 'white',
+                }}
+              >
+                Actions
+              </CTableHeaderCell>
             </CTableRow>
           </CTableHead>
 
@@ -882,7 +928,6 @@ const handleEditGroup = async (item) => {
 
                     {columns.map((col) => (
                       <CTableDataCell
-                        
                         className="text-center"
                         style={{
                           padding: '0px 12px',
@@ -929,33 +974,33 @@ const handleEditGroup = async (item) => {
                         )}
                       </CTableDataCell>
                     ))}
-                     <CTableDataCell
-                          className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
-                        >
-                          <IconButton
-                            aria-label="edit"
-                            onClick={() => handleEditGroup(item)}
-                            className="icon-button icon-button-edit"
-                          >
-                            <RiEdit2Fill className="icon-button-icon" />
-                          </IconButton>
-                    
-                          <IconButton
-                            aria-label="delete"
-                            onClick={() => haqndleDeletesubmit(item)}
-                            className="icon-button icon-button-delete"
-                          >
-                            <AiFillDelete className="icon-button-icon" />
-                          </IconButton>
-                          <IconButton
-                            aria-label="delete"
-                            onClick={() => haqndleIn(item)}
-                            className="icon-button icon-button-icon"
-                            style={{ backgroundColor: '#307ac4' }}
-                          >
-                            <IoShareSocialOutline className="icon-button-icon" />
-                          </IconButton>
-                        </CTableDataCell>
+                    <CTableDataCell
+                      className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
+                    >
+                      <IconButton
+                        aria-label="edit"
+                        onClick={() => handleEditGroup(item)}
+                        className="icon-button icon-button-edit"
+                      >
+                        <RiEdit2Fill className="icon-button-icon" />
+                      </IconButton>
+
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => haqndleDeletesubmit(item)}
+                        className="icon-button icon-button-delete"
+                      >
+                        <AiFillDelete className="icon-button-icon" />
+                      </IconButton>
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => haqndleIn(item)}
+                        className="icon-button icon-button-icon"
+                        style={{ backgroundColor: '#307ac4' }}
+                      >
+                        <IoShareSocialOutline className="icon-button-icon" />
+                      </IconButton>
+                    </CTableDataCell>
                   </CTableRow>
                   {/* Expanded Content */}
           {/* {expandedRows.includes(item._id) && (
@@ -1084,681 +1129,789 @@ const handleEditGroup = async (item) => {
         />
       </StyledTablePagination>
       <Modal
-  open={addModalOpen}
-  onClose={handleAddModalClose}
-  aria-labelledby="modal-modal-title"
-  aria-describedby="modal-modal-description"
+        open={addModalOpen}
+        onClose={handleAddModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="d-flex justify-content-between">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Add New order
+            </Typography>
+            <IconButton onClick={handleAddModalClose}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <DialogContent>
+            <form onSubmit={handleAddSubmit}>
+              <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {role == 1 ? (
+                  <>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-company-select"
+                        options={Array.isArray(companyData) ? companyData : []}
+                        getOptionLabel={(option) => option.companyName || ''}
+                        value={
+                          companyData.find((company) => company._id == formData.companyId) || null
+                        }
+                        onChange={(event, newValue) => {
+                          setFormData({
+                            ...formData,
+                            companyId: newValue?._id || '',
+                            branchId: '', // Reset branch when company changes
+                            supervisorId: '', // Reset supervisor when company changes
+                            // salesmanId: '', // Reset salesman when company changes
+                          })
+                          setBranchError(false) // Clear branch error
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Company Name"
+                            variant="outlined"
+                            name="companyId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <BusinessIcon />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+
+                    {/* Branch Dropdown */}
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-branch-select"
+                        options={filteredBranches}
+                        getOptionLabel={(option) => option.branchName || ''}
+                        value={
+                          filteredBranches.find((branch) => branch._id == formData.branchId) || null
+                        }
+                        onChange={(event, newValue) => {
+                          if (!formData.companyId) {
+                            setBranchError(true)
+                          } else {
+                            setFormData({
+                              ...formData,
+                              branchId: newValue?._id || '',
+                              supervisorId: '', // Reset supervisor when branch changes
+                              //   salesmanId: '' ,// Reset salesman when branch changes
+                            })
+                            setBranchError(false)
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Branch Name"
+                            variant="outlined"
+                            name="branchId"
+                            error={branchError} // Show error state
+                            helperText={
+                              branchError && formData.companyId
+                                ? 'Please select a company first'
+                                : ''
+                            }
+                            placeholder={
+                              !formData.companyId ? 'Select Company First' : 'Select Branch'
+                            }
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                        disabled={!formData.companyId} // Disable if no company is selected
+                      />
+                    </FormControl>
+
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-supervisor-select"
+                        options={
+                          formData.companyId && formData.branchId
+                            ? SupervisorData.filter(
+                                (supervisor) =>
+                                  supervisor.companyId?._id === formData.companyId &&
+                                  supervisor.branchId?._id === formData.branchId,
+                              )
+                            : []
+                        }
+                        getOptionLabel={(option) => option.supervisorName || ''}
+                        value={
+                          SupervisorData.find(
+                            (supervisor) => supervisor._id === formData.supervisorId,
+                          ) || null
+                        }
+                        onChange={(event, newValue) =>
+                          setFormData({
+                            ...formData,
+                            supervisorId: newValue?._id || '',
+                            // salesmanId: '', // Reset salesman when supervisor changes
+                          })
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Supervisor"
+                            variant="outlined"
+                            name="supervisorId"
+                            placeholder={
+                              !formData.companyId
+                                ? 'Select Company First'
+                                : !formData.branchId
+                                  ? 'Select Branch First'
+                                  : 'Select Supervisor'
+                            }
+                            disabled={!formData.companyId || !formData.branchId}
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiUser />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                        disabled={!formData.branchId} // Disable if branch is not selected
+                      />
+                    </FormControl>
+                
+                    <Box
+  sx={{
+    padding: 2,
+    borderRadius: 2,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#fff',
+    maxWidth: '800px',
+    margin: '0 auto',
+  }}
 >
-  <Box sx={style}>
-    <div className="d-flex justify-content-between">
-      <Typography id="modal-modal-title" variant="h6" component="h2">
-        Add New UserManage
-      </Typography>
-      <IconButton onClick={handleAddModalClose}>
-        <CloseIcon />
+  <Typography
+    variant="h5"
+    gutterBottom
+    sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: 2 }}
+  >
+    Add Products
+  </Typography>
+
+  <FormControl variant="outlined" fullWidth>
+    {(formData.products || []).map((product, index) => (
+     <Grid
+     container
+     spacing={2}
+     key={index}
+     alignItems="center"
+     sx={{ marginBottom: 2 }}
+   >
+     {/* Product Dropdown */}
+     <Grid item xs={6} sm={6}>
+       <Autocomplete
+         id={`product-select-${index}`}
+         options={ProductData || []}
+         getOptionLabel={(option) => option.productName || ''}
+         value={
+           ProductData.find(
+             (item) => item.productName === formData.products[index].productName
+           ) || null
+         }
+         onChange={(event, newValue) => handleProductChange(index, newValue)}
+         renderInput={(params) => (
+           <TextField
+             {...params}
+             label="Select Product"
+             variant="outlined"
+             placeholder="Select Product"
+             size="small"
+             InputProps={{
+               ...params.InputProps,
+               startAdornment: (
+                 <InputAdornment position="start">
+                   <BusinessIcon />
+                 </InputAdornment>
+               ),
+             }}
+             sx={{
+               borderRadius: 2,
+               boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+             }}
+           />
+         )}
+       />
+     </Grid>
+   
+     {/* Quantity Input */}
+     <Grid item xs={2} sm={2}>
+       <TextField
+         label="Quantity"
+         variant="outlined"
+         type="number"
+         value={product.quantity}
+         onChange={(e) => handleQuantityChange(index, e.target.value)}
+         fullWidth
+         disabled={!product.productName}
+         size="small"
+         sx={{
+           borderRadius: 2,
+           boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+         }}
+         InputLabelProps={{
+           shrink: true, // This will force the label to stay "shrunk" (on top)
+         }}
+       />
+     </Grid>
+   
+     {/* Price Input */}
+     <Grid item xs={3} sm={3}>
+       <TextField
+         label="Price"
+         variant="outlined"
+         type="number"
+         value={product.pricePerPiece}
+         onChange={(e) => handlePriceChange(index, e.target.value)}
+         fullWidth
+         disabled={!product.productName}
+         size="small"
+         sx={{
+           borderRadius: 2,
+           boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+         }}
+         InputLabelProps={{
+           shrink: true, // This will force the label to stay "shrunk" (on top)
+         }}
+       />
+     </Grid>
+   
+     {/* Delete Product Button */}
+     <Grid item xs={1} sm={1} sx={{ textAlign: 'center' }}>
+       <IconButton
+         onClick={() => deleteProductRow(index)}
+         color="error"
+         sx={{
+           color: '#f44336', // Red color for the icon
+           '&:hover': {
+             color: '#d32f2f', // Darker red on hover
+           },
+         }}
+       >
+         <DeleteIcon fontSize="small" />
+       </IconButton>
+     </Grid>
+   </Grid>
+   
+    ))}
+
+    {/* Add Product Row Button */}
+    <Box sx={{ textAlign: 'center', marginTop: 0 }}>
+      <IconButton
+        onClick={addProductRow}
+        color="success"
+        sx={{
+          color: '#4caf50', // Green color for the icon
+          '&:hover': {
+            color: '#388e3c', // Darker green on hover
+          },
+        }}
+      >
+        <AddCircleIcon fontSize="large" />
       </IconButton>
+    </Box>
+  </FormControl>
+</Box>
+
+
+
+
+                
+                  </>
+                ) : role == 2 ? (
+                  <>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-branch-select"
+                        options={Array.isArray(BranchData) ? BranchData : []}
+                        getOptionLabel={(option) => option.branchName || ''}
+                        value={
+                          Array.isArray(BranchData)
+                            ? BranchData.find((branch) => branch._id == formData.branchId)
+                            : null
+                        }
+                        onChange={(event, newValue) =>
+                          setFormData({
+                            ...formData,
+                            branchId: newValue?._id || '', // Update branch
+                            supervisorId: '', // Reset supervisor
+                          })
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Branch Name"
+                            variant="outlined"
+                            name="branchId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-supervisor-select"
+                        options={
+                          formData.branchId // Only show supervisors if branch is selected
+                            ? SupervisorData.filter(
+                                (supervisor) => supervisor.branchId?._id === formData.branchId,
+                              )
+                            : []
+                        }
+                        getOptionLabel={(option) => option.supervisorName || ''}
+                        value={
+                          formData.supervisorId
+                            ? SupervisorData.find(
+                                (supervisor) => supervisor._id === formData.supervisorId,
+                              )
+                            : null // Ensure it is null if supervisorId is empty
+                        }
+                        onChange={(event, newValue) =>
+                          setFormData({
+                            ...formData,
+                            supervisorId: newValue?._id || '', // Update supervisor
+                          })
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Supervisor"
+                            variant="outlined"
+                            name="supervisorId"
+                            placeholder={
+                              !formData.branchId ? 'Select Branch First' : 'Select Supervisor'
+                            }
+                            disabled={!formData.branchId} // Disable when no branch is selected
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  </>
+                ) : role == 3 ? (
+                  <>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-supervisor-select"
+                        options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
+                        getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
+                        value={
+                          Array.isArray(SupervisorData)
+                            ? SupervisorData.find(
+                                (supervisor) => supervisor._id === formData.supervisorId,
+                              )
+                            : null
+                        } // Safely find the selected supervisor
+                        onChange={(event, newValue) =>
+                          setFormData({
+                            ...formData,
+                            supervisorId: newValue?._id || '', // Update the supervisorId in formData
+                          })
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Supervisor"
+                            variant="outlined"
+                            name="supervisorId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  </>
+                ) : null}
+                {COLUMNS()
+                  .slice(0, -5)
+                  .map((column) => (
+                    <TextField
+                      key={column.accessor}
+                      label={column.Header}
+                      name={column.accessor}
+                      value={formData[column.accessor] || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [column.accessor]: e.target.value })
+                      }
+                      // Remove required attribute
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">{column.icon}</InputAdornment>
+                        ),
+                      }}
+                    />
+                  ))}
+              </FormControl>
+
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                style={{ marginTop: '20px' }}
+              >
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Box>
+      </Modal>
+      <Modal
+        open={editModalOpen}
+        onClose={handleEditModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="d-flex justify-content-between">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Edit UserManage
+            </Typography>
+            <IconButton onClick={handleEditModalClose}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <DialogContent>
+            <form onSubmit={handleEditSubmit}>
+              <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {role == 1 ? (
+                  <>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-company-select"
+                        options={Array.isArray(companyData) ? companyData : []}
+                        getOptionLabel={(option) => option.companyName || ''}
+                        value={
+                          companyData.find((company) => company._id == formData.companyId) || null
+                        }
+                        onChange={(event, newValue) => {
+                          setFormData({
+                            ...formData,
+                            companyId: newValue?._id || '',
+                            branchId: '', // Reset branch when company changes
+                            supervisorId: '', // Reset supervisor when company changes
+                          })
+                          setBranchError(false) // Clear branch error
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Company Name"
+                            variant="outlined"
+                            name="companyId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <BusinessIcon />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+
+                    {/* Branch Dropdown */}
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-branch-select"
+                        options={filteredBranches}
+                        getOptionLabel={(option) => option.branchName || ''}
+                        value={
+                          filteredBranches.find((branch) => branch._id == formData.branchId) || null
+                        }
+                        onChange={(event, newValue) => {
+                          if (!formData.companyId) {
+                            setBranchError(true)
+                          } else {
+                            setFormData({
+                              ...formData,
+                              branchId: newValue?._id || '',
+                              supervisorId: '', // Reset supervisor when branch changes
+                            })
+                            setBranchError(false)
+                          }
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Branch Name"
+                            variant="outlined"
+                            name="branchId"
+                            error={branchError} // Show error state
+                            helperText={
+                              branchError && formData.companyId
+                                ? 'Please select a company first'
+                                : ''
+                            }
+                            placeholder={
+                              !formData.companyId ? 'Select Company First' : 'Select Branch'
+                            }
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                        disabled={!formData.companyId} // Disable if no company is selected
+                      />
+                    </FormControl>
+
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-supervisor-select"
+                        options={
+                          formData.companyId && formData.branchId
+                            ? SupervisorData.filter(
+                                (supervisor) =>
+                                  supervisor.companyId?._id === formData.companyId &&
+                                  supervisor.branchId?._id === formData.branchId,
+                              )
+                            : []
+                        }
+                        getOptionLabel={(option) => option.supervisorName || ''}
+                        value={
+                          SupervisorData.find(
+                            (supervisor) => supervisor._id === formData.supervisorId,
+                          ) || null
+                        }
+                        onChange={(event, newValue) =>
+                          setFormData({
+                            ...formData,
+                            supervisorId: newValue?._id || '',
+                          })
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Supervisor"
+                            variant="outlined"
+                            name="supervisorId"
+                            placeholder={
+                              !formData.companyId
+                                ? 'Select Company First'
+                                : !formData.branchId
+                                  ? 'Select Branch First'
+                                  : 'Select Supervisor'
+                            }
+                            disabled={!formData.companyId || !formData.branchId}
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiUser />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                        disabled={!formData.branchId} // Disable if branch is not selected
+                      />
+                    </FormControl>
+                  </>
+                ) : role == 2 ? (
+                  <>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-branch-select"
+                        options={Array.isArray(BranchData) ? BranchData : []}
+                        getOptionLabel={(option) => option.branchName || ''}
+                        value={
+                          Array.isArray(BranchData)
+                            ? BranchData.find((branch) => branch._id == formData.branchId)
+                            : null
+                        }
+                        onChange={(event, newValue) =>
+                          setFormData({
+                            ...formData,
+                            branchId: newValue?._id || '',
+                            supervisorId: '', // Reset supervisor when branch changes
+                          })
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Branch Name"
+                            variant="outlined"
+                            name="branchId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-supervisor-select"
+                        options={
+                          formData.branchId // Only filter if branch is selected
+                            ? SupervisorData.filter(
+                                (supervisor) => supervisor.branchId?._id === formData.branchId,
+                              )
+                            : []
+                        }
+                        getOptionLabel={(option) => option.supervisorName || ''}
+                        value={
+                          Array.isArray(SupervisorData)
+                            ? SupervisorData.find(
+                                (supervisor) => supervisor._id === formData.supervisorId,
+                              )
+                            : null
+                        }
+                        onChange={(event, newValue) =>
+                          setFormData({
+                            ...formData,
+                            supervisorId: newValue?._id || '',
+                          })
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Supervisor"
+                            variant="outlined"
+                            name="supervisorId"
+                            placeholder={
+                              !formData.branchId ? 'Select Branch First' : 'Select Supervisor'
+                            }
+                            disabled={!formData.branchId} // Disable when branch is not selected
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  </>
+                ) : role == 3 ? (
+                  <>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-supervisor-select"
+                        options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
+                        getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
+                        value={
+                          Array.isArray(SupervisorData)
+                            ? SupervisorData.find(
+                                (supervisor) => supervisor._id === formData.supervisorId,
+                              )
+                            : null
+                        } // Safely find the selected supervisor
+                        onChange={(event, newValue) =>
+                          setFormData({
+                            ...formData,
+                            supervisorId: newValue?._id || '', // Update the supervisorId in formData
+                          })
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Supervisor"
+                            variant="outlined"
+                            name="supervisorId"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FiGitBranch />
+                                </InputAdornment>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  </>
+                ) : null}
+
+                {COLUMNS()
+                  .slice(0, -5)
+                  .map((column) => (
+                    <TextField
+                      key={column.accessor}
+                      label={column.Header}
+                      name={column.accessor}
+                      value={formData[column.accessor] || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [column.accessor]: e.target.value })
+                      }
+                      // Remove required attribute
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">{column.icon}</InputAdornment>
+                        ),
+                      }}
+                    />
+                  ))}
+              </FormControl>
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                style={{ marginTop: '20px' }}
+              >
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Box>
+      </Modal>
     </div>
-    <DialogContent>
-      <form onSubmit={handleAddSubmit}>
-
-         <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      
-             {role == 1 ? (
-            <>
-          
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-company-select"
-    options={Array.isArray(companyData) ? companyData : []}
-    getOptionLabel={(option) => option.companyName || ''}
-    value={companyData.find((company) => company._id == formData.companyId) || null}
-    onChange={(event, newValue) => {
-      setFormData({
-        ...formData,
-        companyId: newValue?._id || '',
-        branchId: '', // Reset branch when company changes
-        supervisorId: '', // Reset supervisor when company changes
-        // salesmanId: '', // Reset salesman when company changes
-    })
-      setBranchError(false) // Clear branch error
-    }}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Company Name"
-        variant="outlined"
-        name="companyId"
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <BusinessIcon />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-  />
-</FormControl>
-
-{/* Branch Dropdown */}
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-branch-select"
-    options={filteredBranches}
-    getOptionLabel={(option) => option.branchName || ''}
-    value={filteredBranches.find((branch) => branch._id == formData.branchId) || null}
-    onChange={(event, newValue) => {
-      if (!formData.companyId) {
-        setBranchError(true)
-      } else {
-        setFormData({ 
-          ...formData, 
-          branchId: newValue?._id || '', 
-          supervisorId: '', // Reset supervisor when branch changes
-        //   salesmanId: '' ,// Reset salesman when branch changes  
-        })
-        setBranchError(false)
-      }
-    }}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Branch Name"
-        variant="outlined"
-        name="branchId"
-        error={branchError} // Show error state
-        helperText={
-          branchError && formData.companyId
-            ? 'Please select a company first'
-            : ''
-        }
-        placeholder={!formData.companyId ? 'Select Company First' : 'Select Branch'}
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiGitBranch />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-    disabled={!formData.companyId} // Disable if no company is selected
-  />
-</FormControl>
-
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-supervisor-select"
-    options={
-      formData.companyId && formData.branchId
-        ? SupervisorData.filter(
-            (supervisor) =>
-              supervisor.companyId?._id === formData.companyId &&
-              supervisor.branchId?._id === formData.branchId
-          )
-        : []
-    }
-    getOptionLabel={(option) => option.supervisorName || ''}
-    value={
-      SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId) || null
-    }
-    onChange={(event, newValue) =>
-      setFormData({
-        ...formData,
-        supervisorId: newValue?._id || '',
-        // salesmanId: '', // Reset salesman when supervisor changes
-      })
-    }
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Supervisor"
-        variant="outlined"
-        name="supervisorId"
-        placeholder={
-          !formData.companyId
-            ? 'Select Company First'
-            : !formData.branchId
-            ? 'Select Branch First'
-            : 'Select Supervisor'
-        }
-        disabled={!formData.companyId || !formData.branchId}
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiUser />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-    disabled={!formData.branchId} // Disable if branch is not selected
-  />
-</FormControl>
-{/* Salesman Dropdown */}
-{/* <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-salesman-select"
-    options={
-      formData.companyId && formData.branchId && formData.supervisorId
-        ? SalesmanData.filter(
-            (salesman) =>
-              salesman.companyId?._id === formData.companyId &&
-              salesman.branchId?._id === formData.branchId &&
-              salesman.supervisorId?._id === formData.supervisorId
-          )
-        : []
-    }
-    getOptionLabel={(option) => option.salesmanName || ''}
-    value={
-      SalesmanData.find((salesman) => salesman._id === formData.salesmanId) || null
-    }
-    onChange={(event, newValue) =>
-      setFormData({
-        ...formData,
-        salesmanId: newValue?._id || '',
-      })
-    }
-    disabled={!formData.companyId || !formData.branchId || !formData.supervisorId}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Salesman"
-        variant="outlined"
-        name="salesmanId"
-        placeholder={
-          !formData.companyId
-            ? 'Select Company First'
-            : !formData.branchId
-            ? 'Select Branch First'
-            : !formData.supervisorId
-            ? 'Select Supervisor First'
-            : 'Select Salesman'
-        }
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiUser />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-  />
-</FormControl> */}
-
-
-
-            </>
-          ) : role == 2 ? (
-            <>
-       <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-branch-select"
-    options={Array.isArray(BranchData) ? BranchData : []}
-    getOptionLabel={(option) => option.branchName || ''}
-    value={
-      Array.isArray(BranchData)
-        ? BranchData.find((branch) => branch._id == formData.branchId)
-        : null
-    }
-    onChange={(event, newValue) =>
-      setFormData({
-        ...formData,
-        branchId: newValue?._id || '', // Update branch
-        supervisorId: '', // Reset supervisor
-      })
-    }
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Branch Name"
-        variant="outlined"
-        name="branchId"
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiGitBranch />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-  />
-</FormControl>
-
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-supervisor-select"
-    options={
-      formData.branchId // Only show supervisors if branch is selected
-        ? SupervisorData.filter((supervisor) => supervisor.branchId?._id === formData.branchId)
-        : []
-    }
-    getOptionLabel={(option) => option.supervisorName || ''}
-    value={
-      formData.supervisorId
-        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
-        : null // Ensure it is null if supervisorId is empty
-    }
-    onChange={(event, newValue) =>
-      setFormData({
-        ...formData,
-        supervisorId: newValue?._id || '', // Update supervisor
-      })
-    }
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Supervisor"
-        variant="outlined"
-        name="supervisorId"
-        placeholder={!formData.branchId ? 'Select Branch First' : 'Select Supervisor'}
-        disabled={!formData.branchId} // Disable when no branch is selected
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiGitBranch />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-  />
-</FormControl>
-
-
-
-            </>
-          ) :role==3?(
-            <>
-         
-            <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-<Autocomplete
-  id="searchable-supervisor-select"
-  options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
-  getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
-  value={
-    Array.isArray(SupervisorData)
-      ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
-      : null
-  } // Safely find the selected supervisor
-  onChange={(event, newValue) =>
-    setFormData({
-      ...formData,
-      supervisorId: newValue?._id || '', // Update the supervisorId in formData
-    })
-  }
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Supervisor"
-      variant="outlined"
-      name="supervisorId"
-      InputProps={{
-        ...params.InputProps,
-        startAdornment: (
-          <InputAdornment position="start">
-            <FiGitBranch />
-          </InputAdornment>
-        ),
-      }}
-    />
-  )}
-/>
-</FormControl>
-          </>
-
-          ): null}
-          {COLUMNS().slice(0, -5).map((column) => (
-            <TextField
-              key={column.accessor}
-              label={column.Header}
-              name={column.accessor}
-              value={formData[column.accessor] || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, [column.accessor]: e.target.value })
-              }
-              // Remove required attribute
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {column.icon}
-                  </InputAdornment>
-                ),
-              }}
-            />
-          ))}
-         
-        </FormControl>
-        
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          style={{ marginTop: '20px' }}
-        >
-          Submit
-        </Button>
-      </form>
-    </DialogContent>
-  </Box>
-</Modal>
-<Modal
-  open={editModalOpen}
-  onClose={handleEditModalClose}
-  aria-labelledby="modal-modal-title"
-  aria-describedby="modal-modal-description"
->
-  <Box sx={style}>
-    <div className="d-flex justify-content-between">
-      <Typography id="modal-modal-title" variant="h6" component="h2">
-        Edit UserManage
-      </Typography>
-      <IconButton onClick={handleEditModalClose}>
-        <CloseIcon />
-      </IconButton>
-    </div>
-    <DialogContent>
-      <form onSubmit={handleEditSubmit}>
-      <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      {role == 1 ? (
-            <>
-             <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-company-select"
-    options={Array.isArray(companyData) ? companyData : []}
-    getOptionLabel={(option) => option.companyName || ''}
-    value={companyData.find((company) => company._id == formData.companyId) || null}
-    onChange={(event, newValue) => {
-      setFormData({
-        ...formData,
-        companyId: newValue?._id || '',
-        branchId: '', // Reset branch when company changes
-        supervisorId: '', // Reset supervisor when company changes
-      })
-      setBranchError(false) // Clear branch error
-    }}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Company Name"
-        variant="outlined"
-        name="companyId"
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <BusinessIcon />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-  />
-</FormControl>
-
-{/* Branch Dropdown */}
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-branch-select"
-    options={filteredBranches}
-    getOptionLabel={(option) => option.branchName || ''}
-    value={filteredBranches.find((branch) => branch._id == formData.branchId) || null}
-    onChange={(event, newValue) => {
-      if (!formData.companyId) {
-        setBranchError(true)
-      } else {
-        setFormData({ 
-          ...formData, 
-          branchId: newValue?._id || '', 
-          supervisorId: '' // Reset supervisor when branch changes
-        })
-        setBranchError(false)
-      }
-    }}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Branch Name"
-        variant="outlined"
-        name="branchId"
-        error={branchError} // Show error state
-        helperText={
-          branchError && formData.companyId
-            ? 'Please select a company first'
-            : ''
-        }
-        placeholder={!formData.companyId ? 'Select Company First' : 'Select Branch'}
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiGitBranch />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-    disabled={!formData.companyId} // Disable if no company is selected
-  />
-</FormControl>
-
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-supervisor-select"
-    options={
-      formData.companyId && formData.branchId
-        ? SupervisorData.filter(
-            (supervisor) =>
-              supervisor.companyId?._id === formData.companyId &&
-              supervisor.branchId?._id === formData.branchId
-          )
-        : []
-    }
-    getOptionLabel={(option) => option.supervisorName || ''}
-    value={
-      SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId) || null
-    }
-    onChange={(event, newValue) =>
-      setFormData({
-        ...formData,
-        supervisorId: newValue?._id || '',
-      })
-    }
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Supervisor"
-        variant="outlined"
-        name="supervisorId"
-        placeholder={
-          !formData.companyId
-            ? 'Select Company First'
-            : !formData.branchId
-            ? 'Select Branch First'
-            : 'Select Supervisor'
-        }
-        disabled={!formData.companyId || !formData.branchId}
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiUser />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-    disabled={!formData.branchId} // Disable if branch is not selected
-  />
-</FormControl>
-            </>
-          ) : role == 2 ? (
-            <>
-             
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-branch-select"
-    options={Array.isArray(BranchData) ? BranchData : []}
-    getOptionLabel={(option) => option.branchName || ''}
-    value={
-      Array.isArray(BranchData)
-        ? BranchData.find((branch) => branch._id == formData.branchId)
-        : null
-    }
-    onChange={(event, newValue) =>
-      setFormData({
-        ...formData,
-        branchId: newValue?._id || '',
-        supervisorId: '', // Reset supervisor when branch changes
-      })
-    }
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Branch Name"
-        variant="outlined"
-        name="branchId"
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiGitBranch />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-  />
-</FormControl>
-
-<FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-  <Autocomplete
-    id="searchable-supervisor-select"
-    options={
-      formData.branchId // Only filter if branch is selected
-        ? SupervisorData.filter((supervisor) => supervisor.branchId?._id === formData.branchId)
-        : []
-    }
-    getOptionLabel={(option) => option.supervisorName || ''}
-    value={
-      Array.isArray(SupervisorData)
-        ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
-        : null
-    }
-    onChange={(event, newValue) =>
-      setFormData({
-        ...formData,
-        supervisorId: newValue?._id || '',
-      })
-    }
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Supervisor"
-        variant="outlined"
-        name="supervisorId"
-        placeholder={!formData.branchId ? 'Select Branch First' : 'Select Supervisor'}
-        disabled={!formData.branchId} // Disable when branch is not selected
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start">
-              <FiGitBranch />
-            </InputAdornment>
-          ),
-        }}
-      />
-    )}
-  />
-</FormControl>
-
-            </>
-          ) :role==3?(
-            <>
-         
-            <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
-<Autocomplete
-  id="searchable-supervisor-select"
-  options={Array.isArray(SupervisorData) ? SupervisorData : []} // Ensure SupervisorData is an array
-  getOptionLabel={(option) => option.supervisorName || ''} // Display supervisor name
-  value={
-    Array.isArray(SupervisorData)
-      ? SupervisorData.find((supervisor) => supervisor._id === formData.supervisorId)
-      : null
-  } // Safely find the selected supervisor
-  onChange={(event, newValue) =>
-    setFormData({
-      ...formData,
-      supervisorId: newValue?._id || '', // Update the supervisorId in formData
-    })
-  }
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Supervisor"
-      variant="outlined"
-      name="supervisorId"
-      InputProps={{
-        ...params.InputProps,
-        startAdornment: (
-          <InputAdornment position="start">
-            <FiGitBranch />
-          </InputAdornment>
-        ),
-      }}
-    />
-  )}
-/>
-</FormControl>
-          </>
-
-          ): null}
-         
-          {COLUMNS().slice(0, -5).map((column) => (
-            <TextField
-              key={column.accessor}
-              label={column.Header}
-              name={column.accessor}
-              value={formData[column.accessor] || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, [column.accessor]: e.target.value })
-              }
-              // Remove required attribute
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {column.icon}
-                  </InputAdornment>
-                ),
-              }}
-            />
-          ))}
-         
-        </FormControl>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          style={{ marginTop: '20px' }}
-        >
-          Submit
-        </Button>
-      </form>
-    </DialogContent>
-  </Box>
-</Modal>
-    </div>
-    
   )
-  
 }
 
-export default OrderList 
+export default OrderList
