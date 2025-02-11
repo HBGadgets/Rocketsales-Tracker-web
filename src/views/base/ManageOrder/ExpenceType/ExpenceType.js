@@ -131,7 +131,7 @@ const ExpenceType = () => {
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/expencetype`
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/expencetype`
   
     try {
       const response = await axios.get(url, {
@@ -178,7 +178,7 @@ const ExpenceType = () => {
 
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/company`
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`
 
     try {
       const response = await axios.get(url, {
@@ -200,7 +200,7 @@ const ExpenceType = () => {
   }
   const fetchBranch = async () => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/branch`
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`
 
     try {
       const response = await axios.get(url, {
@@ -296,7 +296,7 @@ const ExpenceType = () => {
 
       // Perform the POST request
       const response = await axios.post(
-        `https://rocketsales-server.onrender.com/api/ExpenceType`,
+        `${import.meta.env.VITE_SERVER_URL}/api/ExpenceType`,
         formData,
         {
           headers: {
@@ -333,7 +333,7 @@ const ExpenceType = () => {
     try {
       const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/ExpenceType/${formData._id}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/ExpenceType/${formData._id}`,
         formData,
         {
           headers: {
@@ -379,8 +379,8 @@ const ExpenceType = () => {
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
-        url: `https://rocketsales-server.onrender.com/api/ExpenceType/${item._id}`,
+        // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
+        url: `${import.meta.env.VITE_SERVER_URL}/api/ExpenceType/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',

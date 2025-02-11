@@ -99,6 +99,8 @@
     const [taskData, setTaskData] = useState([])
     const [selectedRow, setSelectedRow] = useState([])
     const [taskAddModalOpen, setTaskAddModalOpen] = useState(false)
+   
+    
     const [newTask, setNewTask] = useState({
       taskDescription: '',
       deadline: '',
@@ -473,10 +475,12 @@
         throw error // Re-throw the error for further handling if needed
       }
     }
+   
     useEffect(() => {
       fetchCompany()
       fetchBranch()
       fetchsupervisor()
+      
     }, [])
     // Format the date into DD-MM-YYYY format
     function formatDate(date) {

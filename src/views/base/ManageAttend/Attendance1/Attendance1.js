@@ -201,13 +201,13 @@ const Attendance1 = () => {
     console.log(selectedPeriod)
     if (selectedPeriod && selectedPeriod !== 'Custom') {
       // If the period is not custom, pass the period as a filter
-      url = `https://rocketsales-server.onrender.com/api/attendence?filter=${selectedPeriod}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/attendence?filter=${selectedPeriod}`
     } else if (startDate && endDate) {
       // For "Custom" date range, pass the startDate and endDate as query params
-      url = `https://rocketsales-server.onrender.com/api/attendence?startDate=${startDate}&endDate=${endDate}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/attendence?startDate=${startDate}&endDate=${endDate}`
     } else {
       // If "Custom" is selected but no dates are provided, just fetch all data
-      url = `https://rocketsales-server.onrender.com/api/attendence`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/attendence`
     }
     console.log('my url', url)
     console.log('Access Token:', accessToken)
@@ -346,7 +346,7 @@ const Attendance1 = () => {
   
       // Make the PUT request to update the attendance status
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/attendence/${item._id}`, 
+        `${import.meta.env.VITE_SERVER_URL}/api/attendence/${item._id}`, 
         updatedData,
         {
           headers: {

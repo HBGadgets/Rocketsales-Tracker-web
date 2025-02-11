@@ -132,7 +132,7 @@ const [role, setRole] = useState(null);
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/branch`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`;
   
     try {
       const response = await axios.get(url, {
@@ -191,7 +191,7 @@ const [role, setRole] = useState(null);
   
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/company`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`;
   
     try {
       const response = await axios.get(url, {
@@ -267,7 +267,7 @@ const [role, setRole] = useState(null);
   //   console.log(formData)
   //   try {
   //     const accessToken = Cookies.get('token')
-  //     const response = await axios.post(`https://rocketsales-server.onrender.com/api/branch`, formData, {
+  //     const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/branch`, formData, {
   //       headers: {
   //         Authorization: `Bearer ${accessToken}`,
   //         'Content-Type': 'application/json',
@@ -311,7 +311,7 @@ const [role, setRole] = useState(null);
       console.log('FormData to be submitted:', updatedFormData);
   
       const response = await axios.post(
-        `https://rocketsales-server.onrender.com/api/branch`,
+        `${import.meta.env.VITE_SERVER_URL}/api/branch`,
         updatedFormData,
         {
           headers: {
@@ -349,7 +349,7 @@ const [role, setRole] = useState(null);
     try {
       const accessToken = Cookies.get('authToken')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/branch/${formData._id}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/branch/${formData._id}`,
         formData,
         {
           headers: {
@@ -396,8 +396,8 @@ const [role, setRole] = useState(null);
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
-        url: `https://rocketsales-server.onrender.com/api/branch/${item._id}`,
+        // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
+        url: `${import.meta.env.VITE_SERVER_URL}/api/branch/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',

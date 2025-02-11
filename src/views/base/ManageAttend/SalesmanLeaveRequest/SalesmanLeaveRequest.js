@@ -208,13 +208,13 @@ const SalesmanLeaveRequest = () => {
 
     if (selectedPeriod && selectedPeriod !== 'Custom') {
       // If the period is not custom, pass the period as a filter
-      url = `https://rocketsales-server.onrender.com/api/leaverequest?filter=${selectedPeriod}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?filter=${selectedPeriod}`
     } else if (startDate && endDate) {
       // For "Custom" date range, pass the startDate and endDate as query params
-      url = `https://rocketsales-server.onrender.com/api/leaverequest?startDate=${startDate}&endDate=${endDate}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?startDate=${startDate}&endDate=${endDate}`
     } else {
       // If "Custom" is selected but no dates are provided, fetch all expenses
-      url = `https://rocketsales-server.onrender.com/api/leaverequest`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest`
     }
     console.log("myurl",url);
     try {
@@ -345,7 +345,7 @@ const exportToPDF = PDFExporter({
 const handleMarkApprove = async (item) => {
   try {
     console.log(`Request Approved Successfully!`);
-    console.log("mnb",`https://rocketsales-server.onrender.com/api/leaverequest/${item._id}`)
+    console.log("mnb",`${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`)
     const absentData = {
       leaveRequestStatus: 'Approve',
     };
@@ -353,7 +353,7 @@ console.log("MYAA",absentData)
     const accessToken = Cookies.get('token');
 
     const response = await axios.put(
-      `https://rocketsales-server.onrender.com/api/leaverequest/${item._id}`,
+      `${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`,
       absentData,
       {
         headers: {
@@ -392,7 +392,7 @@ console.log("MYAA",absentData)
     const accessToken = Cookies.get('token');
 
     const response = await axios.put(
-      `https://rocketsales-server.onrender.com/api/leaverequest/${item._id}`,
+      `${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`,
       absentData,
       {
         headers: {
