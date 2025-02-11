@@ -27,7 +27,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://rocketsales-server.onrender.com/api/login', {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

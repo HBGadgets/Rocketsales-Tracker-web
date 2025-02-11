@@ -70,6 +70,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component'
 // import { useNavigate } from 'react-router-dom';
 import { ShoppingCart } from '@mui/icons-material';
 import { IoShareSocialOutline } from "react-icons/io5";
+import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 const OrderList = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -99,7 +100,12 @@ const [branchError, setBranchError] = useState(false)
     const [companyData, setCompanyData] = useState([]);
     const [SupervisorData, setSupervisorData] = useState([]);
     const [SalesmanData, setSalesmanData] = useState([]);
-
+    const [expandedRows, setExpandedRows] = useState([]);  
+    const toggleRowExpansion = (id) => {
+      setExpandedRows(prev => 
+        prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
+      );
+    };
   const navigate = useNavigate()
   const handleEditModalClose = () => {
     setFormData({})
@@ -293,7 +299,7 @@ const handleEditGroup = async (item) => {
     marginTop: '8px',
   }
 
-  const fetchData = async (startDate, endDate, selectedPeriod, page = 1) => {
+  const fetchData = async () => {
     setLoading(true)
     const accessToken = Cookies.get('token')
     let url
@@ -615,7 +621,7 @@ const handleEditGroup = async (item) => {
               }}
             >
               <ShoppingCart style={{ fontSize: '24px', color: '#4c637c' }} />
-              Orders
+              Pending Orders
             </h2>
           </div>
 
@@ -755,6 +761,19 @@ const handleEditGroup = async (item) => {
         >
           <CTableHead>
             <CTableRow>
+            <CTableHeaderCell
+                className="text-center"
+                style={{
+                  backgroundColor: '#1d3d5f',
+                  padding: '5px 12px',
+                  borderBottom: '1px solid #e0e0e0',
+                  textAlign: 'center',
+                  verticalAlign: 'middle',
+                  color: 'white',
+                }}
+              >
+                
+              </CTableHeaderCell>
               <CTableHeaderCell
                 className="text-center"
                 style={{
@@ -819,6 +838,8 @@ const handleEditGroup = async (item) => {
               sortedData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
+                  <React.Fragment key={item._id}>
+                    
                   <CTableRow
                     key={index}
                     style={{
@@ -828,6 +849,25 @@ const handleEditGroup = async (item) => {
                     }}
                     hover
                   >
+                    {/* Expand Column */}
+            <CTableDataCell 
+              style={{ 
+                padding: '0px 12px',
+                cursor: 'pointer',
+                backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
+              }}
+            >
+              <IconButton 
+                size="small" 
+                onClick={() => toggleRowExpansion(item._id)}
+              >
+                {expandedRows.includes(item._id) ? (
+                  <ArrowDropUp style={{ color: '#1d3d5f' }} />
+                ) : (
+                  <ArrowDropDown style={{ color: '#1d3d5f' }} />
+                )}
+              </IconButton>
+            </CTableDataCell>
                     <CTableDataCell
                       className="text-center"
                       style={{
@@ -917,6 +957,95 @@ const handleEditGroup = async (item) => {
                           </IconButton>
                         </CTableDataCell>
                   </CTableRow>
+                  {/* Expanded Content */}
+          {/* {expandedRows.includes(item._id) && (
+            <CTableRow>
+              <CTableDataCell 
+                colSpan={columns.length + 3} 
+                style={{ padding: '0 24px', backgroundColor: '#f9f9f9' }}
+              >
+                <div style={{ margin: '16px 0' }}>
+                  <h5 style={{ marginBottom: '12px', color: '#1d3d5f' }}>
+                    Products Details
+                  </h5>
+                  <CTable bordered hover>
+                    <CTableHead>
+                      <CTableRow>
+                        <CTableHeaderCell>Product Name</CTableHeaderCell>
+                        <CTableHeaderCell>Quantity</CTableHeaderCell>
+                        <CTableHeaderCell>Price</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {item.products.map((product, pIndex) => (
+                        <CTableRow key={pIndex}>
+                          <CTableDataCell>{product.productName}</CTableDataCell>
+                          <CTableDataCell>{product.quantity}</CTableDataCell>
+                          <CTableDataCell>₹{product.price.toFixed(2)}</CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </CTableBody>
+                  </CTable>
+                </div>
+              </CTableDataCell>
+            </CTableRow>
+          )} */}
+          {expandedRows.includes(item._id) && (
+  <CTableRow>
+    <CTableDataCell 
+      colSpan={columns.length + 3} 
+      style={{ padding: '0 24px', backgroundColor: '#f9f9f9' }}
+    >
+      <div style={{ margin: '16px 0' }}>
+        <h5 style={{ marginBottom: '12px', color: '#1d3d5f' }}>
+          Products Details
+        </h5>
+        <CTable bordered hover>
+          <CTableHead>
+            <CTableRow>
+              <CTableHeaderCell>Product Name</CTableHeaderCell>
+              <CTableHeaderCell>Quantity</CTableHeaderCell>
+              <CTableHeaderCell>Price</CTableHeaderCell>
+              <CTableHeaderCell>Total</CTableHeaderCell>
+            </CTableRow>
+          </CTableHead>
+          <CTableBody>
+            {item.products.map((product, pIndex) => {
+              const productTotal = product.quantity * product.price;
+              return (
+                <CTableRow key={pIndex}>
+                  <CTableDataCell>{product.productName}</CTableDataCell>
+                  <CTableDataCell>{product.quantity}</CTableDataCell>
+                  <CTableDataCell>₹{product.price.toFixed(2)}</CTableDataCell>
+                  <CTableDataCell>₹{productTotal.toFixed(2)}</CTableDataCell>
+                </CTableRow>
+              );
+            })}
+            
+            {/* Gross Total Row */}
+            {item.products.length > 0 && (
+              <CTableRow style={{ backgroundColor: '#f1f8fd' }}>
+                <CTableDataCell 
+                  colSpan={3}
+                  style={{ textAlign: 'right', fontWeight: 'bold' }}
+                >
+                  Gross Total:
+                </CTableDataCell>
+                <CTableDataCell style={{ fontWeight: 'bold' }}>
+                  ₹{item.products.reduce((sum, product) => 
+                    sum + (product.quantity * product.price), 0
+                  ).toFixed(2)}
+                </CTableDataCell>
+              </CTableRow>
+            )}
+          </CTableBody>
+        </CTable>
+      </div>
+    </CTableDataCell>
+  </CTableRow>
+)}
+          </React.Fragment>
+
                 ))
             ) : (
               <CTableRow>

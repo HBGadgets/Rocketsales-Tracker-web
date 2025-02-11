@@ -233,7 +233,7 @@ const createNav = () => {
         ),
       },
     ];
-  } else if (role === 6) {
+  } else if (role === 5) {
     managementItems = [
       {
         component: CNavItem,
@@ -246,25 +246,26 @@ const createNav = () => {
         ),
       },
      
-      {
-        component: CNavItem,
-        name: 'Supervisor',
-        to: '/Supervisor',
-        icon: (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaUserTie style={{ marginRight: '15px', fontSize: '20px' }} />
-          </div>
-        ),
-      }, {
-        component: CNavItem,
-        name: 'Manage User',
-        to: '/UserManage',
-        icon: (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
-          </div>
-        ),
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Supervisor',
+      //   to: '/Supervisor',
+      //   icon: (
+      //     <div style={{ display: 'flex', alignItems: 'center' }}>
+      //       <FaUserTie style={{ marginRight: '15px', fontSize: '20px' }} />
+      //     </div>
+      //   ),
+      // },
+      //  {
+      //   component: CNavItem,
+      //   name: 'Manage User',
+      //   to: '/UserManage',
+      //   icon: (
+      //     <div style={{ display: 'flex', alignItems: 'center' }}>
+      //       <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
+      //     </div>
+      //   ),
+      // },
     ];
   } else {
     managementItems = [
@@ -278,16 +279,16 @@ const createNav = () => {
           </div>
         ),
       },
-      {
-        component: CNavItem,
-        name: 'Manage User',
-      to: '/UserManage',
-        icon: (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
-          </div>
-        ),
-      },
+      // {
+      //   component: CNavItem,
+      //   name: 'Manage User',
+      // to: '/UserManage',
+      //   icon: (
+      //     <div style={{ display: 'flex', alignItems: 'center' }}>
+      //       <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
+      //     </div>
+      //   ),
+      // },
     ];
   }
 
