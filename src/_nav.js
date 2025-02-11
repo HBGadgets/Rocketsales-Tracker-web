@@ -429,8 +429,8 @@ const createNav = () => {
       items: [
         {
           component: CNavItem,
-          name: 'Order List',
-          to: '/order-list',
+          name: 'Pending Orders',
+          to: '/Pending-order-list',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <FaShoppingCart style={{ marginRight: '15px', fontSize: '25px' }} />

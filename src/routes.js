@@ -5,6 +5,7 @@ const LiveTrack = React.lazy(() => import('./views/theme/livetrack/LiveTrack'))
 const IndividualTrack = React.lazy(() => import('./views/theme/livetrack/IndividualTrack'))
 const ChatBot = React.lazy(() => import('./views/theme/chatbot/ChatBot'))
 
+
 const Attendance = React.lazy(() => import('./views/base/ManageAttend/Attendance'))
 const LeaveApplication = React.lazy(() => import('./views/base/ManageAttend/LeaveApplication'))
 const ManualAttendance = React.lazy(() => import('./views/base/ManageAttend/ManualAttendance/Manual'))
@@ -48,13 +49,16 @@ const routes = [
 
   // { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/dashboard', name: 'DashBoard', element: DashBoard },
+
  { path: '/chatbot', name: 'ChatBot', element: ChatBot },
+
+
   { path: '/livetrack', name: 'LiveTrack', element: LiveTrack },
   { path: '/salesman', name: 'IndividualTrack', element: IndividualTrack },
 
   { path: '/manual-attendance', name: 'Manual Attendance', element: ManualAttendance },
   { path: '/attendance', name: 'Attendance1', element: Attendance },
-  { path: '/order-list', name: 'order List', element: OrderList },
+  { path: '/Pending-order-list', name: 'Pending Orders', element: OrderList },
   { path: '/product-list', name: 'product List', element: ProductList },
 
   { path: '/leave-application', name: 'Leave Application', element: LeaveApplication },
