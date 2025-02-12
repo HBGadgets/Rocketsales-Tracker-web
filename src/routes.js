@@ -4,6 +4,7 @@ const DashBoard = React.lazy(() => import('./views/theme/dashboard/DashBoard'))
 const LiveTrack = React.lazy(() => import('./views/theme/livetrack/LiveTrack'))
 const IndividualTrack = React.lazy(() => import('./views/theme/livetrack/IndividualTrack'))
 const ChatBot = React.lazy(() => import('./views/theme/chatbot/ChatBot'))
+const Invoice = React.lazy(() => import('./views/base/ManageOrder/Invoice/Invoice'))
 
 
 const Attendance = React.lazy(() => import('./views/base/ManageAttend/Attendance'))
@@ -12,7 +13,7 @@ const ManualAttendance = React.lazy(() => import('./views/base/ManageAttend/Manu
 const VisitShop = React.lazy(() => import('./views/base/ManageAttend/VistShop'))
 
 const InventoryManagment = React.lazy(() => import('./views/base/ManageOrder/InventoryManage'))
-const InvoiceForm = React.lazy(() => import('./views/base/ManageOrder/Invoice'))
+// const InvoiceForm = React.lazy(() => import('./views/base/ManageOrder/Invoice'))
 const Po = React.lazy(() => import('./views/base/ManageOrder/PO'))
 
 const TaskManagment = React.lazy(() => import('./views/base/Management/TaskManagement/TaskManagement'))
@@ -64,7 +65,7 @@ const routes = [
   { path: '/leave-application', name: 'Leave Application', element: LeaveApplication },
   { path: '/visit-shop', name: 'Visit Shop', element: VisitShop },
 
-  { path: '/invoice', name: 'Invoice', element: InvoiceForm },
+  // { path: '/invoice', name: 'Invoice', element: InvoiceForm },
   { path: '/po', name: 'PO', element: Po },
   { path: '/inventory-management', name: 'Inventory Management', element: InventoryManagment },
   
@@ -89,6 +90,7 @@ const routes = [
   { path: '/DeniedRequest', name: 'Rejected Request', element: DeniedRequest },
   { path: '/SalesmanExpenceManagement', name: 'Salesman Expences', element: SalesmanExpenceManagement },
   { path: '/ExpenceType', name: 'Expence Type', element: ExpenceType },
+  { path: '/invoice', name: 'Invoice', element: Invoice },
 ]
 
 export default routes
