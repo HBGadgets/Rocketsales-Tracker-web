@@ -641,11 +641,11 @@ const OrderList = () => {
   }
   // const [ProductData, setProductData] = useState([]); // Populate this with your fetched product data
 
-  // const handleProductChange = (index, newValue) => {
-  //   const updatedProducts = [...formData.products]
-  //   updatedProducts[index].productName = newValue?.productName || ''
-  //   setFormData({ ...formData, products: updatedProducts })
-  // }
+  const handleProductChange = (index, newValue) => {
+    const updatedProducts = [...formData.products]
+    updatedProducts[index].productName = newValue?.productName || ''
+    setFormData({ ...formData, products: updatedProducts })
+  }
 
   const handleQuantityChange = (index, value) => {
     const updatedProducts = [...formData.products]
@@ -673,17 +673,7 @@ const OrderList = () => {
  
 
  
-    const [popupVisible, setPopupVisible] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState(null);
-  
-    const openpopup = (item) => {
-      setSelectedOrder(item); // Store the selected order
-      setPopupVisible(true); // Show the popup
-    };
-  
-    const closePopup = () => {
-      setPopupVisible(false); // Hide the popup
-    };
+   
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -1035,9 +1025,7 @@ const OrderList = () => {
                       >
                         <IoShareSocialOutline className="icon-button-icon" />
                       </IconButton>
-                      <button onClick={() => openpopup(item)} className="primary">
-                      Order Detail
-                      </button>
+                      
                     </CTableDataCell>
                   </CTableRow>
                   {/* Expanded Content */}
@@ -1146,60 +1134,7 @@ const OrderList = () => {
               </CTableRow>
             )}
           </CTableBody>
-          {popupVisible && selectedOrder && (
-  <div className="popup">
-    <div className="popup-content">
-      <button className="close-btn" onClick={closePopup}>
-        X
-      </button>
-      <h3 className='center'>Order Details</h3>
-      <div>
-        <div className='orderstyle'>
-        <p><strong>Order ID:</strong> {selectedOrder._id}</p>
-        <p><strong>Shop Name:</strong> {selectedOrder.shopName}</p>
-        </div>
-    
-        {/* <p><strong>Shop Address:</strong> {selectedOrder.shopAddress}</p> */}
-
-        <h3>Products</h3>
-        {selectedOrder.products && Array.isArray(selectedOrder.products) && selectedOrder.products.length > 0 ? (
-          <table className="order-table">
-            <thead>
-              <tr>
-                <th>Product Name</th>
-                <th>Quantity</th>
-                <th>Price per Piece</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selectedOrder.products.map((product) => (
-                <tr key={product._id}>
-                  <td>{product.productName}</td>
-                  <td>{product.quantity}</td>
-                  <td>{product.price}</td>
-                  <td>{product.quantity * product.price}</td> {/* Amount */}
-                </tr>
-              ))}
-
-              {/* Add the total amount row */}
-              <tr>
-                <td colSpan="3" style={{ textAlign: 'left' }}><strong>Total Amount</strong></td>
-                <td>
-                  <strong>
-                    {selectedOrder.products.reduce((total, product) => total + (product.quantity * product.price), 0)}
-                  </strong>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        ) : (
-          <p>No products available for this order.</p>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+     
 
 
 
