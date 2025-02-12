@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect,useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -56,6 +56,7 @@ import { StyledTablePagination } from '../../../../views/PaginationCssFile/Table
 import { BsBuildingsFill } from 'react-icons/bs'
 import '../../ReusablecodeforTable/styles.css';
 import ExcelJS from 'exceljs';
+import debounce from 'lodash.debounce';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 const Company = () => {
@@ -104,41 +105,26 @@ const Company = () => {
   }
 
   // ##################### getting data  ###################
-  const fetchData = async (page = 1) => {
+  const fetchData = async () => {
     const accessToken = Cookies.get('token');
     const url = `${import.meta.env.VITE_SERVER_URL}/api/company`;
   console.log("to",accessToken)
     try {
       const response = await axios.get(url, {
-        headers: {
-          Authorization: 'Bearer ' + accessToken,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-  
       if (response.data) {
-        // Filter the data based on the search query if it is not empty
-        const filteredData = response.data
-          .map((item) => {
-            // Apply the formatDate method to 'created_at' field if it exists
-            if (item.createdAt) {
-              item.createdAt = formatDate(item.createdAt);
-            }
-            return item;
-          })
-          .filter((item) =>
-            Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          );
-  
-        setData(filteredData); // Set the filtered data to `data`
-        setSortedData(filteredData); // Set the filtered data to `sortedData`
+        const formattedData = response.data.map((item) => ({
+          ...item,
+          createdAt: formatDate(item.createdAt),
+        }));
+        setData(formattedData);
+        setSortedData(formattedData);
         setLoading(false);
       }
     } catch (error) {
       setLoading(false);
       console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
     }
   };
   
@@ -156,11 +142,15 @@ const Company = () => {
     const [day, month, year] = dateString.split('-').map(Number);
     return new Date(year, month - 1, day);
   }
-  
   useEffect(() => {
-    setLoading(true)
-    fetchData() // Refetch data when searchQuery changes
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+    setLoading(true);
+    fetchData();
+  }, []); 
+  // useEffect(() => {
+  //   setLoading(true)
+  //   fetchData() // Refetch data when searchQuery changes
+  // }, [searchQuery])
+  //  // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -174,10 +164,43 @@ const Company = () => {
       setCurrentPage(1)
     }
   }
-
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  const debouncedFilter = useCallback(
+    debounce((query, data) => {
+      if (!query) {
+        setFilteredData(data);
+      } else {
+        const filtered = data.filter((item) =>
+          Object.values(item).some((value) =>
+            value.toString().toLowerCase().includes(query.toLowerCase())
+          )
+        );
+        setFilteredData(filtered);
+      }
+    }, 500),
+    []
+  );
   useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+    if (data && data.length > 0) {
+      debouncedFilter(searchQuery, data);
+    }
+  }, [searchQuery, data, debouncedFilter]);
+  
+  useEffect(() => {
+    return () => debouncedFilter.cancel();
+  }, [debouncedFilter]);
+
+  // useEffect(() => {
+  //   return () => {
+  //     debouncedFetchData.cancel(); // Cleanup on unmount
+  //   };
+  // }, []);
+
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -206,8 +229,14 @@ const Company = () => {
         setAddModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -245,8 +274,14 @@ const Company = () => {
         setEditModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -339,7 +374,8 @@ const exportToPDF = PDFExporter({
       className="form-control"
       placeholder="🔍 Search here..."
       value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
+      // onChange={(e) => setSearchQuery(e.target.value)}
+      onChange={handleSearchChange} 
       style={{
         height: "40px", // Ensure consistent height
         padding: "8px 12px",
@@ -473,8 +509,8 @@ const exportToPDF = PDFExporter({
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : sortedData.length > 0 ? (
-              sortedData
+            ) : filteredData.length > 0 ? (
+              filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow
@@ -599,6 +635,7 @@ const exportToPDF = PDFExporter({
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''}
+              required={column.accessor === 'companyName'||column.accessor === 'username' || column.accessor === 'password'}
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -609,6 +646,13 @@ const exportToPDF = PDFExporter({
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}
@@ -653,6 +697,7 @@ const exportToPDF = PDFExporter({
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''} // Pre-fill with existing data
+              required={column.accessor === 'companyName'||column.accessor === 'username' || column.accessor === 'password'}
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -663,6 +708,13 @@ const exportToPDF = PDFExporter({
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}
