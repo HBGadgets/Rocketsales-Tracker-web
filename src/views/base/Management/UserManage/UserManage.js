@@ -385,8 +385,14 @@ const [role, setRole] = useState(null);
         setAddModalOpen(false); // Close modal
       }
     } catch (error) {
-      toast.error('An error occurred');
-      throw error.response ? error.response.data : new Error('An error occurred');
+      // toast.error('An error occurred');
+      // throw error.response ? error.response.data : new Error('An error occurred');
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   };
   
@@ -405,10 +411,11 @@ const [role, setRole] = useState(null);
     e.preventDefault()
     console.log(formData)
     try {
+      const { profileImage, ...filteredFormData } = formData;
       const accessToken = Cookies.get('token')
       const response = await axios.put(
         `${import.meta.env.VITE_SERVER_URL}/api/salesman/${formData._id}`,
-        formData,
+        filteredFormData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -417,14 +424,20 @@ const [role, setRole] = useState(null);
       )
 
       if (response.status === 200) {
-        toast.success('group is edited successfully')
+        toast.success('User is edited successfully')
         fetchData()
         setFormData({ name: '' })
         setEditModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -800,6 +813,8 @@ const filteredBranches = formData.companyId
         label="Company Name"
         variant="outlined"
         name="companyId"
+        required
+        placeholder="Select Company"
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -807,6 +822,13 @@ const filteredBranches = formData.companyId
               <BusinessIcon />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -838,6 +860,7 @@ const filteredBranches = formData.companyId
         label="Branch Name"
         variant="outlined"
         name="branchId"
+        required
         error={branchError} // Show error state
         helperText={
           branchError && formData.companyId
@@ -852,6 +875,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -887,6 +917,7 @@ const filteredBranches = formData.companyId
         label="Supervisor"
         variant="outlined"
         name="supervisorId"
+        required
         placeholder={
           !formData.companyId
             ? 'Select Company First'
@@ -902,6 +933,13 @@ const filteredBranches = formData.companyId
               <FiUser />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -937,6 +975,7 @@ const filteredBranches = formData.companyId
         label="Branch Name"
         variant="outlined"
         name="branchId"
+        required
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -944,6 +983,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -976,6 +1022,7 @@ const filteredBranches = formData.companyId
         label="Supervisor"
         variant="outlined"
         name="supervisorId"
+        required
         placeholder={!formData.branchId ? 'Select Branch First' : 'Select Supervisor'}
         disabled={!formData.branchId} // Disable when no branch is selected
         InputProps={{
@@ -985,6 +1032,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1019,6 +1073,7 @@ const filteredBranches = formData.companyId
       label="Supervisor"
       variant="outlined"
       name="supervisorId"
+      required
       InputProps={{
         ...params.InputProps,
         startAdornment: (
@@ -1026,6 +1081,13 @@ const filteredBranches = formData.companyId
             <FiGitBranch />
           </InputAdornment>
         ),
+      }}
+      sx={{
+        "& .MuiFormLabel-asterisk": {
+          color: "red",
+          fontSize: "1.4rem",
+          // fontWeight: "bold",
+        },
       }}
     />
   )}
@@ -1040,6 +1102,9 @@ const filteredBranches = formData.companyId
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''}
+              placeholder={`Enter ${column.Header}`} // Dynamic placeholder
+
+              required={column.accessor === 'salesmanName'||column.accessor === 'username' || column.accessor === 'password'}
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -1050,6 +1115,13 @@ const filteredBranches = formData.companyId
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}
@@ -1113,6 +1185,7 @@ const filteredBranches = formData.companyId
         label="Company Name"
         variant="outlined"
         name="companyId"
+        required
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -1120,6 +1193,13 @@ const filteredBranches = formData.companyId
               <BusinessIcon />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1152,6 +1232,7 @@ const filteredBranches = formData.companyId
         variant="outlined"
         name="branchId"
         error={branchError} // Show error state
+        required
         helperText={
           branchError && formData.companyId
             ? 'Please select a company first'
@@ -1165,6 +1246,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1200,6 +1288,7 @@ const filteredBranches = formData.companyId
         label="Supervisor"
         variant="outlined"
         name="supervisorId"
+        required
         placeholder={
           !formData.companyId
             ? 'Select Company First'
@@ -1215,6 +1304,13 @@ const filteredBranches = formData.companyId
               <FiUser />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1315,6 +1411,7 @@ const filteredBranches = formData.companyId
         label="Branch Name"
         variant="outlined"
         name="branchId"
+        required
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -1322,6 +1419,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1354,6 +1458,7 @@ const filteredBranches = formData.companyId
         label="Supervisor"
         variant="outlined"
         name="supervisorId"
+        required
         placeholder={!formData.branchId ? 'Select Branch First' : 'Select Supervisor'}
         disabled={!formData.branchId} // Disable when branch is not selected
         InputProps={{
@@ -1363,6 +1468,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1395,6 +1507,7 @@ const filteredBranches = formData.companyId
       label="Supervisor"
       variant="outlined"
       name="supervisorId"
+      required
       InputProps={{
         ...params.InputProps,
         startAdornment: (
@@ -1402,6 +1515,13 @@ const filteredBranches = formData.companyId
             <FiGitBranch />
           </InputAdornment>
         ),
+      }}
+      sx={{
+        "& .MuiFormLabel-asterisk": {
+          color: "red",
+          fontSize: "1.4rem",
+          // fontWeight: "bold",
+        },
       }}
     />
   )}
@@ -1417,6 +1537,8 @@ const filteredBranches = formData.companyId
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''}
+              required={column.accessor === 'salesmanName'||column.accessor === 'username' || column.accessor === 'password'}
+
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -1427,6 +1549,13 @@ const filteredBranches = formData.companyId
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}

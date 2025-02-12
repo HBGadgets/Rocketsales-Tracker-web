@@ -229,8 +229,14 @@ const Company = () => {
         setAddModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -268,8 +274,14 @@ const Company = () => {
         setEditModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -623,6 +635,7 @@ const exportToPDF = PDFExporter({
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''}
+              required={column.accessor === 'companyName'||column.accessor === 'username' || column.accessor === 'password'}
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -633,6 +646,13 @@ const exportToPDF = PDFExporter({
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}
@@ -677,6 +697,7 @@ const exportToPDF = PDFExporter({
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''} // Pre-fill with existing data
+              required={column.accessor === 'companyName'||column.accessor === 'username' || column.accessor === 'password'}
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -687,6 +708,13 @@ const exportToPDF = PDFExporter({
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}
