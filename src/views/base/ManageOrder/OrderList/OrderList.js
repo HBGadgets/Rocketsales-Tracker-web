@@ -77,7 +77,7 @@ const OrderList = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [formData, setFormData] = useState({
-    products: [{ productName: '', quantity: '', pricePerPiece: '' }],
+    products: [{ productName: '', quantity: '', price: '' }],
   })
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState([])
@@ -112,7 +112,7 @@ const OrderList = () => {
     };
   const navigate = useNavigate()
   const handleEditModalClose = () => {
-    setFormData({})
+    setFormData({ products: [{ productName: '', quantity: '', price: '' }]})
     setEditModalOpen(false)
   }
   const handleEditSubmit = async (e) => {
@@ -213,7 +213,8 @@ const OrderList = () => {
     console.log('this is before edit', formData)
   }
   const handleAddModalClose = () => {
-    setFormData({})
+   
+    setFormData({ products: [{ productName: '', quantity: '', price: '' }]})
     setAddModalOpen(false)
   }
   const handleAddSubmit = async (e) => {
@@ -243,7 +244,7 @@ const OrderList = () => {
       const products = formData.products.map((product) => ({
         productName: product.productName || '',
         quantity: Number(product.quantity) || 0,
-        price: Number(product.pricePerPiece) || 0
+        price: Number(product.price) || 0
       }));
   
       const orderData = {
@@ -655,14 +656,14 @@ const OrderList = () => {
 
   const handlePriceChange = (index, value) => {
     const updatedProducts = [...formData.products]
-    updatedProducts[index].pricePerPiece = value
+    updatedProducts[index].price = value
     setFormData({ ...formData, products: updatedProducts })
   }
 
   const addProductRow = () => {
     setFormData({
       ...formData,
-      products: [...formData.products, { productName: '', quantity: '', pricePerPiece: '' }],
+      products: [...formData.products, { productName: '', quantity: '', price: '' }],
     })
   }
   const deleteProductRow = (index) => {
@@ -1084,12 +1085,23 @@ const OrderList = () => {
             {item.products.map((product, pIndex) => {
               const productTotal = product.quantity * product.price;
               return (
+                // <CTableRow key={pIndex}>
+                //   <CTableDataCell>{product.productName}</CTableDataCell>
+                //   <CTableDataCell>{product.quantity}</CTableDataCell>
+                //   <CTableDataCell>₹{product.price.toFixed(2)}</CTableDataCell>
+                //   <CTableDataCell>₹{productTotal.toFixed(2)}</CTableDataCell>
+                // </CTableRow>
                 <CTableRow key={pIndex}>
-                  <CTableDataCell>{product.productName}</CTableDataCell>
-                  <CTableDataCell>{product.quantity}</CTableDataCell>
-                  <CTableDataCell>₹{product.price.toFixed(2)}</CTableDataCell>
-                  <CTableDataCell>₹{productTotal.toFixed(2)}</CTableDataCell>
-                </CTableRow>
+  <CTableDataCell>{product.productName}</CTableDataCell>
+  <CTableDataCell>{product.quantity}</CTableDataCell>
+  <CTableDataCell>
+  ₹{typeof product.price === 'number' ? product.price.toFixed(2) : '0.00'}
+</CTableDataCell>
+  <CTableDataCell>
+    ₹{productTotal ? productTotal.toFixed(2) : '0.00'}
+  </CTableDataCell>
+</CTableRow>
+
               );
             })}
             
@@ -1541,7 +1553,7 @@ const OrderList = () => {
          label="Price"
          variant="outlined"
          type="number"
-         value={product.pricePerPiece}
+         value={product.price}
          onChange={(e) => handlePriceChange(index, e.target.value)}
          fullWidth
          disabled={!product.productName}
@@ -1998,7 +2010,7 @@ const OrderList = () => {
          label="Price"
          variant="outlined"
          type="number"
-         value={product.pricePerPiece}
+         value={product.price}
          onChange={(e) => handlePriceChange(index, e.target.value)}
          fullWidth
          disabled={!product.productName}
@@ -2050,7 +2062,7 @@ const OrderList = () => {
   </FormControl>
 </Box>
                 {COLUMNS()
-                  .slice(2, -5)
+                  .slice(0, -5)
                   .map((column) => (
                     <TextField
                       key={column.accessor}

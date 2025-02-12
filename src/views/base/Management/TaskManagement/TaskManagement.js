@@ -18,6 +18,8 @@
     MenuItem,
     InputAdornment,
     Autocomplete,
+    Chip,
+    Tooltip,
   } from '@mui/material'
   import { RiEdit2Fill } from 'react-icons/ri'
   import { AiFillDelete } from 'react-icons/ai'
@@ -509,17 +511,23 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
           response = await axios.get(url, { 
             headers: { Authorization: `Bearer ${accessToken}` } 
           });
-          // Transform task data to match table structure
-          const formattedData = response.data.map(task => ({
-            ...task,
-            _id: task._id,
-            salesmanName: task.assignedTo[0]?.salesmanName || 'N/A',
-            companyName: task.companyId?.companyName || 'N/A',
-            branchName: task.branchId?.branchName || 'N/A',
-            supervisorName: task.supervisorId?.supervisorName || 'N/A',
-            createdAt: task.createdAt ? formatDate(task.createdAt) : 'N/A',
-            // Add other task-related fields as needed
-          }));
+          // Transform task data to match table structur
+          if(response.data){
+            const formattedData = response.data.map(task => ({
+              ...task,
+              _id: task._id,
+              salesmanName: task.assignedTo[0]?.salesmanName || 'N/A',
+              companyName: task.companyId?.companyName || 'N/A',
+              branchName: task.branchId?.branchName || 'N/A',
+              supervisorName: task.supervisorId?.supervisorName || 'N/A',
+              createdAt: task.createdAt ? formatDate(task.createdAt) : 'N/A',
+              // Add other task-related fields as needed
+            }));
+            console.log("dta of tasssskksksksksksksksk", formattedData);
+            setData(formattedData);
+            setSortedData(formattedData);
+          }
+          
           console.log("dta of tasssskksksksksksksksk", formattedData);
           setData(formattedData);
           setSortedData(formattedData);
@@ -1768,7 +1776,15 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
                     <strong>Deadline: </strong> {new Date(task.deadline).toLocaleDateString()}
                     </Typography>
                     <Typography variant="body2" color="textSecondary" style={{ marginTop: '5px' }}>
-                    <strong>Status: </strong> {task.status}
+                    {/* <strong>Status: </strong> */}
+                    <Chip
+     label={`Status: ${task.status}`}
+    style={{
+      backgroundColor: task.status === 'Completed' ? 'green' : 'red',
+      color: 'white',
+      fontWeight: 'bold',
+    }}
+  />
                     </Typography>
                     
                     {/* Edit and Delete Icons */}
@@ -2037,7 +2053,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
           margin="normal"
           inputProps={{ step: "any" }}
         /> */}
-        <FormControlLabel
+        {/* <FormControlLabel
     control={
       <Checkbox
         checked={editTaskData.status === 'Completed'}
@@ -2052,15 +2068,58 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
     }
     label="Completed"
     style={{ marginTop: '10px' }}
-  />
-        <Button 
+  /> */}
+   <Box 
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            margin: 'normal',
+            mt: 2,
+            mb: 2,
+            border: '1px solid rgba(0, 0, 0, 0.23)',
+            borderRadius: '4px',
+            padding: '16.5px 14px'
+          }}
+        >
+          <InputAdornment position="start" sx={{ mr: 1 }}>
+            <CheckCircleIcon />
+          </InputAdornment>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={editTaskData.status === 'Completed'}
+                onChange={(e) => 
+                  setEditTaskData({
+                    ...editTaskData,
+                    status: e.target.checked ? 'Completed' : 'Pending'
+                  })
+                }
+                color="primary"
+              />
+            }
+            label="Completed"
+            sx={{ margin: 0 }}
+          />
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            type="submit"
+            sx={{ width: '50%' }}
+          >
+            Update Task
+          </Button>
+        </Box>
+        {/* <Button 
           variant="contained" 
           color="primary" 
           type="submit" 
           style={{ marginTop: '20px' }}
         >
           Update Task
-        </Button>
+        </Button> */}
       </form>
     </Box>
   </Modal>
