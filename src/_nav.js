@@ -86,6 +86,7 @@ const createNav = () => {
           </div>
         ),
       },
+
       // {
       //   component: CNavItem,
       //   name: 'Branch Group',
@@ -479,6 +480,16 @@ const createNav = () => {
             </div>
           ),
         }, 
+        {
+          component: CNavItem,
+          name: 'Invoice',
+          to: '/invoice',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <BiMoney style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
         
         
       ],
