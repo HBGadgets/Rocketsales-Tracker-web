@@ -1,0 +1,83 @@
+/* Style for the popup background */
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Transparent black background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure the popup appears on top */
+  }
+  
+  /* Style for the popup content */
+  .popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+    max-width: 600px;
+    width: 90%;
+    overflow-y: auto;
+  }
+  
+  /* Centering the heading */
+  .center {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Style for the close button */
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #333;
+  }
+  
+  /* Hover effect for close button */
+  .close-btn:hover {
+    color: red; /* Change color on hover */
+  }
+  
+  /* Style for the table */
+  .order-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .order-table th, .order-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  .order-table th {
+    background-color: #f4f4f4;
+  }
+  
+  .order-table tr:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
+  
+  .order-table tr:nth-child(even) {
+    background-color: #ffffff;
+  }
+  
+  .center {
+    text-align: center;
+    margin: 20px 0; /* Optional: Add some space around the heading */
+  }
+  .orderstyle{
+    display: flex;
+    justify-content: space-between;
+    /* margin: 4px; */
+  }
+  
