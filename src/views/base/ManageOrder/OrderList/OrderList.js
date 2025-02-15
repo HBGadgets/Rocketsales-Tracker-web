@@ -146,7 +146,11 @@ const OrderList = () => {
       throw error.response ? error.response.data : new Error('An error occurred')
     }
   }
-  const handleInvoiceSubmit = async (e) => {}
+  const handleInvoiceSubmit = async (e) => {
+    e.preventDefault()
+  
+
+  }
   const styles = {
     container: {
       display: 'flex',
@@ -2143,7 +2147,7 @@ startAdornment:(
 />
 
                 {COLUMNS()
-                  .slice(0, -5)
+                  .slice(0, -10)
                   .map((column) => (
                     <TextField
                       key={column.accessor}
