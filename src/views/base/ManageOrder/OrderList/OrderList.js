@@ -73,9 +73,14 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteIcon from "@mui/icons-material/Delete";
 import './OrderList.css';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
+import PercentIcon from "@mui/icons-material/Percent"; // Import GST percent icon
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import DiscountIcon from "@mui/icons-material/Discount";
+
 const OrderList = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
+  const [invoicemodalopen, setinvoicemodalopen] = useState(false)
   const [formData, setFormData] = useState({
     products: [{ productName: '', quantity: '', price: '' }],
   })
@@ -141,6 +146,7 @@ const OrderList = () => {
       throw error.response ? error.response.data : new Error('An error occurred')
     }
   }
+  const handleInvoiceSubmit = async (e) => {}
   const styles = {
     container: {
       display: 'flex',
@@ -211,6 +217,12 @@ const OrderList = () => {
     setEditModalOpen(true)
     setFormData({ ...item })
     console.log('this is before edit', formData)
+  }
+  const haqndleIn =async (item)=>{
+    console.log("my item for invoice",item)
+    setinvoicemodalopen(true)
+    setFormData({ ...item })
+    console.log('this is before invoice', formData)
   }
   const handleAddModalClose = () => {
    
@@ -673,7 +685,10 @@ const OrderList = () => {
   };
  
 
- 
+  const handleInvoiceModalClose = () => {
+    setFormData({})
+    setinvoicemodalopen(false)
+  }
    
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
@@ -1029,39 +1044,7 @@ const OrderList = () => {
                       
                     </CTableDataCell>
                   </CTableRow>
-                  {/* Expanded Content */}
-          {/* {expandedRows.includes(item._id) && (
-            <CTableRow>
-              <CTableDataCell 
-                colSpan={columns.length + 3} 
-                style={{ padding: '0 24px', backgroundColor: '#f9f9f9' }}
-              >
-                <div style={{ margin: '16px 0' }}>
-                  <h5 style={{ marginBottom: '12px', color: '#1d3d5f' }}>
-                    Products Details
-                  </h5>
-                  <CTable bordered hover>
-                    <CTableHead>
-                      <CTableRow>
-                        <CTableHeaderCell>Product Name</CTableHeaderCell>
-                        <CTableHeaderCell>Quantity</CTableHeaderCell>
-                        <CTableHeaderCell>Price</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {item.products.map((product, pIndex) => (
-                        <CTableRow key={pIndex}>
-                          <CTableDataCell>{product.productName}</CTableDataCell>
-                          <CTableDataCell>{product.quantity}</CTableDataCell>
-                          <CTableDataCell>₹{product.price.toFixed(2)}</CTableDataCell>
-                        </CTableRow>
-                      ))}
-                    </CTableBody>
-                  </CTable>
-                </div>
-              </CTableDataCell>
-            </CTableRow>
-          )} */}
+                  
           {expandedRows.includes(item._id) && (
   <CTableRow>
     <CTableDataCell 
@@ -1085,12 +1068,7 @@ const OrderList = () => {
             {item.products.map((product, pIndex) => {
               const productTotal = product.quantity * product.price;
               return (
-                // <CTableRow key={pIndex}>
-                //   <CTableDataCell>{product.productName}</CTableDataCell>
-                //   <CTableDataCell>{product.quantity}</CTableDataCell>
-                //   <CTableDataCell>₹{product.price.toFixed(2)}</CTableDataCell>
-                //   <CTableDataCell>₹{productTotal.toFixed(2)}</CTableDataCell>
-                // </CTableRow>
+               
                 <CTableRow key={pIndex}>
   <CTableDataCell>{product.productName}</CTableDataCell>
   <CTableDataCell>{product.quantity}</CTableDataCell>
@@ -2061,6 +2039,109 @@ const OrderList = () => {
     </Box>
   </FormControl>
 </Box>
+                {COLUMNS()
+                  .slice(0, -5)
+                  .map((column) => (
+                    <TextField
+                      key={column.accessor}
+                      label={column.Header}
+                      name={column.accessor}
+                      value={formData[column.accessor] || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, [column.accessor]: e.target.value })
+                      }
+                      // Remove required attribute
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">{column.icon}</InputAdornment>
+                        ),
+                      }}
+                    />
+                  ))}
+              </FormControl>
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                style={{ marginTop: '20px' }}
+              >
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Box>
+      </Modal>
+      <Modal
+        open={invoicemodalopen}
+        onClose={handleInvoiceModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="d-flex justify-content-between">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+             Generate Invoice
+            </Typography>
+            <IconButton onClick={handleInvoiceModalClose}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <DialogContent>
+            <form onSubmit={handleEditSubmit}>
+              <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <TextField
+  key="gst"
+  label="GST (%)"
+  variant="outlined"
+  name="gst"
+  value={formData.gst || ""} // Ensure it doesn't show undefined
+  onChange={(e) => setFormData({ ...formData, gst: e.target.value })}
+  sx={{ marginBottom: "10px" }}
+  fullWidth
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <PercentIcon /> {/* GST Icon in input field */}
+      </InputAdornment>
+    ),
+  }}
+/>
+<TextField
+  key="HSNcode"
+  label="HSN Code"
+  variant="outlined"
+  name="HSNcode"
+  value={formData.HSNcode || ""}
+  onChange={(e) => setFormData({ ...formData, HSNcode: e.target.value })}
+  sx={{ marginBottom: "10px" }}
+  fullWidth
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <ConfirmationNumberIcon /> {/* HSN Code Icon */}
+      </InputAdornment>
+    ),
+  }}
+/>
+<TextField
+key="discount"
+label="Discount (amount)"
+variant="outlined"
+name="discount"
+value={formData.discount || ""}
+onChange={(e)=>setFormData({...formData,discount:e.target.value})}
+sx={{marginBottom:"10px"}}
+fullWidth
+InputProps={{
+startAdornment:(
+  <InputAdornment position="start">
+    <DiscountIcon /> {/* Discount Icon */}
+  </InputAdornment>
+)
+}}
+
+/>
+
                 {COLUMNS()
                   .slice(0, -5)
                   .map((column) => (
