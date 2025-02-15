@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -62,6 +62,8 @@ import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode';
 import { FiUser } from "react-icons/fi";
+import debounce from 'lodash.debounce';
+
 const token=Cookies.get("token");
 // let role=null
 // if(token){
@@ -134,52 +136,96 @@ const [role, setRole] = useState(null);
     fetchRole(); // Call the function to fetch role
   }, []); 
   // ##################### getting data  ###################
-  const fetchData = async (page = 1) => {
+  // const fetchData = async (page = 1) => {
+  //   const accessToken = Cookies.get('token');
+  //   const url = `https://rocketsales-server.onrender.com/api/salesman`;
+  
+  //   try {
+  //     const response = await axios.get(url, {
+  //       headers: {
+  //         Authorization: 'Bearer ' + accessToken,
+  //       },
+  //     });
+  
+  //     // Log the full response data to inspect its structure
+  //     console.log("Full Response Data:", response.data);
+  
+  //     // Process the salesmandata
+  //     const salesmandata = response.data.salesmandata.map((item) => ({
+  //       ...item,
+  //       companyName: item.companyId?.companyName || null, // Extract companyName or set null
+  //       companyId: item.companyId?._id || null,          // Extract companyId or set null
+  //       branchName: item.branchId?.branchName || null,   // Extract branchName or set null
+  //       branchId: item.branchId?._id || null,            // Extract branchId or set null
+  //       supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
+  //       supervisorId: item.supervisorId?._id || null,    // Extract supervisorId or set null
+  //     }));
+  
+  //     console.log("Processed Data:", salesmandata);
+  
+  //     if (salesmandata) {
+  //       // Filter the data based on the search query if it is not empty
+  //       const filteredData = salesmandata
+  //         .map((item) => {
+  //           // Apply the formatDate method to 'createdAt' field if it exists
+  //           if (item.createdAt) {
+  //             item.createdAt = formatDate(item.createdAt); // Use your custom formatDate method
+  //           }
+  
+  //           return item;
+  //         })
+  //         .filter((item) =>
+  //           Object.values(item).some((value) =>
+  //             value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+  //           )
+  //         );
+  
+  //       setData(filteredData); // Set the filtered data to `data`
+  //       setSortedData(filteredData); // Set the filtered data to `sortedData`
+  //       setLoading(false);
+  //     } else {
+  //       console.error('Salesman data is missing or incorrectly structured.');
+  //       setLoading(false);
+  //     }
+  //   } catch (error) {
+  //     setLoading(false);
+  //     console.error('Error fetching data:', error);
+  //     throw error; // Re-throw the error for further handling if needed
+  //   }
+  // };
+  const fetchData = async () => {
     const accessToken = Cookies.get('token');
     const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`;
   
     try {
       const response = await axios.get(url, {
-        headers: {
-          Authorization: 'Bearer ' + accessToken,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
   
-      // Log the full response data to inspect its structure
-      console.log("Full Response Data:", response.data);
+      
+      // Ensure the response contains the salesmandata array
+      if (response.data && response.data.salesmandata) {
+        const formattedData = response.data.salesmandata.map((item) => ({
+          ...item,
+          companyName: item.companyId?.companyName || null, // Extract companyName or default to null
+          companyId: item.companyId?._id || null,             // Extract companyId or default to null
+          branchName: item.branchId?.branchName || null,       // Extract branchName or default to null
+          branchId: item.branchId?._id || null,                // Extract branchId or default to null
+          supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or default to null
+          supervisorId: item.supervisorId?._id || null,        // Extract supervisorId or default to null
+          // Format the createdAt date if it exists
+          createdAt: item.createdAt ? formatDate(item.createdAt) : item.createdAt,
+        }));
   
-      // Process the salesmandata
-      const salesmandata = response.data.salesmandata.map((item) => ({
-        ...item,
-        companyName: item.companyId?.companyName || null, // Extract companyName or set null
-        companyId: item.companyId?._id || null,          // Extract companyId or set null
-        branchName: item.branchId?.branchName || null,   // Extract branchName or set null
-        branchId: item.branchId?._id || null,            // Extract branchId or set null
-        supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
-        supervisorId: item.supervisorId?._id || null,    // Extract supervisorId or set null
-      }));
+        // Filter the data based on the search query
+        const filteredData = formattedData.filter((item) =>
+          Object.values(item).some((value) =>
+            value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        );
   
-      console.log("Processed Data:", salesmandata);
-  
-      if (salesmandata) {
-        // Filter the data based on the search query if it is not empty
-        const filteredData = salesmandata
-          .map((item) => {
-            // Apply the formatDate method to 'createdAt' field if it exists
-            if (item.createdAt) {
-              item.createdAt = formatDate(item.createdAt); // Use your custom formatDate method
-            }
-  
-            return item;
-          })
-          .filter((item) =>
-            Object.values(item).some((value) =>
-              value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          );
-  
-        setData(filteredData); // Set the filtered data to `data`
-        setSortedData(filteredData); // Set the filtered data to `sortedData`
+        setData(filteredData);
+        setSortedData(filteredData);
         setLoading(false);
       } else {
         console.error('Salesman data is missing or incorrectly structured.');
@@ -187,8 +233,7 @@ const [role, setRole] = useState(null);
       }
     } catch (error) {
       setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      console.error('Error fetching salesman data:', error);
     }
   };
   
@@ -287,12 +332,15 @@ const [role, setRole] = useState(null);
     const [day, month, year] = dateString.split('-').map(Number);
     return new Date(year, month - 1, day);
   }
-  
   useEffect(() => {
-    setLoading(true)
-    // fetchcompany()
-    fetchData() // Refetch data when searchQuery changes
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+      setLoading(true);
+      fetchData();
+    }, []);
+  // useEffect(() => {
+  //   setLoading(true)
+  //   // fetchcompany()
+  //   fetchData() // Refetch data when searchQuery changes
+  // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -306,10 +354,42 @@ const [role, setRole] = useState(null);
       setCurrentPage(1)
     }
   }
-
-  useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+  const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+      };
+      const debouncedFilter = useCallback(
+        debounce((query, data) => {
+          if (!query) {
+            setFilteredData(data);
+          } else {
+            // const filtered = data.filter((item) =>
+            //   Object.values(item).some((value) =>
+            //     value.toString().toLowerCase().includes(query.toLowerCase())
+            //   )
+            // );
+            const filtered = data.filter((item) =>
+              Object.entries(item).some(([key, value]) =>
+                key !== "profileImage" && (value?.toString() ?? "").toLowerCase().includes(query.toLowerCase())
+              )
+            );            
+            
+            setFilteredData(filtered);
+          }
+        }, 500),
+        []
+      );
+      useEffect(() => {
+        if (data && data.length > 0) {
+          debouncedFilter(searchQuery, data);
+        }
+      }, [searchQuery, data, debouncedFilter]);
+      
+      useEffect(() => {
+        return () => debouncedFilter.cancel();
+      }, [debouncedFilter]);
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -533,7 +613,8 @@ const filteredBranches = formData.companyId
       className="form-control"
       placeholder="🔍 Search here..."
       value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
+      // onChange={(e) => setSearchQuery(e.target.value)}
+      onChange={handleSearchChange} 
       style={{
         height: "40px", // Ensure consistent height
         padding: "8px 12px",
@@ -667,8 +748,8 @@ const filteredBranches = formData.companyId
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : sortedData.length > 0 ? (
-              sortedData
+            ) : filteredData.length > 0 ? (
+              filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow

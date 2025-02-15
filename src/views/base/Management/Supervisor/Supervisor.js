@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -61,6 +61,7 @@ import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode'
+import debounce from 'lodash.debounce';
 
 const Supervisor = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -129,61 +130,102 @@ const Supervisor = () => {
   }
 
   // ##################### getting data  ###################
-  const fetchData = async (page = 1) => {
-    const accessToken = Cookies.get('token')
-    const url = `${import.meta.env.VITE_SERVER_URL}/api/supervisor`
+  // const fetchData = async (page = 1) => {
+  //   const accessToken = Cookies.get('token')
+  //   const url = `https://rocketsales-server.onrender.com/api/supervisor`
 
+  //   try {
+  //     const response = await axios.get(url, {
+  //       headers: {
+  //         Authorization: 'Bearer ' + accessToken,
+  //       },
+  //     })
+
+  //     // Log the full response data to inspect its structure
+  //     console.log('Full Response Data:', response.data)
+
+  //     // Flattening the supervisor data and adding companyName and branchName
+  //     const allData = response.data.supervisors.map((item) => ({
+  //       ...item,
+  //       companyName: item.companyId.companyName, // Extract companyName from companyId
+  //       companyId: item.companyId._id, // Extract companyId from companyId
+  //       branchName: item.branchId.branchName, // Extract branchName from branchId
+  //       branchId: item.branchId._id, // Extract branchId from branchId
+  //     }))
+
+  //     console.log('Processed Data:', allData)
+
+  //     if (allData) {
+  //       // Filter the data based on the search query if it is not empty
+  //       const filteredData = allData
+  //         .map((item) => {
+  //           // Apply the formatDate method to 'createdAt' field if it exists
+  //           if (item.createdAt) {
+  //             item.createdAt = formatDate(item.createdAt) // Use your custom formatDate method
+  //           }
+
+  //           return item
+  //         })
+  //         .filter((item) =>
+  //           Object.values(item).some((value) =>
+  //             value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+  //           ),
+  //         )
+
+  //       setData(filteredData) // Set the filtered data to `data`
+  //       setSortedData(filteredData) // Set the filtered data to `sortedData`
+  //       setLoading(false)
+  //     } else {
+  //       console.error('Supervisors data is missing or incorrectly structured.')
+  //       setLoading(false)
+  //     }
+  //   } catch (error) {
+  //     setLoading(false)
+  //     console.error('Error fetching data:', error)
+  //     throw error // Re-throw the error for further handling if needed
+  //   }
+  // }
+  const fetchData = async () => {
+    const accessToken = Cookies.get('token');
+    // const url = `https://rocketsales-server.onrender.com/api/supervisor`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/supervisor`
+    
     try {
       const response = await axios.get(url, {
-        headers: {
-          Authorization: 'Bearer ' + accessToken,
-        },
-      })
-
-      // Log the full response data to inspect its structure
-      console.log('Full Response Data:', response.data)
-
-      // Flattening the supervisor data and adding companyName and branchName
-      const allData = response.data.supervisors.map((item) => ({
-        ...item,
-        companyName: item.companyId.companyName, // Extract companyName from companyId
-        companyId: item.companyId._id, // Extract companyId from companyId
-        branchName: item.branchId.branchName, // Extract branchName from branchId
-        branchId: item.branchId._id, // Extract branchId from branchId
-      }))
-
-      console.log('Processed Data:', allData)
-
-      if (allData) {
-        // Filter the data based on the search query if it is not empty
-        const filteredData = allData
-          .map((item) => {
-            // Apply the formatDate method to 'createdAt' field if it exists
-            if (item.createdAt) {
-              item.createdAt = formatDate(item.createdAt) // Use your custom formatDate method
-            }
-
-            return item
-          })
-          .filter((item) =>
-            Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
-            ),
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+  
+      // Check that the response data contains the supervisors array
+      if (response.data && response.data.supervisors) {
+        const formattedData = response.data.supervisors.map((item) => ({
+          ...item,
+          companyName: item.companyId?.companyName, // Extract companyName from companyId object
+          companyId: item.companyId?._id,             // Extract companyId from companyId object
+          branchName: item.branchId?.branchName,       // Extract branchName from branchId object
+          branchId: item.branchId?._id,                // Extract branchId from branchId object
+          createdAt: item.createdAt ? formatDate(item.createdAt) : item.createdAt, // Format createdAt if available
+        }));
+  
+        // Filter the data based on the search query (if one is provided)
+        const filteredData = formattedData.filter((item) =>
+          Object.values(item).some((value) =>
+            value.toString().toLowerCase().includes(searchQuery.toLowerCase())
           )
-
-        setData(filteredData) // Set the filtered data to `data`
-        setSortedData(filteredData) // Set the filtered data to `sortedData`
-        setLoading(false)
+        );
+  
+        setData(filteredData);
+        setSortedData(filteredData);
+        setLoading(false);
       } else {
-        console.error('Supervisors data is missing or incorrectly structured.')
-        setLoading(false)
+        console.error('Supervisors data is missing or incorrectly structured.');
+        setLoading(false);
       }
     } catch (error) {
-      setLoading(false)
-      console.error('Error fetching data:', error)
-      throw error // Re-throw the error for further handling if needed
+      setLoading(false);
+      console.error('Error fetching supervisor data:', error);
     }
-  }
+  };
+  
 
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token')
@@ -248,12 +290,17 @@ const Supervisor = () => {
     const [day, month, year] = dateString.split('-').map(Number)
     return new Date(year, month - 1, day)
   }
-
-  useEffect(() => {
-    setLoading(true)
-    // fetchcompany()
-    fetchData() // Refetch data when searchQuery changes
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+useEffect(() => {
+    setLoading(true);
+    fetchData();
+  }, []);
+  // useEffect(() => {
+  //   setLoading(true)
+  //   // fetchcompany()
+  //   fetchData()
+  //  // Refetch data when searchQuery changes
+  // }, [searchQuery]) 
+  // // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -267,10 +314,37 @@ const Supervisor = () => {
       setCurrentPage(1)
     }
   }
+  const handleSearchChange = (e) => {
+      setSearchQuery(e.target.value);
+    };
+    const debouncedFilter = useCallback(
+      debounce((query, data) => {
+        if (!query) {
+          setFilteredData(data);
+        } else {
+          const filtered = data.filter((item) =>
+            Object.values(item).some((value) =>
+              value.toString().toLowerCase().includes(query.toLowerCase())
+            )
+          );
+          setFilteredData(filtered);
+        }
+      }, 500),
+      []
+    );
+    useEffect(() => {
+      if (data && data.length > 0) {
+        debouncedFilter(searchQuery, data);
+      }
+    }, [searchQuery, data, debouncedFilter]);
+    
+    useEffect(() => {
+      return () => debouncedFilter.cancel();
+    }, [debouncedFilter]);
 
-  useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -463,7 +537,9 @@ const Supervisor = () => {
               className="form-control"
               placeholder="🔍 Search here..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              // onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange} 
+
               style={{
                 height: '40px', // Ensure consistent height
                 padding: '8px 12px',
@@ -597,8 +673,8 @@ const Supervisor = () => {
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : sortedData.length > 0 ? (
-              sortedData
+            ) :  filteredData.length > 0 ? (
+              filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow

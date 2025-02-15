@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -61,6 +61,7 @@ import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { FaThumbsUp } from 'react-icons/fa';
 import { CTooltip } from '@coreui/react';
+import debounce from 'lodash.debounce';
 
 // import { useNavigate } from 'react-router-dom';
 const ApproveRequest = () => {
@@ -271,12 +272,14 @@ const ApproveRequest = () => {
     const [day, month, year] = dateString.split('-').map(Number)
     return new Date(year, month - 1, day)
   }
-
-  useEffect(() => {
-    setLoading(true)
-    // fetchData() // Refetch data when searchQuery changes
-    fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+   useEffect(() => {
+        fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
+      }, []);
+  // useEffect(() => {
+  //   setLoading(true)
+  //   // fetchData() // Refetch data when searchQuery changes
+  //   fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
+  // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -290,10 +293,46 @@ const ApproveRequest = () => {
       setCurrentPage(1)
     }
   }
-
-  useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+  const debouncedFilter = useCallback(
+        debounce((query, sourceData) => {
+          if (!query) {
+            setFilteredData(sourceData);
+            return;
+          }
+          const filtered = sourceData.filter(item =>
+            Object.values(item).some(value =>
+              value?.toString().toLowerCase().includes(query.toLowerCase())
+            )
+          );
+          // const filtered = sourceData.filter(item =>
+          //   Object.entries(item).some(([key, value]) => {
+          //     if (key === 'profileImgUrl') return false; // Skip searching the profileImage field
+          //     return value?.toString().toLowerCase().includes(query.toLowerCase());
+          //   })
+          // );
+          
+          
+          setFilteredData(filtered);
+        }, 500),
+        []
+      );
+      // Handle search input changes
+      const handleSearchChange = (e) => {
+        const query = e.target.value;
+        setSearchQuery(query);
+        debouncedFilter(query, data);
+      };
+    
+      // Cancel debounce on component unmount
+      useEffect(() => {
+        return () => debouncedFilter.cancel();
+      }, [debouncedFilter]);
+      useEffect(() => {
+        setFilteredData(data);
+      }, [data])
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -416,7 +455,8 @@ const exportToPDF = PDFExporter({
               className="form-control"
               placeholder="🔍 Search here..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              // onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               style={{
                 height: '40px', // Ensure consistent height
                 padding: '8px 12px',
@@ -533,8 +573,8 @@ const exportToPDF = PDFExporter({
         Loading...
       </CTableDataCell>
     </CTableRow>
-  ) : sortedData.length > 0 ? (
-    sortedData
+  ) : filteredData.length > 0 ? (
+    filteredData
       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
       .map((item, index) => (
         <CTableRow
