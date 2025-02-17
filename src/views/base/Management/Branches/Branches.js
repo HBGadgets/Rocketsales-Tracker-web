@@ -455,36 +455,88 @@ const handleSearchChange = (e) => {
       toast.error('Invalid item selected for deletion.')
       return
     }
+  
+    toast((t) => (
+      <div>
+        <p>Do you want to delete <u><b>{item.branchName}</b></u> user?</p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id)
+  
+              try {
+                const accessToken = Cookies.get('token')
+                if (!accessToken) {
+                  toast.error('Authentication token is missing.')
+                  return
+                }
+  
+                const response = await axios({
+                  method: 'DELETE',
+                  url: `${import.meta.env.VITE_SERVER_URL}/api/branch/${item._id}`,
+                  headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                  },
+                })
+  
+                // Check if deletion was successful
+                toast.success('Branch deleted successfully')
+                fetchData()
+              } catch (error) {
+                console.error('Error Details:', error.response || error.message)
+                toast.error('An error occurred while deleting the Company.')
+              }
+            }}
+            style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity });
+  };
+  // const haqndleDeletesubmit = async (item) => {
+  //   if (!item._id) {
+  //     toast.error('Invalid item selected for deletion.')
+  //     return
+  //   }
 
-    const confirmed = confirm('Do you want to delete this user?')
-    if (!confirmed) return
+  //   const confirmed = confirm('Do you want to delete this user?')
+  //   if (!confirmed) return
 
-    try {
-      const accessToken = Cookies.get('token')
-      if (!accessToken) {
-        toast.error('Authentication token is missing.')
-        return
-      }
+  //   try {
+  //     const accessToken = Cookies.get('token')
+  //     if (!accessToken) {
+  //       toast.error('Authentication token is missing.')
+  //       return
+  //     }
 
-      const response = await axios({
-        method: 'DELETE', // Explicitly specifying DELETE method
-        // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
-        url: `${import.meta.env.VITE_SERVER_URL}/api/branch/${item._id}`,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
+  //     const response = await axios({
+  //       method: 'DELETE', // Explicitly specifying DELETE method
+  //       // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
+  //       url: `${import.meta.env.VITE_SERVER_URL}/api/branch/${item._id}`,
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     })
 
-      if (response.status === 200) {
-        toast.success('Group deleted successfully')
-        fetchData()
-      }
-    } catch (error) {
-      console.error('Error Details:', error.response || error.message)
-      toast.error('An error occurred while deleting the group.')
-    }
-  }
+  //     if (response.status === 200) {
+  //       toast.success('Branch deleted successfully')
+  //       fetchData()
+  //     }
+  //   } catch (error) {
+  //     console.error('Error Details:', error.response || error.message)
+  //     toast.error('An error occurred while deleting the Branch.')
+  //   }
+  // }
 
 
   
