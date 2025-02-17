@@ -158,6 +158,8 @@ const [loadingChatUser, setLoadingChatUser] = useState(true);
 
   const handleAdminClick = (username) => {
     setSelectedUsername(null);
+    setNameofSelectedUser(null);
+    setNameofSelectedUserImg(null);
     setchatAdmin(username);
     setNameofSelectedUserImg();
     setMessages([]);
