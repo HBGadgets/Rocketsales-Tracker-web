@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -62,6 +62,8 @@ import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode';
 import { FiUser } from "react-icons/fi";
+import debounce from 'lodash.debounce';
+
 const token=Cookies.get("token");
 // let role=null
 // if(token){
@@ -134,52 +136,96 @@ const [role, setRole] = useState(null);
     fetchRole(); // Call the function to fetch role
   }, []); 
   // ##################### getting data  ###################
-  const fetchData = async (page = 1) => {
+  // const fetchData = async (page = 1) => {
+  //   const accessToken = Cookies.get('token');
+  //   const url = `https://rocketsales-server.onrender.com/api/salesman`;
+  
+  //   try {
+  //     const response = await axios.get(url, {
+  //       headers: {
+  //         Authorization: 'Bearer ' + accessToken,
+  //       },
+  //     });
+  
+  //     // Log the full response data to inspect its structure
+  //     console.log("Full Response Data:", response.data);
+  
+  //     // Process the salesmandata
+  //     const salesmandata = response.data.salesmandata.map((item) => ({
+  //       ...item,
+  //       companyName: item.companyId?.companyName || null, // Extract companyName or set null
+  //       companyId: item.companyId?._id || null,          // Extract companyId or set null
+  //       branchName: item.branchId?.branchName || null,   // Extract branchName or set null
+  //       branchId: item.branchId?._id || null,            // Extract branchId or set null
+  //       supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
+  //       supervisorId: item.supervisorId?._id || null,    // Extract supervisorId or set null
+  //     }));
+  
+  //     console.log("Processed Data:", salesmandata);
+  
+  //     if (salesmandata) {
+  //       // Filter the data based on the search query if it is not empty
+  //       const filteredData = salesmandata
+  //         .map((item) => {
+  //           // Apply the formatDate method to 'createdAt' field if it exists
+  //           if (item.createdAt) {
+  //             item.createdAt = formatDate(item.createdAt); // Use your custom formatDate method
+  //           }
+  
+  //           return item;
+  //         })
+  //         .filter((item) =>
+  //           Object.values(item).some((value) =>
+  //             value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+  //           )
+  //         );
+  
+  //       setData(filteredData); // Set the filtered data to `data`
+  //       setSortedData(filteredData); // Set the filtered data to `sortedData`
+  //       setLoading(false);
+  //     } else {
+  //       console.error('Salesman data is missing or incorrectly structured.');
+  //       setLoading(false);
+  //     }
+  //   } catch (error) {
+  //     setLoading(false);
+  //     console.error('Error fetching data:', error);
+  //     throw error; // Re-throw the error for further handling if needed
+  //   }
+  // };
+  const fetchData = async () => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/salesman`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`;
   
     try {
       const response = await axios.get(url, {
-        headers: {
-          Authorization: 'Bearer ' + accessToken,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
   
-      // Log the full response data to inspect its structure
-      console.log("Full Response Data:", response.data);
+      
+      // Ensure the response contains the salesmandata array
+      if (response.data && response.data.salesmandata) {
+        const formattedData = response.data.salesmandata.map((item) => ({
+          ...item,
+          companyName: item.companyId?.companyName || null, // Extract companyName or default to null
+          companyId: item.companyId?._id || null,             // Extract companyId or default to null
+          branchName: item.branchId?.branchName || null,       // Extract branchName or default to null
+          branchId: item.branchId?._id || null,                // Extract branchId or default to null
+          supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or default to null
+          supervisorId: item.supervisorId?._id || null,        // Extract supervisorId or default to null
+          // Format the createdAt date if it exists
+          createdAt: item.createdAt ? formatDate(item.createdAt) : item.createdAt,
+        }));
   
-      // Process the salesmandata
-      const salesmandata = response.data.salesmandata.map((item) => ({
-        ...item,
-        companyName: item.companyId?.companyName || null, // Extract companyName or set null
-        companyId: item.companyId?._id || null,          // Extract companyId or set null
-        branchName: item.branchId?.branchName || null,   // Extract branchName or set null
-        branchId: item.branchId?._id || null,            // Extract branchId or set null
-        supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
-        supervisorId: item.supervisorId?._id || null,    // Extract supervisorId or set null
-      }));
+        // Filter the data based on the search query
+        const filteredData = formattedData.filter((item) =>
+          Object.values(item).some((value) =>
+            value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        );
   
-      console.log("Processed Data:", salesmandata);
-  
-      if (salesmandata) {
-        // Filter the data based on the search query if it is not empty
-        const filteredData = salesmandata
-          .map((item) => {
-            // Apply the formatDate method to 'createdAt' field if it exists
-            if (item.createdAt) {
-              item.createdAt = formatDate(item.createdAt); // Use your custom formatDate method
-            }
-  
-            return item;
-          })
-          .filter((item) =>
-            Object.values(item).some((value) =>
-              value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          );
-  
-        setData(filteredData); // Set the filtered data to `data`
-        setSortedData(filteredData); // Set the filtered data to `sortedData`
+        setData(filteredData);
+        setSortedData(filteredData);
         setLoading(false);
       } else {
         console.error('Salesman data is missing or incorrectly structured.');
@@ -187,8 +233,7 @@ const [role, setRole] = useState(null);
       }
     } catch (error) {
       setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      console.error('Error fetching salesman data:', error);
     }
   };
   
@@ -196,7 +241,7 @@ const [role, setRole] = useState(null);
   
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/company`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`;
   
     try {
       const response = await axios.get(url, {
@@ -220,7 +265,7 @@ const [role, setRole] = useState(null);
   };
   const fetchBranch = async () => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/branch`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`;
   
     try {
       const response = await axios.get(url, {
@@ -245,7 +290,7 @@ const [role, setRole] = useState(null);
   };
   const fetchsupervisor = async () => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/supervisor`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/supervisor`;
   
     try {
       const response = await axios.get(url, {
@@ -287,12 +332,15 @@ const [role, setRole] = useState(null);
     const [day, month, year] = dateString.split('-').map(Number);
     return new Date(year, month - 1, day);
   }
-  
   useEffect(() => {
-    setLoading(true)
-    // fetchcompany()
-    fetchData() // Refetch data when searchQuery changes
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+      setLoading(true);
+      fetchData();
+    }, []);
+  // useEffect(() => {
+  //   setLoading(true)
+  //   // fetchcompany()
+  //   fetchData() // Refetch data when searchQuery changes
+  // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -306,10 +354,42 @@ const [role, setRole] = useState(null);
       setCurrentPage(1)
     }
   }
-
-  useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+  const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+      };
+      const debouncedFilter = useCallback(
+        debounce((query, data) => {
+          if (!query) {
+            setFilteredData(data);
+          } else {
+            // const filtered = data.filter((item) =>
+            //   Object.values(item).some((value) =>
+            //     value.toString().toLowerCase().includes(query.toLowerCase())
+            //   )
+            // );
+            const filtered = data.filter((item) =>
+              Object.entries(item).some(([key, value]) =>
+                key !== "profileImage" && (value?.toString() ?? "").toLowerCase().includes(query.toLowerCase())
+              )
+            );            
+            
+            setFilteredData(filtered);
+          }
+        }, 500),
+        []
+      );
+      useEffect(() => {
+        if (data && data.length > 0) {
+          debouncedFilter(searchQuery, data);
+        }
+      }, [searchQuery, data, debouncedFilter]);
+      
+      useEffect(() => {
+        return () => debouncedFilter.cancel();
+      }, [debouncedFilter]);
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -324,7 +404,7 @@ const [role, setRole] = useState(null);
   //   console.log(formData)
   //   try {
   //     const accessToken = Cookies.get('token')
-  //     const response = await axios.post(`https://rocketsales-server.onrender.com/api/salesman`, formData, {
+  //     const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/salesman`, formData, {
   //       headers: {
   //         Authorization: `Bearer ${accessToken}`,
   //         'Content-Type': 'application/json',
@@ -368,7 +448,7 @@ const [role, setRole] = useState(null);
   
       // Perform the POST request
       const response = await axios.post(
-        `https://rocketsales-server.onrender.com/api/salesman`,
+        `${import.meta.env.VITE_SERVER_URL}/api/salesman`,
         formData,
         {
           headers: {
@@ -385,8 +465,14 @@ const [role, setRole] = useState(null);
         setAddModalOpen(false); // Close modal
       }
     } catch (error) {
-      toast.error('An error occurred');
-      throw error.response ? error.response.data : new Error('An error occurred');
+      // toast.error('An error occurred');
+      // throw error.response ? error.response.data : new Error('An error occurred');
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   };
   
@@ -405,10 +491,11 @@ const [role, setRole] = useState(null);
     e.preventDefault()
     console.log(formData)
     try {
+      const { profileImage, ...filteredFormData } = formData;
       const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/salesman/${formData._id}`,
-        formData,
+        `${import.meta.env.VITE_SERVER_URL}/api/salesman/${formData._id}`,
+        filteredFormData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -417,14 +504,20 @@ const [role, setRole] = useState(null);
       )
 
       if (response.status === 200) {
-        toast.success('group is edited successfully')
+        toast.success('User is edited successfully')
         fetchData()
         setFormData({ name: '' })
         setEditModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -454,8 +547,8 @@ const [role, setRole] = useState(null);
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
-        url: `https://rocketsales-server.onrender.com/api/salesman/${item._id}`,
+        // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
+        url: `${import.meta.env.VITE_SERVER_URL}/api/salesman/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -520,7 +613,8 @@ const filteredBranches = formData.companyId
       className="form-control"
       placeholder="🔍 Search here..."
       value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
+      // onChange={(e) => setSearchQuery(e.target.value)}
+      onChange={handleSearchChange} 
       style={{
         height: "40px", // Ensure consistent height
         padding: "8px 12px",
@@ -654,8 +748,8 @@ const filteredBranches = formData.companyId
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : sortedData.length > 0 ? (
-              sortedData
+            ) : filteredData.length > 0 ? (
+              filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow
@@ -800,6 +894,8 @@ const filteredBranches = formData.companyId
         label="Company Name"
         variant="outlined"
         name="companyId"
+        required
+        placeholder="Select Company"
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -807,6 +903,13 @@ const filteredBranches = formData.companyId
               <BusinessIcon />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -838,6 +941,7 @@ const filteredBranches = formData.companyId
         label="Branch Name"
         variant="outlined"
         name="branchId"
+        required
         error={branchError} // Show error state
         helperText={
           branchError && formData.companyId
@@ -852,6 +956,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -887,6 +998,7 @@ const filteredBranches = formData.companyId
         label="Supervisor"
         variant="outlined"
         name="supervisorId"
+        required
         placeholder={
           !formData.companyId
             ? 'Select Company First'
@@ -902,6 +1014,13 @@ const filteredBranches = formData.companyId
               <FiUser />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -937,6 +1056,7 @@ const filteredBranches = formData.companyId
         label="Branch Name"
         variant="outlined"
         name="branchId"
+        required
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -944,6 +1064,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -976,6 +1103,7 @@ const filteredBranches = formData.companyId
         label="Supervisor"
         variant="outlined"
         name="supervisorId"
+        required
         placeholder={!formData.branchId ? 'Select Branch First' : 'Select Supervisor'}
         disabled={!formData.branchId} // Disable when no branch is selected
         InputProps={{
@@ -985,6 +1113,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1019,6 +1154,7 @@ const filteredBranches = formData.companyId
       label="Supervisor"
       variant="outlined"
       name="supervisorId"
+      required
       InputProps={{
         ...params.InputProps,
         startAdornment: (
@@ -1026,6 +1162,13 @@ const filteredBranches = formData.companyId
             <FiGitBranch />
           </InputAdornment>
         ),
+      }}
+      sx={{
+        "& .MuiFormLabel-asterisk": {
+          color: "red",
+          fontSize: "1.4rem",
+          // fontWeight: "bold",
+        },
       }}
     />
   )}
@@ -1040,6 +1183,9 @@ const filteredBranches = formData.companyId
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''}
+              placeholder={`Enter ${column.Header}`} // Dynamic placeholder
+
+              required={column.accessor === 'salesmanName'||column.accessor === 'username' || column.accessor === 'password'}
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -1050,6 +1196,13 @@ const filteredBranches = formData.companyId
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}
@@ -1113,6 +1266,7 @@ const filteredBranches = formData.companyId
         label="Company Name"
         variant="outlined"
         name="companyId"
+        required
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -1120,6 +1274,13 @@ const filteredBranches = formData.companyId
               <BusinessIcon />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1152,6 +1313,7 @@ const filteredBranches = formData.companyId
         variant="outlined"
         name="branchId"
         error={branchError} // Show error state
+        required
         helperText={
           branchError && formData.companyId
             ? 'Please select a company first'
@@ -1165,6 +1327,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1200,6 +1369,7 @@ const filteredBranches = formData.companyId
         label="Supervisor"
         variant="outlined"
         name="supervisorId"
+        required
         placeholder={
           !formData.companyId
             ? 'Select Company First'
@@ -1215,6 +1385,13 @@ const filteredBranches = formData.companyId
               <FiUser />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1315,6 +1492,7 @@ const filteredBranches = formData.companyId
         label="Branch Name"
         variant="outlined"
         name="branchId"
+        required
         InputProps={{
           ...params.InputProps,
           startAdornment: (
@@ -1322,6 +1500,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1354,6 +1539,7 @@ const filteredBranches = formData.companyId
         label="Supervisor"
         variant="outlined"
         name="supervisorId"
+        required
         placeholder={!formData.branchId ? 'Select Branch First' : 'Select Supervisor'}
         disabled={!formData.branchId} // Disable when branch is not selected
         InputProps={{
@@ -1363,6 +1549,13 @@ const filteredBranches = formData.companyId
               <FiGitBranch />
             </InputAdornment>
           ),
+        }}
+        sx={{
+          "& .MuiFormLabel-asterisk": {
+            color: "red",
+            fontSize: "1.4rem",
+            // fontWeight: "bold",
+          },
         }}
       />
     )}
@@ -1395,6 +1588,7 @@ const filteredBranches = formData.companyId
       label="Supervisor"
       variant="outlined"
       name="supervisorId"
+      required
       InputProps={{
         ...params.InputProps,
         startAdornment: (
@@ -1402,6 +1596,13 @@ const filteredBranches = formData.companyId
             <FiGitBranch />
           </InputAdornment>
         ),
+      }}
+      sx={{
+        "& .MuiFormLabel-asterisk": {
+          color: "red",
+          fontSize: "1.4rem",
+          // fontWeight: "bold",
+        },
       }}
     />
   )}
@@ -1417,6 +1618,8 @@ const filteredBranches = formData.companyId
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''}
+              required={column.accessor === 'salesmanName'||column.accessor === 'username' || column.accessor === 'password'}
+
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -1427,6 +1630,13 @@ const filteredBranches = formData.companyId
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}

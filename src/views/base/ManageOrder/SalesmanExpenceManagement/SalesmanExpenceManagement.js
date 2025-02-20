@@ -235,13 +235,13 @@ const SalesmanExpenceManagement = () => {
 
     if (selectedPeriod && selectedPeriod !== 'Custom') {
       // If the period is not custom, pass the period as a filter
-      url = `https://rocketsales-server.onrender.com/api/expence?filter=${selectedPeriod}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/expence?filter=${selectedPeriod}`
     } else if (startDate && endDate) {
       // For "Custom" date range, pass the startDate and endDate as query params
-      url = `https://rocketsales-server.onrender.com/api/expence?startDate=${startDate}&endDate=${endDate}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/expence?startDate=${startDate}&endDate=${endDate}`
     } else {
       // If "Custom" is selected but no dates are provided, fetch all expenses
-      url = `https://rocketsales-server.onrender.com/api/expence`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/expence`
     }
 
     console.log('Expense API URL:', url)
@@ -354,7 +354,7 @@ const SalesmanExpenceManagement = () => {
 
     const confirmed = confirm('Do you want to delete this user?')
     if (!confirmed) return
-    console.log(`https://rocketsales-server.onrender.com/api/expence/${item._id}`)
+    console.log(`${import.meta.env.VITE_SERVER_URL}/api/expence/${item._id}`)
     try {
       const accessToken = Cookies.get('token')
       if (!accessToken) {
@@ -364,7 +364,7 @@ const SalesmanExpenceManagement = () => {
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        url: `https://rocketsales-server.onrender.com/api/expence/${item._id}`,
+        url: `${import.meta.env.VITE_SERVER_URL}/api/expence/${item._id}`,
 
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -420,7 +420,7 @@ const SalesmanExpenceManagement = () => {
   
       // Perform the POST request
       const response = await axios.post(
-        `https://rocketsales-server.onrender.com/api/expence`,
+        `${import.meta.env.VITE_SERVER_URL}/api/expence`,
         formData,
         {
           headers: {
@@ -448,7 +448,7 @@ const SalesmanExpenceManagement = () => {
     try {
       const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/expence/${formData._id}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/expence/${formData._id}`,
         {
           ...formData,  // Ensure the formData includes billDoc
           // billDoc: '', // If billDoc is a separate field in formData
@@ -483,7 +483,7 @@ const SalesmanExpenceManagement = () => {
     : []
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/company`
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`
 
     try {
       const response = await axios.get(url, {
@@ -505,7 +505,7 @@ const SalesmanExpenceManagement = () => {
   }
   const fetchBranch = async () => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/branch`
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`
 
     try {
       const response = await axios.get(url, {
@@ -528,7 +528,7 @@ const SalesmanExpenceManagement = () => {
   }
   const fetchsupervisor = async () => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/supervisor`
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/supervisor`
 
     try {
       const response = await axios.get(url, {
@@ -551,7 +551,7 @@ const SalesmanExpenceManagement = () => {
   }
   const fetchSalesman = async () => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/salesman` // Use the correct API endpoint
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman` // Use the correct API endpoint
   
     try {
       const response = await axios.get(url, {
@@ -576,7 +576,7 @@ const SalesmanExpenceManagement = () => {
   }
   const fetchExpenceType = async () => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/expencetype`
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/expencetype`
   
     try {
       const response = await axios.get(url, {

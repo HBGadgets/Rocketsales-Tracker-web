@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect,useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -60,6 +60,7 @@ import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import emptyimage from '../../images/emptyimage.jpg'
+import debounce from 'lodash.debounce';
 // import { DialogContent } from "@mui/material";
 // import { useNavigate } from 'react-router-dom';
 const Attendance1 = () => {
@@ -201,13 +202,13 @@ const Attendance1 = () => {
     console.log(selectedPeriod)
     if (selectedPeriod && selectedPeriod !== 'Custom') {
       // If the period is not custom, pass the period as a filter
-      url = `https://rocketsales-server.onrender.com/api/attendence?filter=${selectedPeriod}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/attendence?filter=${selectedPeriod}`
     } else if (startDate && endDate) {
       // For "Custom" date range, pass the startDate and endDate as query params
-      url = `https://rocketsales-server.onrender.com/api/attendence?startDate=${startDate}&endDate=${endDate}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/attendence?startDate=${startDate}&endDate=${endDate}`
     } else {
       // If "Custom" is selected but no dates are provided, just fetch all data
-      url = `https://rocketsales-server.onrender.com/api/attendence`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/attendence`
     }
     console.log('my url', url)
     console.log('Access Token:', accessToken)
@@ -260,12 +261,14 @@ const Attendance1 = () => {
     const [day, month, year] = dateString.split('-').map(Number)
     return new Date(year, month - 1, day)
   }
-
   useEffect(() => {
-    setLoading(true)
-    // fetchData() // Refetch data when searchQuery changes
-    fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+    fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
+  }, []);
+  // useEffect(() => {
+  //   setLoading(true)
+  //   // fetchData() // Refetch data when searchQuery changes
+  //   fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
+  // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -279,10 +282,47 @@ const Attendance1 = () => {
       setCurrentPage(1)
     }
   }
+   // Debounced filtering function
+  const debouncedFilter = useCallback(
+    debounce((query, sourceData) => {
+      if (!query) {
+        setFilteredData(sourceData);
+        return;
+      }
+      // const filtered = sourceData.filter(item =>
+      //   Object.values(item).some(value =>
+      //     value?.toString().toLowerCase().includes(query.toLowerCase())
+      //   )
+      // );
+      const filtered = sourceData.filter(item =>
+        Object.entries(item).some(([key, value]) => {
+          if (key === 'profileImgUrl') return false; // Skip searching the profileImage field
+          return value?.toString().toLowerCase().includes(query.toLowerCase());
+        })
+      );
+      
+      
+      setFilteredData(filtered);
+    }, 500),
+    []
+  );
+  // Handle search input changes
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    debouncedFilter(query, data);
+  };
 
+  // Cancel debounce on component unmount
   useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+    return () => debouncedFilter.cancel();
+  }, [debouncedFilter]);
+  useEffect(() => {
+    setFilteredData(data);
+  }, [data])
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -324,48 +364,164 @@ const Attendance1 = () => {
   // Use in Dropdown
   // <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>;
 
-  const handleStatusClick = async (item) => {
-    try {
-      // Show a confirmation message
-      const confirmChange = window.confirm("Do you want to change the attendance status?");
+  // const handleStatusClick = async (item) => {
+  //   try {
+  //     // Show a confirmation message
+  //     const confirmChange = window.confirm("Do you want to change the attendance status?");
       
-      if (!confirmChange) {
-        return; // If user cancels, exit function
-      }
+  //     if (!confirmChange) {
+  //       return; // If user cancels, exit function
+  //     }
   
-      // Toggle the attendance status between 'Absent' and 'Present'
-      const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent';
+  //     // Toggle the attendance status between 'Absent' and 'Present'
+  //     const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent';
   
-      // Prepare the data for the PUT request
-      const updatedData = {
-        attendenceStatus: updatedStatus, // Update the attendenceStatus field
-      };
+  //     // Prepare the data for the PUT request
+  //     const updatedData = {
+  //       attendenceStatus: updatedStatus, // Update the attendenceStatus field
+  //     };
   
-      // Get access token from cookies
-      const accessToken = Cookies.get('token');
+  //     // Get access token from cookies
+  //     const accessToken = Cookies.get('token');
   
-      // Make the PUT request to update the attendance status
-      const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/attendence/${item._id}`, 
-        updatedData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`, // Include Bearer token in the header
-          },
-        }
-      );
+  //     // Make the PUT request to update the attendance status
+  //     const response = await axios.put(
+  //       `${import.meta.env.VITE_SERVER_URL}/api/attendence/${item._id}`, 
+  //       updatedData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`, // Include Bearer token in the header
+  //         },
+  //       }
+  //     );
   
-      // Handle the response
-      if (response.status === 200) {
-        alert("Attendance status updated successfully!");
-        // Refresh data after update
-        fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
-      }
-    } catch (error) {
-      alert("Failed to update attendance status");
-    }
+  //     // Handle the response
+  //     if (response.status === 200) {
+  //       alert("Attendance status updated successfully!");
+  //       // Refresh data after update
+  //       fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
+  //     }
+  //   } catch (error) {
+  //     alert("Failed to update attendance status");
+  //   }
+  // };
+  // const handleStatusClick = async (item) => {
+  //   toast((t) => (
+  //     <div>
+  //       <p>Do you want to change the attendance status for <b>{item.salesmanName}</b>?</p>
+  //       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+  //         <button 
+  //           onClick={async () => {
+  //             toast.dismiss(t.id); // Close confirmation toast
+  
+  //             try {
+  //               // Toggle status
+  //               const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent';
+  
+  //               // Prepare update data
+  //               const updatedData = { attendenceStatus: updatedStatus };
+  
+  //               // Get access token
+  //               const accessToken = Cookies.get('token');
+  
+  //               // Send update request
+  //               const response = await axios.put(
+  //                 `${import.meta.env.VITE_SERVER_URL}/api/attendence/${item._id}`, 
+  //                 updatedData,
+  //                 {
+  //                   headers: { Authorization: `Bearer ${accessToken}` },
+  //                 }
+  //               );
+  
+  //               if (response.status === 200) {
+  //                 toast.success(
+  //                   <span>
+  //                     Attendance status updated to{' '}
+  //                     <span style={{ color: updatedStatus === 'Absent' ? 'red' : 'green', fontWeight: 'bold' }}>
+  //                       {updatedStatus}
+  //                     </span>{' '}
+  //                     successfully!
+  //                   </span>
+  //                 );
+  //                 fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
+                  
+  //               }
+  //             } catch (error) {
+  //               toast.error('Failed to update attendance status.');
+  //             }
+  //           }} 
+  //           style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+  //         >
+  //           Confirm
+  //         </button>
+  
+  //         <button 
+  //           onClick={() => toast.dismiss(t.id)} 
+  //           style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+  //         >
+  //           Cancel
+  //         </button>
+  //       </div>
+  //     </div>
+  //   ), { duration: Infinity });
+  // };
+  const handleStatusClick = async (item) => {
+    toast((t) => (
+      <div>
+        <p>Do you want to change the attendance status for <b>{item.salesmanName}</b>?</p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+          <button 
+            onClick={async () => {
+              toast.dismiss(t.id);
+  
+              try {
+                const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent';
+                const accessToken = Cookies.get('token');
+  
+                await axios.put(
+                  `${import.meta.env.VITE_SERVER_URL}/api/attendence/${item._id}`, 
+                  { attendenceStatus: updatedStatus },
+                  { headers: { Authorization: `Bearer ${accessToken}` } }
+                );
+  
+                // Update local state directly
+                setData(prevData => 
+                  prevData.map(d => 
+                    d._id === item._id ? { ...d, attendenceStatus: updatedStatus } : d
+                  )
+                );
+                setFilteredData(prevFiltered => 
+                  prevFiltered.map(d => 
+                    d._id === item._id ? { ...d, attendenceStatus: updatedStatus } : d
+                  )
+                );
+  
+                toast.success(
+                  <span>
+                    Status updated to{' '}
+                    <span style={{ color: updatedStatus === 'Absent' ? 'red' : 'green', fontWeight: 'bold' }}>
+                      {updatedStatus}
+                    </span>
+                  </span>
+                );
+              } catch (error) {
+                toast.error('Failed to update status');
+              }
+            }} 
+            style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+          >
+            Confirm
+          </button>
+          <button 
+            onClick={() => toast.dismiss(t.id)} 
+            style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity });
   };
-  
   
   // Function to handle image click
   const [isOpen, setIsOpen] = useState(false);
@@ -467,7 +623,8 @@ const Attendance1 = () => {
               className="form-control"
               placeholder="🔍 Search here..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              // onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               style={{
                 height: '40px', // Ensure consistent height
                 padding: '8px 12px',
@@ -603,8 +760,8 @@ const Attendance1 = () => {
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : sortedData.length > 0 ? (
-              sortedData
+            ) : filteredData.length > 0 ? (
+              filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow

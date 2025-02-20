@@ -1,115 +1,168 @@
-import { useState,useEffect } from 'react'
-import './ChatBot.css'
-
+import { useState, useEffect, useRef } from 'react';
+import './ChatBot.css';
+import jwt_decode from "jwt-decode";
+import Cookies from 'js-cookie';
 import io from "socket.io-client";
+import axios from 'axios';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css'; 
+import avatarImg from '../../../views/base/images/emptyimage.jpg';
 
-const socket = io("http://localhost:5000");
-
-
+const socket = io(import.meta.env.VITE_SERVER_URL);
 
 export default function Component() {
-  const [activeChats, setActiveChats] = useState([
-    {
-      id: '1',
-      name: 'John Doe',
-      role: 'Salesman',
-      lastMessage: 'Thank you for your help',
-      date: '08/15/2024',
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      role: 'Manager',
-      lastMessage: 'How can I assist you?',
-      date: '08/14/2024',
-    },
-  ])
+  const accessToken = Cookies.get('token');
+  if (!accessToken) {
+    throw new Error('Token is missing');
+  }
 
-  const [selectedChat, setSelectedChat] = useState(null)
-  // const [messages, setMessages] = useState([
-  //   {
-  //     id: '1',
-  //     sender: 'John Doe',
-  //     content: 'Hello, I need some assistance with a client.',
-  //     timestamp: '10:30 AM',
-  //   },
-  //   { id: '2', sender: 'You', content: 'Sure, what can I help you with?', timestamp: '10:32 AM' },
-  // ])
-
-  const userName = "pavan"; // Replace with dynamic username from token
-
-  const receiverUserName = "gagan";
+  const decodedToken = jwt_decode(accessToken);
+  const userName = decodedToken.username;
+  const chatusername = decodedToken.chatusername;
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const[preMessage, setPreMessage] = useState(null);
+
   const [roomId, setRoomId] = useState("");
-
-  const [newMessage, setNewMessage] = useState('')
-
-              // new code start from here
-
-              useEffect(() => {
-                if (userName && !roomId) { 
-                  const room = generateRoomId(userName, receiverUserName);
-                  setRoomId(room);
-                  socket.emit("joinRoom", { room, username: userName });
-                }
-              }, [userName, roomId]);
-
-              useEffect(() => {
-                // Create a function to handle incoming messages
-                const handleReceiveMessage = (data) => {
-                  setMessages((prevMessages) => [...prevMessages, data]);
-                };
-              
-               
-                socket.on("receiveMessage", handleReceiveMessage);
-              
-                
-                return () => {
-                  socket.off("receiveMessage", handleReceiveMessage);
-                };
-              }, []); 
-              
-              console.log("first",messages); 
-          
-
-              const generateRoomId = (user1, user2) => {
-                return [user1, user2].sort().join("_");
-              };
-
-              const handleSendMessage = () => {
-                if (message.trim()) {
-                  socket.emit("sendMessage", { room: roomId, message, sender: userName,receiver:receiverUserName });
-                  setMessage(""); // Clear the input
-                }
-              };
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedUsername, setSelectedUsername] = useState(null);
+  const [chatAdmin, setchatAdmin] = useState(null);
+  const [selectedUser, setNameofSelectedUser] = useState(null);
+  const [selectedUserImg, setNameofSelectedUserImg] = useState(null);
 
 
+const [loadingPreMessage, setLoadingPreMessage] = useState(true);
+const [loadingChatUser, setLoadingChatUser] = useState(true);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (userName && (selectedUsername || chatAdmin)) {
+      const room = generateRoomId(userName, selectedUsername || chatAdmin);
+      setRoomId(room);
+
+      socket.emit("joinRoom", {
+        room,
+        username: userName
+      });
+    }
+  }, [userName, chatAdmin, selectedUsername]);
+
+  useEffect(() => {
+    const handleReceiveMessage = (data) => {
+      setMessages((prevMessages) => [...prevMessages, data]);
+    };
+
+    socket.on("receiveMessage", handleReceiveMessage);
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+    };
+  }, []);
+
+  const generateRoomId = (user1, user2) => {
+    return [user1, user2].sort().join("_");
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  const scrollToBottomafterPreMessage = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+  };
+
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      socket.emit("sendMessage", { room: roomId, message, sender: userName, receiver: chatAdmin || selectedUsername });
+      setMessage(""); // Clear the input
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]); 
+  useEffect(() => {
+    scrollToBottomafterPreMessage();
+  }, [preMessage]); 
+
+  const fetchData = async () => {
+    const accessToken = Cookies.get('token');
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/chatboxuser`;
+
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: 'Bearer ' + accessToken,
+        },
+      });
+      setLoading(false);
+      setData(response.data);
+    } catch (error) {
+      setLoading(false);
+      console.error('Error fetching data:', error);
+      throw error;
+    }finally {
+      setLoadingChatUser(false);
+    }
+  };
 
 
-              // new code end here
+    
+  const fetchPreMessage = async () => {
+    const accessToken = Cookies.get('token');
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/userprechatmessage/${roomId}`;
+
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: 'Bearer ' + accessToken,
+        },
+      });
+      setLoading(false);
+      setPreMessage(response.data.data);
+    } catch (error) {
+      setLoading(false);
+      console.error('Error fetching data:', error);
+      throw error;
+    }finally {
+      setLoadingPreMessage(false);
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    setLoadingChatUser(true);
+    fetchData();
+  }, []);
 
 
+  useEffect(() => {
+    if (roomId) {
+      setLoading(true);
+      setLoadingPreMessage(true);
+      fetchPreMessage();
+    setMessages([]);
 
+    }
+  }, [userName, roomId]); 
+  
+  const handleSalesmanClick = (username,name,Img) => {
+    setSelectedUsername(username);
+    setNameofSelectedUser(name);
+    setNameofSelectedUserImg(Img);
 
+    // setMessages([]);
 
+  };
 
+  const handleAdminClick = (username) => {
+    setSelectedUsername(null);
+    setchatAdmin(username);
+    setNameofSelectedUserImg();
+    setMessages([]);
+  };
 
-
-
-
-  // const handleSendMessage = () => {
-  //   if (newMessage.trim() === '') return
-  //   const newMsg = {
-  //     id: Date.now().toString(),
-  //     sender: 'You',
-  //     content: newMessage,
-  //     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-  //   }
-  //   setMessages([...messages, newMsg])
-  //   setNewMessage('')
-  // }
 
   return (
     <>
@@ -132,417 +185,214 @@ export default function Component() {
               <div
                 data-mdb-perfect-scrollbar-init
                 className="overflow-y-scroll"
-                style={{ height: '70vh' }}
+                style={{ height: "70vh" }}
               >
-                <ul className="list-unstyled mb-0">
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-success badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Marie Horwitz</p>
-                          <p className="small text-muted">Hello, Are you there?</p>
-                        </div>
+                <div>
+                  <a
+                    href="#!"
+                    className="d-flex justify-content-between text-decoration-none"
+                  >
+                    <div className="d-flex flex-row">
+                      <div>
+                        <img
+                          src={avatarImg}
+                          alt="avatar"
+                          className="d-flex align-self-center me-3 rounded-circle"
+                          width={60}
+                        />
+                        <span className="badge bg-success badge-dot" />
                       </div>
                       <div className="pt-1">
-                        <p className="small text-muted mb-1">Just now</p>
-                        <span className="badge bg-danger rounded-pill float-end">3</span>
+                        <p
+                          className="fw-bold mb-0 mt-2"
+                          onClick={() => handleAdminClick(chatusername)}
+                        >
+                          Admin
+                        </p>
                       </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava2-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-warning badge-dot" />
+                    </div>
+                  </a>
+                </div>
+                 {/* Show Skeleton if PreMessage is Loading */}
+                 {loadingChatUser &&
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <div key={index} style={{ padding: "10px", maxWidth: "60%" }}>
+                        <Skeleton height={40} width="100%" />
+                      </div>
+                    ))
+                  }
+  
+                {!loadingChatUser && data?.map((user) => (
+                  <ul className="list-unstyled mb-0" key={user.id}>
+                    <li
+                      onClick={() =>
+                        handleSalesmanClick(
+                          user.username,
+                          user.companyName ||
+                            user.branchName ||
+                            user.supervisorName ||
+                            user.salesmanName ,user.profileImage
+                        )
+                      }
+                      className="p-2 border-bottom"
+                    >
+                      <a
+                        href="#!"
+                        className="d-flex justify-content-between text-decoration-none"
+                      >
+                        <div className="d-flex flex-row">
+                          <div>
+                            <img
+                               src={user.profileImage ? `data:image/png;base64,${user.profileImage}` : avatarImg}
+                              alt="avatar"
+                              className="d-flex align-self-center me-3 rounded-circle"
+                              width={50}
+                            />
+                            <span className="badge bg-success badge-dot" />
+                          </div>
+                          <div className="pt-1">
+                            <p className="fw-bold mb-0">
+                              {user.companyName ||
+                                user.branchName ||
+                                user.supervisorName ||
+                                user.salesmanName}
+                            </p>
+                          </div>
                         </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Alexa Chung</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">5 mins ago</p>
-                        <span className="badge bg-danger rounded-pill float-end">2</span>
-                      </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-success badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Danny McChain</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava4-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-danger badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Ashley Olsen</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava5-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-warning badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Kate Moss</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava5-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-warning badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Kate Moss</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava5-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-warning badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Kate Moss</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava5-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-warning badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Kate Moss</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava5-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-warning badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Kate Moss</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava5-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-warning badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Kate Moss</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-                  <li className="p-2 border-bottom">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava5-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-warning badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Kate Moss</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-
-                  <li className="p-2">
-                    <a href="#!" className="d-flex justify-content-between">
-                      <div className="d-flex flex-row">
-                        <div>
-                          <img
-                            src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
-                            alt="avatar"
-                            className="d-flex align-self-center me-3"
-                            width={60}
-                          />
-                          <span className="badge bg-success badge-dot" />
-                        </div>
-                        <div className="pt-1">
-                          <p className="fw-bold mb-0">Ben Smith</p>
-                          <p className="small text-muted">Lorem ipsum dolor sit.</p>
-                        </div>
-                      </div>
-                      <div className="pt-1">
-                        <p className="small text-muted mb-1">Yesterday</p>
-                      </div>
-                    </a>
-                  </li>
-                </ul>
+                      </a>
+                    </li>
+                  </ul>
+                ))}
               </div>
             </div>
           </div>
-          <div className="col-md-6 col-lg-7 col-xl-8">
-            <div className="flex flex-column ">
-              <div className="d-flex flex-row bg-body-tertiary p-3">
-                <img
-                  src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
-                  alt="avatar 1"
-                  style={{ width: 45, height: '100%' }}
-                />
-                <div>
-                  <p className="fw-bold p-2 ms-3 mb-1 ">Lorem ipsum dolor</p>
+  
+          <div
+            className="col-md-6 col-lg-7 col-xl-8"
+            style={{ height: "80vh" }} // Parent container with fixed height
+          >
+            {(selectedUsername || chatAdmin) && (
+              <div className="d-flex flex-column h-100">
+                {/* Chat header */}
+                <div className="d-flex flex-row bg-body-tertiary p-3">
+                  <img
+                    src={selectedUserImg ? `data:image/png;base64,${selectedUserImg}` : avatarImg}
+                    className="d-flex align-self-center me-3 rounded-circle"
+                    alt="avatar"
+                    style={{ width: 45, height: "100%" }}
+                  />
+                  <div>
+                    <p className="fw-bold p-2 ms-3 mb-1">
+                      {selectedUser || "Admin"}
+                    </p>
+                  </div>
+                </div>
+  
+                {/* Messages container */}
+                <div className="flex-grow-1 overflow-auto">
+                   {/* Show Skeleton if PreMessage is Loading */}
+                  {loadingPreMessage &&
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <div key={index} style={{ padding: "10px", maxWidth: "60%" }}>
+                        <Skeleton height={40} width="100%" />
+                      </div>
+                    ))
+                  }
+                  {/* Render previous messages first */}
+                  {!loadingPreMessage && preMessage?.map((msg, index) => (
+                    <div
+                      key={`pre-${index}`}
+                      style={{
+                        display: "flex",
+                        justifyContent:
+                          msg.sender === userName ? "flex-end" : "flex-start",
+                        width: "100%",
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor:
+                            msg.sender === userName ? "#007bff" : "#ccc",
+                          color: msg.sender === "me" ? "white" : "black",
+                          padding: "10px",
+                          borderRadius: "10px",
+                          maxWidth: "60%",
+                          margin: "5px 0",
+                          textAlign: "left",
+                        }}
+                      >
+                        {msg.Message }
+                        <br />
+                        <div className="d-flex justify-content-between gap-3">
+                          {/* Optionally, add sender or timestamp */}
+                        </div>
+                      </div>
+                      </div>
+                  ))}
+
+                  {/* Then render real-time messages */}
+                  {messages.map((msg, index) => (
+                    <div
+                      key={`msg-${index}`}
+                      style={{
+                        display: "flex",
+                        justifyContent:
+                          msg.sender === userName ? "flex-end" : "flex-start",
+                        width: "100%",
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor:
+                            msg.sender === userName ? "#007bff" : "#ccc",
+                          color: msg.sender === "me" ? "white" : "black",
+                          padding: "10px",
+                          borderRadius: "10px",
+                          maxWidth: "60%",
+                          margin: "5px 0",
+                          textAlign: "left",
+                        }}
+                      >
+                        {msg.message}
+                        <br />
+                        <div className="d-flex justify-content-between gap-3">
+                          {/* Optionally, add sender or timestamp */}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} /> {/* Scroll ref */}
+                </div>
+  
+                {/* Input area (always at the bottom) */}
+                <div className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2">
+                  <input
+                    type="text"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="form-control form-control-lg ms-2"
+                    id="exampleFormControlInput2"
+                    placeholder="Type message"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && message.trim()) {
+                        handleSendMessage();
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    className="form-control w-auto form-control-lg ms-2"
+                  >
+                    Send
+                  </button>
                 </div>
               </div>
-              <div>
-              {messages.map((msg, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              justifyContent: msg.sender === "me" ? "flex-end" : "flex-start", // Right for sender, left for receiver
-              width: "100%",
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: msg.sender === "me" ? "#007bff" : "#ccc",
-                color: msg.sender === "me" ? "white" : "black",
-                padding: "10px",
-                borderRadius: "10px",
-                maxWidth: "60%",
-                margin: "5px 0",
-                textAlign: "left",
-              }}
-            >
-              <strong>{msg.sender}: </strong> {msg.message}
-            </div>
-          </div>
-        ))}
-           </div>
-
-              <div className="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2">
-                <img
-                  src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
-                  alt="avatar 3"
-                  style={{ width: 40, height: '100%' }}
-                />
-                <input
-                  type="text"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="form-control form-control-lg ms-2"
-                  id="exampleFormControlInput2"
-                  placeholder="Type message"
-                />
-                <button
-                  onClick={handleSendMessage}
-                  className="form-control w-auto form-control-lg ms-2"
-                >
-                  Send
-                </button>
-
-                <a className="ms-1 text-muted" href="#!">
-                  <i className="fas fa-paperclip" />
-                </a>
-                <a className="ms-3 text-muted" href="#!">
-                  <i className="fas fa-smile" />
-                </a>
-                <a className="ms-3" href="#!">
-                  <i className="fas fa-paper-plane" />
-                </a>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
     </>
-  )
-
-  return (
-    <div style={{ textAlign: "center" }}>
-      <h1>Chat App</h1>
-      <div
-        style={{
-          width: "60%",
-          margin: "0 auto",
-          border: "1px solid #ccc",
-          padding: "10px",
-          height: "300px",
-          overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-end", // Ensures the latest message stays at the bottom
-        }}
-      >
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              justifyContent: msg.sender === "me" ? "flex-end" : "flex-start", // Right for sender, left for receiver
-              width: "100%",
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: msg.sender === "me" ? "#007bff" : "#ccc",
-                color: msg.sender === "me" ? "white" : "black",
-                padding: "10px",
-                borderRadius: "10px",
-                maxWidth: "60%",
-                margin: "5px 0",
-                textAlign: "left",
-              }}
-            >
-              <strong>{msg.sender}: </strong> {msg.message}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div style={{ marginTop: "20px" }}>
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type a message..."
-          style={{ padding: "10px", width: "300px" }}
-        />
-        <button
-          onClick={handleSendMessage}
-          style={{ padding: "10px 20px", marginLeft: "10px" }}
-        >
-          Send
-        </button>
-      </div>
-    </div>
   );
   
-  
-  
-  
+
 }

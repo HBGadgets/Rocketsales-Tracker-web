@@ -3,7 +3,9 @@ import React from 'react'
 const DashBoard = React.lazy(() => import('./views/theme/dashboard/DashBoard'))
 const LiveTrack = React.lazy(() => import('./views/theme/livetrack/LiveTrack'))
 const IndividualTrack = React.lazy(() => import('./views/theme/livetrack/IndividualTrack'))
-// const ChatBot = React.lazy(() => import('./views/theme/chatbot/ChatBot'))
+const ChatBot = React.lazy(() => import('./views/theme/chatbot/ChatBot'))
+const Invoice = React.lazy(() => import('./views/base/ManageOrder/Invoice/Invoice'))
+
 
 const Attendance = React.lazy(() => import('./views/base/ManageAttend/Attendance'))
 const LeaveApplication = React.lazy(() => import('./views/base/ManageAttend/LeaveApplication'))
@@ -11,7 +13,7 @@ const ManualAttendance = React.lazy(() => import('./views/base/ManageAttend/Manu
 const VisitShop = React.lazy(() => import('./views/base/ManageAttend/VistShop'))
 
 const InventoryManagment = React.lazy(() => import('./views/base/ManageOrder/InventoryManage'))
-const InvoiceForm = React.lazy(() => import('./views/base/ManageOrder/Invoice'))
+// const InvoiceForm = React.lazy(() => import('./views/base/ManageOrder/Invoice'))
 const Po = React.lazy(() => import('./views/base/ManageOrder/PO'))
 
 const TaskManagment = React.lazy(() => import('./views/base/Management/TaskManagement/TaskManagement'))
@@ -48,19 +50,22 @@ const routes = [
 
   // { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/dashboard', name: 'DashBoard', element: DashBoard },
-  // { path: '/chatbot', name: 'ChatBot', element: ChatBot },
+
+ { path: '/chatbot', name: 'ChatBot', element: ChatBot },
+
+
   { path: '/livetrack', name: 'LiveTrack', element: LiveTrack },
   { path: '/salesman', name: 'IndividualTrack', element: IndividualTrack },
 
   { path: '/manual-attendance', name: 'Manual Attendance', element: ManualAttendance },
   { path: '/attendance', name: 'Attendance1', element: Attendance },
-  { path: '/order-list', name: 'order List', element: OrderList },
+  { path: '/Pending-order-list', name: 'Pending Orders', element: OrderList },
   { path: '/product-list', name: 'product List', element: ProductList },
 
   { path: '/leave-application', name: 'Leave Application', element: LeaveApplication },
   { path: '/visit-shop', name: 'Visit Shop', element: VisitShop },
 
-  { path: '/invoice', name: 'Invoice', element: InvoiceForm },
+  // { path: '/invoice', name: 'Invoice', element: InvoiceForm },
   { path: '/po', name: 'PO', element: Po },
   { path: '/inventory-management', name: 'Inventory Management', element: InventoryManagment },
   
@@ -85,6 +90,7 @@ const routes = [
   { path: '/DeniedRequest', name: 'Rejected Request', element: DeniedRequest },
   { path: '/SalesmanExpenceManagement', name: 'Salesman Expences', element: SalesmanExpenceManagement },
   { path: '/ExpenceType', name: 'Expence Type', element: ExpenceType },
+  { path: '/invoice', name: 'Invoice', element: Invoice },
 ]
 
 export default routes

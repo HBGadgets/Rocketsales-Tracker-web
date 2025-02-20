@@ -1,4 +1,4 @@
-  import React, { useState, useEffect } from 'react'
+  import React, { useState, useEffect, useCallback } from 'react'
   import axios from 'axios'
   import {
     TableContainer,
@@ -18,6 +18,8 @@
     MenuItem,
     InputAdornment,
     Autocomplete,
+    Chip,
+    Tooltip,
   } from '@mui/material'
   import { RiEdit2Fill } from 'react-icons/ri'
   import { AiFillDelete } from 'react-icons/ai'
@@ -68,7 +70,12 @@
   import RoomIcon from '@mui/icons-material/Room';
   import { Checkbox, FormControlLabel } from '@mui/material';
   import VisibilityIcon from '@mui/icons-material/Visibility';
-  const token = Cookies.get('token')
+import debounce from 'lodash.debounce';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+// import { set } from 'core-js/core/dict'
+
+  // const token = Cookies.get('token')
   // let role=null
   // if(token){
   //   const decodetoken=jwt_decode(token);
@@ -90,7 +97,9 @@
     const [currentPage, setCurrentPage] = useState(1)
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(25)
-    const columns = COLUMNS()
+    const [role, setRole] = useState(null)
+    // const columns = COLUMNS()
+    const columns = COLUMNS(role);
     const [sortedData, setSortedData] = useState([])
     const [companyData, setCompanyData] = useState([])
     const [BranchData, setBranchData] = useState([])
@@ -99,6 +108,7 @@
     const [taskData, setTaskData] = useState([])
     const [selectedRow, setSelectedRow] = useState([])
     const [taskAddModalOpen, setTaskAddModalOpen] = useState(false)
+    const [tokenData, setTokenData] = useState([])
     const [newTask, setNewTask] = useState({
       taskDescription: '',
       deadline: '',
@@ -133,6 +143,41 @@
     });
     setEditTaskModalOpen(true);
   };
+  const handleStatusChange = async (item) => {
+    try {
+      const token = Cookies.get('token');
+      const newStatus = item.status === "Completed" ? "Pending" : "Completed"; // Toggle status
+  
+      // API call to update status
+      const response = await axios.put(
+        `${import.meta.env.VITE_SERVER_URL}/api/task/status/${item._id}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        toast.success(`Task marked as ${newStatus}`);
+  
+        // ✅ Update state instantly instead of making an extra GET request
+        setTaskData((prevTasks) =>
+          prevTasks.map((task) =>
+            task._id === item._id ? { ...task, status: newStatus } : task
+          )
+        );
+        fetchData(); // Refresh the task data
+      }
+    } catch (error) {
+      toast.error('Error updating task status');
+      console.error('Task status update error:', error);
+    }
+  };
+  
+  
     // Add this function to handle task updates
     const handleEditTaskSubmit = async (e) => {
       e.preventDefault();
@@ -331,13 +376,14 @@
       padding: '1rem',
       marginTop: '8px',
     }
-    const [role, setRole] = useState(null)
 
     useEffect(() => {
       const fetchRole = () => {
         const token = Cookies.get('token')
         if (token) {
           const decodedToken = jwt_decode(token)
+          console.log('decoded token', decodedToken);
+          setTokenData(decodedToken)
           setRole(decodedToken.role)
         } else {
           setRole(null)
@@ -347,67 +393,172 @@
       fetchRole() // Call the function to fetch role
     }, [])
     // ##################### getting data  ###################
-    const fetchData = async (page = 1) => {
-      const accessToken = Cookies.get('token')
-      const url = `https://rocketsales-server.onrender.com/api/salesman`
+    // const fetchData = async (page = 1) => {
+    //   const accessToken = Cookies.get('token')
+    //   const url = `https://rocketsales-server.onrender.com/api/salesman`
 
+    //   try {
+    //     const response = await axios.get(url, {
+    //       headers: {
+    //         Authorization: 'Bearer ' + accessToken,
+    //       },
+    //     })
+
+    //     // Log the full response data to inspect its structure
+    //     console.log('Full Response Data:', response.data)
+
+    //     // Process the salesmandata
+    //     const salesmandata = response.data.salesmandata.map((item) => ({
+    //       ...item,
+    //       companyName: item.companyId?.companyName || null, // Extract companyName or set null
+    //       companyId: item.companyId?._id || null, // Extract companyId or set null
+    //       branchName: item.branchId?.branchName || null, // Extract branchName or set null
+    //       branchId: item.branchId?._id || null, // Extract branchId or set null
+    //       supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
+    //       supervisorId: item.supervisorId?._id || null, // Extract supervisorId or set null
+    //     }))
+
+    //     console.log('Processed Data:', salesmandata)
+
+    //     if (salesmandata) {
+    //       // Filter the data based on the search query if it is not empty
+    //       const filteredData = salesmandata
+    //         .map((item) => {
+    //           // Apply the formatDate method to 'createdAt' field if it exists
+    //           if (item.createdAt) {
+    //             item.createdAt = formatDate(item.createdAt) // Use your custom formatDate method
+    //           }
+
+    //           return item
+    //         })
+    //         .filter((item) =>
+    //           Object.values(item).some((value) =>
+    //             value?.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+    //           ),
+    //         )
+
+    //       setData(filteredData) // Set the filtered data to `data`
+    //       setSortedData(filteredData) // Set the filtered data to `sortedData`
+    //       setLoading(false)
+    //     } else {
+    //       console.error('Salesman data is missing or incorrectly structured.')
+    //       setLoading(false)
+    //     }
+    //   } catch (error) {
+    //     setLoading(false)
+    //     console.error('Error fetching data:', error)
+    //     throw error // Re-throw the error for further handling if needed
+    //   }
+    // }
+    // const fetchData = async () => {
+    //   const accessToken = Cookies.get('token');
+    //   // const url = `https://rocketsales-server.onrender.com/api/salesman`;
+    //   // const url = `https://rocketsales-server.onrender.com/api/salesman`;
+    //   const salId = tokenData.id;
+    //   const url = (role == 5) ? `${import.meta.env.VITE_SERVER_URL}/api/task/${salId}` : `https://rocketsales-server.onrender.com/api/salesman`;
+    
+    //   try {
+    //     const response = await axios.get(url, {
+    //       headers: { Authorization: `Bearer ${accessToken}` },
+    //     });
+    
+    //     console.log("dta of tasssskksksksksksksksk", response.data);
+    //     // Ensure the response contains the salesmandata array
+    //     if (response.data && response.data.salesmandata) {
+    //       const formattedData = response.data.salesmandata.map((item) => ({
+    //         ...item,
+    //         companyName: item.companyId?.companyName || null, // Extract companyName or default to null
+    //         companyId: item.companyId?._id || null,             // Extract companyId or default to null
+    //         branchName: item.branchId?.branchName || null,       // Extract branchName or default to null
+    //         branchId: item.branchId?._id || null,                // Extract branchId or default to null
+    //         supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or default to null
+    //         supervisorId: item.supervisorId?._id || null,        // Extract supervisorId or default to null
+    //         // Format the createdAt date if it exists
+    //         createdAt: item.createdAt ? formatDate(item.createdAt) : item.createdAt,
+    //       }));
+    
+    //       // Filter the data based on the search query
+    //       const filteredData = formattedData.filter((item) =>
+    //         Object.values(item).some((value) =>
+    //           value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+    //         )
+    //       );
+    
+    //       setData(filteredData);
+    //       setSortedData(filteredData);
+    //       setLoading(false);
+    //     }else if(true){
+      
+    //     } 
+    //     else {
+    //       console.error('Salesman data is missing or incorrectly structured.');
+    //       setLoading(false);
+    //     }
+    //   } catch (error) {
+    //     setLoading(false);
+    //     console.error('Error fetching salesman data:', error);
+    //   }
+    // };
+    const fetchData = async () => {
+      const accessToken = Cookies.get('token'); 
+      
       try {
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: 'Bearer ' + accessToken,
-          },
-        })
-
-        // Log the full response data to inspect its structure
-        console.log('Full Response Data:', response.data)
-
-        // Process the salesmandata
-        const salesmandata = response.data.salesmandata.map((item) => ({
-          ...item,
-          companyName: item.companyId?.companyName || null, // Extract companyName or set null
-          companyId: item.companyId?._id || null, // Extract companyId or set null
-          branchName: item.branchId?.branchName || null, // Extract branchName or set null
-          branchId: item.branchId?._id || null, // Extract branchId or set null
-          supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
-          supervisorId: item.supervisorId?._id || null, // Extract supervisorId or set null
-        }))
-
-        console.log('Processed Data:', salesmandata)
-
-        if (salesmandata) {
-          // Filter the data based on the search query if it is not empty
-          const filteredData = salesmandata
-            .map((item) => {
-              // Apply the formatDate method to 'createdAt' field if it exists
-              if (item.createdAt) {
-                item.createdAt = formatDate(item.createdAt) // Use your custom formatDate method
-              }
-
-              return item
-            })
-            .filter((item) =>
-              Object.values(item).some((value) =>
-                value?.toString().toLowerCase().includes(searchQuery.toLowerCase()),
-              ),
-            )
-
-          setData(filteredData) // Set the filtered data to `data`
-          setSortedData(filteredData) // Set the filtered data to `sortedData`
-          setLoading(false)
+        let url;
+        let response;
+        
+        if (tokenData.role==5) { // Salesman role
+          url = `${import.meta.env.VITE_SERVER_URL}/api/task/${tokenData.id}`;
+          response = await axios.get(url, { 
+            headers: { Authorization: `Bearer ${accessToken}` } 
+          });
+          // Transform task data to match table structur
+          if(response.data){
+            const formattedData = response.data.map(task => ({
+              ...task,
+              _id: task._id,
+              salesmanName: task.assignedTo[0]?.salesmanName || 'N/A',
+              companyName: task.companyId?.companyName || 'N/A',
+              branchName: task.branchId?.branchName || 'N/A',
+              supervisorName: task.supervisorId?.supervisorName || 'N/A',
+              createdAt: task.createdAt ? formatDate(task.createdAt) : 'N/A',
+              // Add other task-related fields as needed
+            }));
+            console.log("dta of tasssskksksksksksksksk", formattedData);
+            setData(formattedData);
+            setSortedData(formattedData);
+          }
+          
+          console.log("dta of tasssskksksksksksksksk", formattedData);
+          setData(formattedData);
+          setSortedData(formattedData);
         } else {
-          console.error('Salesman data is missing or incorrectly structured.')
-          setLoading(false)
+          url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`;
+          response = await axios.get(url, { 
+            headers: { Authorization: `Bearer ${accessToken}` } 
+          });
+    
+          // Original salesman data processing
+          const formattedData = response.data.salesmandata.map((item) => ({
+            ...item,
+            companyName: item.companyId?.companyName || null,
+            branchName: item.branchId?.branchName || null,
+            supervisorName: item.supervisorId?.supervisorName || null,
+            createdAt: item.createdAt ? formatDate(item.createdAt) : item.createdAt,
+          }));
+    
+          setData(formattedData);
+          setSortedData(formattedData);
         }
+    
+        setLoading(false);
       } catch (error) {
-        setLoading(false)
-        console.error('Error fetching data:', error)
-        throw error // Re-throw the error for further handling if needed
+        setLoading(false);
+        console.error('Error fetching data:', error);
       }
-    }
-
+    };
     const fetchCompany = async () => {
       const accessToken = Cookies.get('token')
-      const url = `https://rocketsales-server.onrender.com/api/company`
+      const url = `${import.meta.env.VITE_SERVER_URL}/api/company`
 
       try {
         const response = await axios.get(url, {
@@ -429,7 +580,7 @@
     }
     const fetchBranch = async () => {
       const accessToken = Cookies.get('token')
-      const url = `https://rocketsales-server.onrender.com/api/branch`
+      const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`
 
       try {
         const response = await axios.get(url, {
@@ -452,7 +603,7 @@
     }
     const fetchsupervisor = async () => {
       const accessToken = Cookies.get('token')
-      const url = `https://rocketsales-server.onrender.com/api/supervisor`
+      const url = `${import.meta.env.VITE_SERVER_URL}/api/supervisor`
 
       try {
         const response = await axios.get(url, {
@@ -473,10 +624,12 @@
         throw error // Re-throw the error for further handling if needed
       }
     }
+   
     useEffect(() => {
       fetchCompany()
       fetchBranch()
       fetchsupervisor()
+      
     }, [])
     // Format the date into DD-MM-YYYY format
     function formatDate(date) {
@@ -492,12 +645,15 @@
       const [day, month, year] = dateString.split('-').map(Number)
       return new Date(year, month - 1, day)
     }
-
-    useEffect(() => {
-      setLoading(true)
-      // fetchcompany()
-      fetchData() // Refetch data when searchQuery changes
-    }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+     useEffect(() => {
+          setLoading(true);
+          fetchData();
+        }, [role]);
+    // useEffect(() => {
+    //   setLoading(true)
+    //   // fetchcompany()
+    //   fetchData() // Refetch data when searchQuery changes
+    // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
     // ##################### Filter data by search query #######################
     const filterGroups = () => {
@@ -511,10 +667,43 @@
         setCurrentPage(1)
       }
     }
+    const handleSearchChange = (e) => {
+            setSearchQuery(e.target.value);
+          };
+          const debouncedFilter = useCallback(
+            debounce((query, data) => {
+              if (!query) {
+                setFilteredData(data);
+              } else {
+                // const filtered = data.filter((item) =>
+                //   Object.values(item).some((value) =>
+                //     value.toString().toLowerCase().includes(query.toLowerCase())
+                //   )
+                // );
+                const filtered = data.filter((item) =>
+                  Object.entries(item).some(([key, value]) =>
+                    key !== "profileImage" && (value?.toString() ?? "").toLowerCase().includes(query.toLowerCase())
+                  )
+                );            
+                
+                setFilteredData(filtered);
+              }
+            }, 500),
+            []
+          );
+          useEffect(() => {
+            if (data && data.length > 0) {
+              debouncedFilter(searchQuery, data);
+            }
+          }, [searchQuery, data, debouncedFilter]);
+          
+          useEffect(() => {
+            return () => debouncedFilter.cancel();
+          }, [debouncedFilter]);
 
-    useEffect(() => {
-      filterGroups(searchQuery)
-    }, [data, searchQuery])
+    // useEffect(() => {
+    //   filterGroups(searchQuery)
+    // }, [data, searchQuery])
 
     const handlePageClick = (e) => {
       console.log(e.selected + 1)
@@ -549,7 +738,7 @@
 
         // Perform the POST request
         const response = await axios.post(
-          `https://rocketsales-server.onrender.com/api/salesman`,
+          `${import.meta.env.VITE_SERVER_URL}/api/salesman`,
           formData,
           {
             headers: {
@@ -588,7 +777,7 @@
       try {
         const accessToken = Cookies.get('token')
         const response = await axios.put(
-          `https://rocketsales-server.onrender.com/api/salesman/${formData._id}`,
+          `${import.meta.env.VITE_SERVER_URL}/api/salesman/${formData._id}`,
           formData,
           {
             headers: {
@@ -697,7 +886,9 @@
                 className="form-control"
                 placeholder="🔍 Search here..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                // onChange={(e) => setSearchQuery(e.target.value)}
+                 onChange={handleSearchChange} 
+
                 style={{
                   height: '40px', // Ensure consistent height
                   padding: '8px 12px',
@@ -844,8 +1035,8 @@
                     Loading...
                   </CTableDataCell>
                 </CTableRow>
-              ) : sortedData.length > 0 ? (
-                sortedData
+              ) : filteredData.length > 0 ? (
+                filteredData
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((item, index) => (
                     <CTableRow
@@ -856,7 +1047,8 @@
                         borderBottom: '1px solid #e0e0e0',
                         
                       }}
-                      onClick={() => handleRowClick(item)}
+                      // onClick={() => handleRowClick(item)}
+                      onClick={role !== 5 ? () => handleRowClick(item) : undefined}
                       hover
                     >
                       <CTableDataCell
@@ -904,13 +1096,39 @@
                       <CTableDataCell
                         className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
                       >
-                        <IconButton
-                          aria-label="edit"
-                          // onClick={() => handleEditGroup(item)}
-                          className="icon-button icon-button-edit"
-                        >
-                          <VisibilityIcon className="icon-button-icon" />
-                        </IconButton>
+                        {role === 5 ? (<>
+    {/* <IconButton
+      aria-label="edit"
+      className="icon-button icon-button-edit"
+    >
+      <CheckCircleIcon className="icon-button-icon" />
+    </IconButton>
+     <IconButton
+     aria-label="edit"
+     className="icon-button icon-button-delete"
+   >
+     <RadioButtonUncheckedIcon className="icon-button-icon" />
+   </IconButton> */}
+   <IconButton
+  aria-label="status"
+  className="icon-button icon-button-status"
+  onClick={() => handleStatusChange(item)} // Dynamic status update
+>
+  {item.status === "Completed" ? (
+    <CheckCircleIcon className="icon-button-icon" style={{ color: "green" }} />
+  ) : (
+    <RadioButtonUncheckedIcon className="icon-button-icon" style={{ color: "red" }} />
+  )}
+</IconButton>
+
+   </>) : ( <IconButton
+    aria-label="edit"
+    // onClick={() => handleEditGroup(item)}
+    className="icon-button icon-button-edit"
+  >
+    <VisibilityIcon className="icon-button-icon" />
+  </IconButton>)}
+                       
 
                         {/* <IconButton
                           aria-label="delete"
@@ -1530,8 +1748,8 @@
                       borderRadius: '8px',
                       padding: '10px',
                       marginBottom: '10px',
-                      // backgroundColor: "#f9f9f9",
-                      backgroundColor: task.status === 'Completed' ? 'lightgreen' : '#f1f8fd',
+                      backgroundColor: "#f1f8fd",
+                      // backgroundColor: task.status === 'Completed' ? 'lightgreen' : '#f1f8fd',
                     }}
                   >
                     {/* Task Description and Status */}
@@ -1557,6 +1775,17 @@
                     <Typography variant="body2" color="textSecondary" style={{ marginTop: '5px' }}>
                     <strong>Deadline: </strong> {new Date(task.deadline).toLocaleDateString()}
                     </Typography>
+                    <Typography variant="body2" color="textSecondary" style={{ marginTop: '5px' }}>
+                    {/* <strong>Status: </strong> */}
+                    <Chip
+     label={`Status: ${task.status}`}
+    style={{
+      backgroundColor: task.status === 'Completed' ? 'green' : 'red',
+      color: 'white',
+      fontWeight: 'bold',
+    }}
+  />
+                    </Typography>
                     
                     {/* Edit and Delete Icons */}
                     <div className="d-flex justify-content-end" style={{ marginTop: '1px' }}>
@@ -1571,23 +1800,40 @@
                 >
                   <DeleteIcon />
                 </IconButton> */}
-                      <IconButton
-                        aria-label="edit"
-                        onClick={() => handleEditTask(task)}
-                        className="icon-button icon-button-edit"
-                        style={{ marginRight: '10px' }}
-                      >
-                        <RiEdit2Fill className="icon-button-icon" />
-                      </IconButton>
-
-                      <IconButton
-                        aria-label="delete"
-                        onClick={() => handleTaskDelete(task._id)}
-                        className="icon-button icon-button-delete"
-                      >
-                        <AiFillDelete className="icon-button-icon" />
-                      </IconButton>
+                     
+                     
                     </div>
+                    <div className="d-flex align-items-center justify-content-end" style={{ gap: "10px", marginTop: "1px" }}>
+  <IconButton
+    aria-label="status"
+    className="icon-button icon-button-fab"
+    onClick={() => handleStatusChange(task)}
+    style={{ color: "#FFFFFF", opacity: 1 }}
+  >
+    {task.status === "Completed" ? (
+      <CheckCircleIcon className="icon-button-icon" style={{ color: "green" }} />
+    ) : (
+      <RadioButtonUncheckedIcon className="icon-button-icon" style={{ color: "red" }} />
+    )}
+  </IconButton>
+
+  <IconButton
+    aria-label="edit"
+    onClick={() => handleEditTask(task)}
+    className="icon-button icon-button-edit"
+  >
+    <RiEdit2Fill className="icon-button-icon" />
+  </IconButton>
+
+  <IconButton
+    aria-label="delete"
+    onClick={() => handleTaskDelete(task._id)}
+    className="icon-button icon-button-delete"
+  >
+    <AiFillDelete className="icon-button-icon" />
+  </IconButton>
+</div>
+
 
                     {/* Company, Branch, and Supervisor Info */}
                     {/* <Typography variant="body2" style={{ marginTop: "5px" }}>
@@ -1807,7 +2053,7 @@
           margin="normal"
           inputProps={{ step: "any" }}
         /> */}
-        <FormControlLabel
+        {/* <FormControlLabel
     control={
       <Checkbox
         checked={editTaskData.status === 'Completed'}
@@ -1822,15 +2068,58 @@
     }
     label="Completed"
     style={{ marginTop: '10px' }}
-  />
-        <Button 
+  /> */}
+   <Box 
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            margin: 'normal',
+            mt: 2,
+            mb: 2,
+            border: '1px solid rgba(0, 0, 0, 0.23)',
+            borderRadius: '4px',
+            padding: '16.5px 14px'
+          }}
+        >
+          <InputAdornment position="start" sx={{ mr: 1 }}>
+            <CheckCircleIcon />
+          </InputAdornment>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={editTaskData.status === 'Completed'}
+                onChange={(e) => 
+                  setEditTaskData({
+                    ...editTaskData,
+                    status: e.target.checked ? 'Completed' : 'Pending'
+                  })
+                }
+                color="primary"
+              />
+            }
+            label="Completed"
+            sx={{ margin: 0 }}
+          />
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            type="submit"
+            sx={{ width: '50%' }}
+          >
+            Update Task
+          </Button>
+        </Box>
+        {/* <Button 
           variant="contained" 
           color="primary" 
           type="submit" 
           style={{ marginTop: '20px' }}
         >
           Update Task
-        </Button>
+        </Button> */}
       </form>
     </Box>
   </Modal>

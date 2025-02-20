@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -61,6 +61,7 @@ import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode'
+import debounce from 'lodash.debounce';
 
 const Supervisor = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -129,65 +130,106 @@ const Supervisor = () => {
   }
 
   // ##################### getting data  ###################
-  const fetchData = async (page = 1) => {
-    const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/supervisor`
+  // const fetchData = async (page = 1) => {
+  //   const accessToken = Cookies.get('token')
+  //   const url = `https://rocketsales-server.onrender.com/api/supervisor`
 
+  //   try {
+  //     const response = await axios.get(url, {
+  //       headers: {
+  //         Authorization: 'Bearer ' + accessToken,
+  //       },
+  //     })
+
+  //     // Log the full response data to inspect its structure
+  //     console.log('Full Response Data:', response.data)
+
+  //     // Flattening the supervisor data and adding companyName and branchName
+  //     const allData = response.data.supervisors.map((item) => ({
+  //       ...item,
+  //       companyName: item.companyId.companyName, // Extract companyName from companyId
+  //       companyId: item.companyId._id, // Extract companyId from companyId
+  //       branchName: item.branchId.branchName, // Extract branchName from branchId
+  //       branchId: item.branchId._id, // Extract branchId from branchId
+  //     }))
+
+  //     console.log('Processed Data:', allData)
+
+  //     if (allData) {
+  //       // Filter the data based on the search query if it is not empty
+  //       const filteredData = allData
+  //         .map((item) => {
+  //           // Apply the formatDate method to 'createdAt' field if it exists
+  //           if (item.createdAt) {
+  //             item.createdAt = formatDate(item.createdAt) // Use your custom formatDate method
+  //           }
+
+  //           return item
+  //         })
+  //         .filter((item) =>
+  //           Object.values(item).some((value) =>
+  //             value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+  //           ),
+  //         )
+
+  //       setData(filteredData) // Set the filtered data to `data`
+  //       setSortedData(filteredData) // Set the filtered data to `sortedData`
+  //       setLoading(false)
+  //     } else {
+  //       console.error('Supervisors data is missing or incorrectly structured.')
+  //       setLoading(false)
+  //     }
+  //   } catch (error) {
+  //     setLoading(false)
+  //     console.error('Error fetching data:', error)
+  //     throw error // Re-throw the error for further handling if needed
+  //   }
+  // }
+  const fetchData = async () => {
+    const accessToken = Cookies.get('token');
+    // const url = `https://rocketsales-server.onrender.com/api/supervisor`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/supervisor`
+    
     try {
       const response = await axios.get(url, {
-        headers: {
-          Authorization: 'Bearer ' + accessToken,
-        },
-      })
-
-      // Log the full response data to inspect its structure
-      console.log('Full Response Data:', response.data)
-
-      // Flattening the supervisor data and adding companyName and branchName
-      const allData = response.data.supervisors.map((item) => ({
-        ...item,
-        companyName: item.companyId.companyName, // Extract companyName from companyId
-        companyId: item.companyId._id, // Extract companyId from companyId
-        branchName: item.branchId.branchName, // Extract branchName from branchId
-        branchId: item.branchId._id, // Extract branchId from branchId
-      }))
-
-      console.log('Processed Data:', allData)
-
-      if (allData) {
-        // Filter the data based on the search query if it is not empty
-        const filteredData = allData
-          .map((item) => {
-            // Apply the formatDate method to 'createdAt' field if it exists
-            if (item.createdAt) {
-              item.createdAt = formatDate(item.createdAt) // Use your custom formatDate method
-            }
-
-            return item
-          })
-          .filter((item) =>
-            Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
-            ),
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+  
+      // Check that the response data contains the supervisors array
+      if (response.data && response.data.supervisors) {
+        const formattedData = response.data.supervisors.map((item) => ({
+          ...item,
+          companyName: item.companyId?.companyName, // Extract companyName from companyId object
+          companyId: item.companyId?._id,             // Extract companyId from companyId object
+          branchName: item.branchId?.branchName,       // Extract branchName from branchId object
+          branchId: item.branchId?._id,                // Extract branchId from branchId object
+          createdAt: item.createdAt ? formatDate(item.createdAt) : item.createdAt, // Format createdAt if available
+        }));
+  
+        // Filter the data based on the search query (if one is provided)
+        const filteredData = formattedData.filter((item) =>
+          Object.values(item).some((value) =>
+            value.toString().toLowerCase().includes(searchQuery.toLowerCase())
           )
-
-        setData(filteredData) // Set the filtered data to `data`
-        setSortedData(filteredData) // Set the filtered data to `sortedData`
-        setLoading(false)
+        );
+  
+        setData(filteredData);
+        setSortedData(filteredData);
+        setLoading(false);
       } else {
-        console.error('Supervisors data is missing or incorrectly structured.')
-        setLoading(false)
+        console.error('Supervisors data is missing or incorrectly structured.');
+        setLoading(false);
       }
     } catch (error) {
-      setLoading(false)
-      console.error('Error fetching data:', error)
-      throw error // Re-throw the error for further handling if needed
+      setLoading(false);
+      console.error('Error fetching supervisor data:', error);
     }
-  }
+  };
+  
 
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/company`
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`
 
     try {
       const response = await axios.get(url, {
@@ -209,7 +251,7 @@ const Supervisor = () => {
   }
   const fetchBranch = async () => {
     const accessToken = Cookies.get('token')
-    const url = `https://rocketsales-server.onrender.com/api/branch`
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`
 
     try {
       const response = await axios.get(url, {
@@ -248,12 +290,17 @@ const Supervisor = () => {
     const [day, month, year] = dateString.split('-').map(Number)
     return new Date(year, month - 1, day)
   }
-
-  useEffect(() => {
-    setLoading(true)
-    // fetchcompany()
-    fetchData() // Refetch data when searchQuery changes
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+useEffect(() => {
+    setLoading(true);
+    fetchData();
+  }, []);
+  // useEffect(() => {
+  //   setLoading(true)
+  //   // fetchcompany()
+  //   fetchData()
+  //  // Refetch data when searchQuery changes
+  // }, [searchQuery]) 
+  // // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -267,10 +314,37 @@ const Supervisor = () => {
       setCurrentPage(1)
     }
   }
+  const handleSearchChange = (e) => {
+      setSearchQuery(e.target.value);
+    };
+    const debouncedFilter = useCallback(
+      debounce((query, data) => {
+        if (!query) {
+          setFilteredData(data);
+        } else {
+          const filtered = data.filter((item) =>
+            Object.values(item).some((value) =>
+              value.toString().toLowerCase().includes(query.toLowerCase())
+            )
+          );
+          setFilteredData(filtered);
+        }
+      }, 500),
+      []
+    );
+    useEffect(() => {
+      if (data && data.length > 0) {
+        debouncedFilter(searchQuery, data);
+      }
+    }, [searchQuery, data, debouncedFilter]);
+    
+    useEffect(() => {
+      return () => debouncedFilter.cancel();
+    }, [debouncedFilter]);
 
-  useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -305,7 +379,7 @@ const Supervisor = () => {
 
       // Perform the POST request
       const response = await axios.post(
-        `https://rocketsales-server.onrender.com/api/supervisor`,
+        `${import.meta.env.VITE_SERVER_URL}/api/supervisor`,
         formData,
         {
           headers: {
@@ -322,8 +396,14 @@ const Supervisor = () => {
         setAddModalOpen(false) // Close modal
       }
     } catch (error) {
-      toast.error('An error occurred')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occurred')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -342,7 +422,7 @@ const Supervisor = () => {
     try {
       const accessToken = Cookies.get('token')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/supervisor/${formData._id}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/supervisor/${formData._id}`,
         formData,
         {
           headers: {
@@ -358,8 +438,14 @@ const Supervisor = () => {
         setEditModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -388,8 +474,8 @@ const Supervisor = () => {
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
-        url: `https://rocketsales-server.onrender.com/api/supervisor/${item._id}`,
+        // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
+        url: `${import.meta.env.VITE_SERVER_URL}/api/supervisor/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -397,7 +483,7 @@ const Supervisor = () => {
       })
 
       if (response.status === 200) {
-        toast.success('Group deleted successfully')
+        toast.success('Supervisor deleted successfully')
         fetchData()
       }
     } catch (error) {
@@ -451,7 +537,9 @@ const Supervisor = () => {
               className="form-control"
               placeholder="🔍 Search here..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              // onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange} 
+
               style={{
                 height: '40px', // Ensure consistent height
                 padding: '8px 12px',
@@ -585,8 +673,8 @@ const Supervisor = () => {
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : sortedData.length > 0 ? (
-              sortedData
+            ) :  filteredData.length > 0 ? (
+              filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow
@@ -726,6 +814,8 @@ const Supervisor = () => {
                             label="Company Name"
                             variant="outlined"
                             name="companyId"
+                            required
+                            placeholder="Select Company" 
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -733,6 +823,13 @@ const Supervisor = () => {
                                   <BusinessIcon />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -762,6 +859,7 @@ const Supervisor = () => {
                             label="Branch Name"
                             variant="outlined"
                             name="branchId"
+                            required
                             error={branchError} // Show error state
                             helperText={
                               branchError && formData.companyId
@@ -778,6 +876,13 @@ const Supervisor = () => {
                                   <FiGitBranch />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -815,6 +920,8 @@ const Supervisor = () => {
                             label="Branch Name"
                             variant="outlined"
                             name="branchId"
+                            required
+
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -822,6 +929,13 @@ const Supervisor = () => {
                                   <FiGitBranch />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -837,6 +951,7 @@ const Supervisor = () => {
                       label={column.Header}
                       name={column.accessor}
                       value={formData[column.accessor] || ''}
+                      required={column.accessor === 'supervisorName'||column.accessor === 'username' || column.accessor === 'password'}
                       onChange={(e) =>
                         setFormData({ ...formData, [column.accessor]: e.target.value })
                       }
@@ -844,6 +959,13 @@ const Supervisor = () => {
                         startAdornment: (
                           <InputAdornment position="start">{column.icon}</InputAdornment>
                         ),
+                      }}
+                      sx={{
+                        "& .MuiFormLabel-asterisk": {
+                          color: "red",
+                          fontSize: "1.4rem",
+                          // fontWeight: "bold",
+                        },
                       }}
                     />
                   ))}
@@ -968,6 +1090,7 @@ const Supervisor = () => {
                             label="Company Name"
                             variant="outlined"
                             name="companyId"
+                            required
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -975,6 +1098,13 @@ const Supervisor = () => {
                                   <BusinessIcon />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -1004,6 +1134,7 @@ const Supervisor = () => {
                             label="Branch Name"
                             variant="outlined"
                             name="branchId"
+                            required
                             error={branchError} // Show error state
                             helperText={
                               branchError && formData.companyId
@@ -1020,6 +1151,13 @@ const Supervisor = () => {
                                   <FiGitBranch />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -1055,6 +1193,7 @@ const Supervisor = () => {
                             label="Branch Name"
                             variant="outlined"
                             name="branchId"
+                            required
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -1062,6 +1201,13 @@ const Supervisor = () => {
                                   <FiGitBranch />
                                 </InputAdornment>
                               ),
+                            }}
+                            sx={{
+                              "& .MuiFormLabel-asterisk": {
+                                color: "red",
+                                fontSize: "1.4rem",
+                                // fontWeight: "bold",
+                              },
                             }}
                           />
                         )}
@@ -1079,6 +1225,7 @@ const Supervisor = () => {
                       label={column.Header}
                       name={column.accessor}
                       value={formData[column.accessor] || ''}
+                      required={column.accessor === 'supervisorName'||column.accessor === 'username' || column.accessor === 'password'}
                       onChange={(e) =>
                         setFormData({ ...formData, [column.accessor]: e.target.value })
                       }
@@ -1086,6 +1233,13 @@ const Supervisor = () => {
                         startAdornment: (
                           <InputAdornment position="start">{column.icon}</InputAdornment>
                         ),
+                      }}
+                      sx={{
+                        "& .MuiFormLabel-asterisk": {
+                          color: "red",
+                          fontSize: "1.4rem",
+                          // fontWeight: "bold",
+                        },
                       }}
                     />
                   ))}

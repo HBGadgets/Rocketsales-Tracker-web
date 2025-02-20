@@ -1,6 +1,4 @@
-
-
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -63,6 +61,8 @@ import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { BsCalendarCheck } from 'react-icons/bs';
 import { FaClock } from 'react-icons/fa';
 import { CTooltip } from '@coreui/react';
+import debounce from 'lodash.debounce';
+
 const SalesmanLeaveRequest = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -208,13 +208,13 @@ const SalesmanLeaveRequest = () => {
 
     if (selectedPeriod && selectedPeriod !== 'Custom') {
       // If the period is not custom, pass the period as a filter
-      url = `https://rocketsales-server.onrender.com/api/leaverequest?filter=${selectedPeriod}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?filter=${selectedPeriod}`
     } else if (startDate && endDate) {
       // For "Custom" date range, pass the startDate and endDate as query params
-      url = `https://rocketsales-server.onrender.com/api/leaverequest?startDate=${startDate}&endDate=${endDate}`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?startDate=${startDate}&endDate=${endDate}`
     } else {
       // If "Custom" is selected but no dates are provided, fetch all expenses
-      url = `https://rocketsales-server.onrender.com/api/leaverequest`
+      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest`
     }
     console.log("myurl",url);
     try {
@@ -273,11 +273,13 @@ const SalesmanLeaveRequest = () => {
     const [day, month, year] = dateString.split('-').map(Number);
     return new Date(year, month - 1, day);
   }
-  
   useEffect(() => {
-    setLoading(true)
-    fetchData() // Refetch data when searchQuery changes
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+      fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
+    }, []);
+  // useEffect(() => {
+  //   setLoading(true)
+  //   fetchData() // Refetch data when searchQuery changes
+  // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -291,10 +293,47 @@ const SalesmanLeaveRequest = () => {
       setCurrentPage(1)
     }
   }
+  const debouncedFilter = useCallback(
+      debounce((query, sourceData) => {
+        if (!query) {
+          setFilteredData(sourceData);
+          return;
+        }
+        const filtered = sourceData.filter(item =>
+          Object.values(item).some(value =>
+            value?.toString().toLowerCase().includes(query.toLowerCase())
+          )
+        );
+        // const filtered = sourceData.filter(item =>
+        //   Object.entries(item).some(([key, value]) => {
+        //     if (key === 'profileImgUrl') return false; // Skip searching the profileImage field
+        //     return value?.toString().toLowerCase().includes(query.toLowerCase());
+        //   })
+        // );
+        
+        
+        setFilteredData(filtered);
+      }, 500),
+      []
+    );
+    // Handle search input changes
+    const handleSearchChange = (e) => {
+      const query = e.target.value;
+      setSearchQuery(query);
+      debouncedFilter(query, data);
+    };
+  
+    // Cancel debounce on component unmount
+    useEffect(() => {
+      return () => debouncedFilter.cancel();
+    }, [debouncedFilter]);
+    useEffect(() => {
+      setFilteredData(data);
+    }, [data])
 
-  useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -342,84 +381,174 @@ const exportToPDF = PDFExporter({
 });
 
 
-const handleMarkApprove = async (item) => {
-  try {
-    console.log(`Request Approved Successfully!`);
-    console.log("mnb",`https://rocketsales-server.onrender.com/api/leaverequest/${item._id}`)
-    const absentData = {
-      leaveRequestStatus: 'Approve',
-    };
-console.log("MYAA",absentData)
-    const accessToken = Cookies.get('token');
+// const handleMarkApprove = async (item) => {
+//   try {
+//     console.log(`Request Approved Successfully!`);
+//     console.log("mnb",`${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`)
+//     const absentData = {
+//       leaveRequestStatus: 'Approve',
+//     };
+// console.log("MYAA",absentData)
+//     const accessToken = Cookies.get('token');
 
-    const response = await axios.put(
-      `https://rocketsales-server.onrender.com/api/leaverequest/${item._id}`,
-      absentData,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+//     const response = await axios.put(
+//       `${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`,
+//       absentData,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//         },
+//       }
+//     );
 
-    if (response.status == 200) {
-      alert(`${item.salesmanName} Request Approved successfully!`);
-      fetchData();
-    }
+//     if (response.status == 200) {
+//       alert(`${item.salesmanName} Request Approved successfully!`);
+//       fetchData();
+//     }
 
    
     
-  } catch (error) {
-    console.error('Error marking salesman request approve:', error);
-    if (error.response) {
-      console.error('Error Response:', error.response.data);
-    }
-    alert('Failed to mark the salesman request approve');
-  }
+//   } catch (error) {
+//     console.error('Error marking salesman request approve:', error);
+//     if (error.response) {
+//       console.error('Error Response:', error.response.data);
+//     }
+//     alert('Failed to mark the salesman request approve');
+//   }
+// };
+const handleMarkApprove = async (item) => {
+  toast((t) => (
+    <div>
+      <p>Are you sure you want to approve <b>{item.salesmanName}'s</b> request?</p>
+      <div style={{ display: 'flex',justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+        <button 
+          onClick={async () => {
+            toast.dismiss(t.id); // Close the confirmation toast
+
+            try {
+              const absentData = { leaveRequestStatus: 'Approve' };
+              const accessToken = Cookies.get('token');
+
+              const response = await axios.put(
+                `${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`,
+                absentData,
+                {
+                  headers: { Authorization: `Bearer ${accessToken}` },
+                }
+              );
+
+              if (response.status === 200) {
+                toast.success(`${item.salesmanName}'s request approved successfully!`);
+                fetchData();
+              }
+            } catch (error) {
+              console.error('Error approving request:', error);
+              toast.error('Failed to approve the salesman request.');
+            }
+          }} 
+          style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+        >
+          Approve
+        </button>
+
+        <button 
+          onClick={() => toast.dismiss(t.id)} 
+          style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  ), { duration: Infinity });
 };
 
 
 
 // Handler for marking a salesman as present
-const handleMarkReject= async (item) => {
-  try {
-    console.log(`Request Rejected Successfully!`);
+// const handleMarkReject= async (item) => {
+//   try {
+//     console.log(`Request Rejected Successfully!`);
     
-    const absentData = {
-      leaveRequestStatus: 'Reject',
-    };
-console.log("MYAA",absentData)
-    const accessToken = Cookies.get('token');
+//     const absentData = {
+//       leaveRequestStatus: 'Reject',
+//     };
+// console.log("MYAA",absentData)
+//     const accessToken = Cookies.get('token');
 
-    const response = await axios.put(
-      `https://rocketsales-server.onrender.com/api/leaverequest/${item._id}`,
-      absentData,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+//     const response = await axios.put(
+//       `${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`,
+//       absentData,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${accessToken}`,
+//         },
+//       }
+//     );
 
-    if (response.status == 200) {
-      alert(`${item.salesmanName} Request Rejected successfully!`);
-      fetchData();
-    }
+//     if (response.status == 200) {
+//       alert(`${item.salesmanName} Request Rejected successfully!`);
+//       fetchData();
+//     }
 
    
     
-  } catch (error) {
-    console.error('Error marking salesman as Reject:', error);
-    if (error.response) {
-      console.error('Error Response:', error.response.data);
-    }
-    alert('Failed to mark the salesman request reject');
-  }
+//   } catch (error) {
+//     console.error('Error marking salesman as Reject:', error);
+//     if (error.response) {
+//       console.error('Error Response:', error.response.data);
+//     }
+//     alert('Failed to mark the salesman request reject');
+//   }
+// };
+const handleMarkReject = async (item) => {
+  toast((t) => (
+    <div>
+      <p>Are you sure you want to reject <b>{item.salesmanName}'s</b> request?</p>
+      <div style={{ display: 'flex',justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+        <button 
+          onClick={async () => {
+            toast.dismiss(t.id); // Close the confirmation toast
+
+            try {
+              const absentData = { leaveRequestStatus: 'Reject' };
+              const accessToken = Cookies.get('token');
+
+              const response = await axios.put(
+                `${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`,
+                absentData,
+                {
+                  headers: { Authorization: `Bearer ${accessToken}` },
+                }
+              );
+
+              if (response.status === 200) {
+                toast.success(`${item.salesmanName}'s request rejected successfully!`);
+                fetchData();
+              }
+            } catch (error) {
+              console.error('Error rejecting request:', error);
+              toast.error('Failed to reject the salesman request.');
+            }
+          }} 
+          style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+        >
+          Reject
+        </button>
+
+        <button 
+          onClick={() => toast.dismiss(t.id)} 
+          style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  ), { duration: Infinity });
 };
 
 // Inline CSS for buttons
 const approveButtonStyle = {
-  backgroundColor: 'red',
+  backgroundColor: 'green',
   color: 'white',
   border: 'none',
   padding: '5px 10px',
@@ -429,7 +558,7 @@ const approveButtonStyle = {
 };
 
 const rejectButtonStyle = {
-  backgroundColor: 'green',
+  backgroundColor: 'red',
   color: 'white',
   border: 'none',
   padding: '5px 10px',
@@ -529,7 +658,8 @@ const rejectButtonStyle = {
       className="form-control"
       placeholder="🔍 Search here..."
       value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
+      // onChange={(e) => setSearchQuery(e.target.value)}
+      onChange={handleSearchChange}
       style={{
         height: "40px", // Ensure consistent height
         padding: "8px 12px",
@@ -660,8 +790,8 @@ const rejectButtonStyle = {
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : sortedData.length > 0 ? (
-              sortedData
+            ) : filteredData.length > 0 ? (
+              filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow

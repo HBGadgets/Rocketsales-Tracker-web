@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect,useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -62,6 +62,8 @@ import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode';
 import { Token } from '@mui/icons-material'
+import debounce from 'lodash.debounce';
+
 const token=Cookies.get("token");
 // let role=null
 // if(token){
@@ -130,58 +132,88 @@ const [role, setRole] = useState(null);
   }
 
   // ##################### getting data  ###################
-  const fetchData = async (page = 1) => {
+  // const fetchData = async (page = 1) => {
+  //   const accessToken = Cookies.get('token');
+  //   const url = `https://rocketsales-server.onrender.com/api/branch`;
+  
+  //   try {
+  //     const response = await axios.get(url, {
+  //       headers: {
+  //         Authorization: 'Bearer ' + accessToken,
+  //       },
+  //     });
+  
+  //     // Log to check the full structure of the response
+  //     console.log("Full Response Data:", response.data);
+  
+  //     // Accessing the 'Branches' directly from the response data
+  //     const allData = response.data.Branches?.map((item) => ({
+  //       ...item,
+  //       companyName: item.companyId.companyName, // Extract company name from companyId object
+  //       companyId: item.companyId._id, // Extract companyId from companyId object
+  //     }));
+  
+  //     console.log("Processed Data:", allData);
+  
+  //     if (allData) {
+  //       // Filter the data based on the search query if it is not empty
+  //       const filteredData = allData
+  //         .map((item) => {
+  //           // Apply the formatDate method to 'createdAt' field if it exists
+  //           if (item.createdAt) {
+  //             item.createdAt = formatDate(item.createdAt);
+  //           }
+            
+  //           return item;
+  //         })
+  //         .filter((item) =>
+  //           Object.values(item).some((value) =>
+  //             value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+  //           )
+  //         );
+  
+  //       setData(filteredData); // Set the filtered data to `data`
+  //       setSortedData(filteredData); // Set the filtered data to `sortedData`
+  //       setLoading(false);
+  //     } else {
+  //       console.error('Branches data is missing or incorrectly structured.');
+  //       setLoading(false);
+  //     }
+  
+  //   } catch (error) {
+  //     setLoading(false);
+  //     console.error('Error fetching data:', error);
+  //     throw error; // Re-throw the error for further handling if needed
+  //   }
+  // };
+  const fetchData = async () => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/branch`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`;
   
     try {
       const response = await axios.get(url, {
-        headers: {
-          Authorization: 'Bearer ' + accessToken,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
   
-      // Log to check the full structure of the response
-      console.log("Full Response Data:", response.data);
+      // Ensure that the response contains a 'Branches' array
+      if (response.data && response.data.Branches) {
+        const formattedData = response.data.Branches.map((item) => ({
+          ...item,
+          companyName: item.companyId?.companyName, // Extract the company name
+          companyId: item.companyId?._id,             // Extract the company ID
+          createdAt: item.createdAt ? formatDate(item.createdAt) : item.createdAt,
+        }));
   
-      // Accessing the 'Branches' directly from the response data
-      const allData = response.data.Branches?.map((item) => ({
-        ...item,
-        companyName: item.companyId.companyName, // Extract company name from companyId object
-        companyId: item.companyId._id, // Extract companyId from companyId object
-      }));
-  
-      console.log("Processed Data:", allData);
-  
-      if (allData) {
-        // Filter the data based on the search query if it is not empty
-        const filteredData = allData
-          .map((item) => {
-            // Apply the formatDate method to 'createdAt' field if it exists
-            if (item.createdAt) {
-              item.createdAt = formatDate(item.createdAt);
-            }
-            
-            return item;
-          })
-          .filter((item) =>
-            Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          );
-  
-        setData(filteredData); // Set the filtered data to `data`
-        setSortedData(filteredData); // Set the filtered data to `sortedData`
+        setData(formattedData);
+        setSortedData(formattedData);
         setLoading(false);
       } else {
         console.error('Branches data is missing or incorrectly structured.');
         setLoading(false);
       }
-  
     } catch (error) {
       setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      console.error('Error fetching branch data:', error);
     }
   };
   
@@ -191,7 +223,7 @@ const [role, setRole] = useState(null);
   
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/company`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`;
   
     try {
       const response = await axios.get(url, {
@@ -230,12 +262,15 @@ const [role, setRole] = useState(null);
     const [day, month, year] = dateString.split('-').map(Number);
     return new Date(year, month - 1, day);
   }
-  
-  useEffect(() => {
-    setLoading(true)
-    // fetchcompany()
-    fetchData() // Refetch data when searchQuery changes
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+   useEffect(() => {
+      setLoading(true);
+      fetchData();
+    }, []); 
+  // useEffect(() => {
+  //   setLoading(true)
+  //   // fetchcompany()
+  //   fetchData() // Refetch data when searchQuery changes
+  // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -249,10 +284,37 @@ const [role, setRole] = useState(null);
       setCurrentPage(1)
     }
   }
-
+const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  const debouncedFilter = useCallback(
+    debounce((query, data) => {
+      if (!query) {
+        setFilteredData(data);
+      } else {
+        const filtered = data.filter((item) =>
+          Object.values(item).some((value) =>
+            value.toString().toLowerCase().includes(query.toLowerCase())
+          )
+        );
+        setFilteredData(filtered);
+      }
+    }, 500),
+    []
+  );
   useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+    if (data && data.length > 0) {
+      debouncedFilter(searchQuery, data);
+    }
+  }, [searchQuery, data, debouncedFilter]);
+  
+  useEffect(() => {
+    return () => debouncedFilter.cancel();
+  }, [debouncedFilter]);
+
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -267,7 +329,7 @@ const [role, setRole] = useState(null);
   //   console.log(formData)
   //   try {
   //     const accessToken = Cookies.get('token')
-  //     const response = await axios.post(`https://rocketsales-server.onrender.com/api/branch`, formData, {
+  //     const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/branch`, formData, {
   //       headers: {
   //         Authorization: `Bearer ${accessToken}`,
   //         'Content-Type': 'application/json',
@@ -311,7 +373,7 @@ const [role, setRole] = useState(null);
       console.log('FormData to be submitted:', updatedFormData);
   
       const response = await axios.post(
-        `https://rocketsales-server.onrender.com/api/branch`,
+        `${import.meta.env.VITE_SERVER_URL}/api/branch`,
         updatedFormData,
         {
           headers: {
@@ -329,8 +391,12 @@ const [role, setRole] = useState(null);
       }
     } catch (error) {
       console.error('Error:', error);
-      toast.error('An error occurred');
-      throw error.response ? error.response.data : new Error('An error occurred');
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   };
   
@@ -349,7 +415,7 @@ const [role, setRole] = useState(null);
     try {
       const accessToken = Cookies.get('authToken')
       const response = await axios.put(
-        `https://rocketsales-server.onrender.com/api/branch/${formData._id}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/branch/${formData._id}`,
         formData,
         {
           headers: {
@@ -359,14 +425,20 @@ const [role, setRole] = useState(null);
       )
 
       if (response.status === 200) {
-        toast.success('group is edited successfully')
+        toast.success('Branch is edited successfully')
         fetchData()
         setFormData({ name: '' })
         setEditModalOpen(false)
       }
     } catch (error) {
-      toast.error('An error occured')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      // toast.error('An error occured')
+      // throw error.response ? error.response.data : new Error('An error occurred')
+      const errorMessage =
+      error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : 'An error occurred. Please try again.';
+
+        toast.error(errorMessage);
     }
   }
 
@@ -396,8 +468,8 @@ const [role, setRole] = useState(null);
 
       const response = await axios({
         method: 'DELETE', // Explicitly specifying DELETE method
-        // url: `https://rocketsales-server.onrender.com/api/delete-branch/${item._id}`,
-        url: `https://rocketsales-server.onrender.com/api/branch/${item._id}`,
+        // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
+        url: `${import.meta.env.VITE_SERVER_URL}/api/branch/${item._id}`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -460,7 +532,8 @@ const exportToPDF = PDFExporter({
       className="form-control"
       placeholder="🔍 Search here..."
       value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
+      // onChange={(e) => setSearchQuery(e.target.value)}
+      onChange={handleSearchChange} 
       style={{
         height: "40px", // Ensure consistent height
         padding: "8px 12px",
@@ -594,8 +667,8 @@ const exportToPDF = PDFExporter({
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : sortedData.length > 0 ? (
-              sortedData
+            ) : filteredData.length > 0 ? (
+              filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow
@@ -745,6 +818,8 @@ const exportToPDF = PDFExporter({
             label="Company Name"
             variant="outlined"
             name="companyId"
+            required
+            placeholder="Select Company" // Dynamic placeholder
             InputProps={{
               ...params.InputProps,
               startAdornment: (
@@ -752,6 +827,13 @@ const exportToPDF = PDFExporter({
                   <BusinessIcon />
                 </InputAdornment>
               ),
+            }}
+            sx={{
+              "& .MuiFormLabel-asterisk": {
+                color: "red",
+                fontSize: "1.4rem",
+                // fontWeight: "bold",
+              },
             }}
           />
         )}
@@ -767,16 +849,25 @@ const exportToPDF = PDFExporter({
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''}
+              required={column.accessor === 'branchName'||column.accessor === 'username' || column.accessor === 'password'}
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
               // Remove required attribute
+              placeholder={`Enter ${column.Header}`} // Dynamic placeholder
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}
@@ -847,6 +938,7 @@ const exportToPDF = PDFExporter({
             label="Company Name"
             variant="outlined"
             name="companyId"
+            required
             InputProps={{
               ...params.InputProps,
               startAdornment: (
@@ -854,6 +946,13 @@ const exportToPDF = PDFExporter({
                   <BusinessIcon />
                 </InputAdornment>
               ),
+            }}
+            sx={{
+              "& .MuiFormLabel-asterisk": {
+                color: "red",
+                fontSize: "1.4rem",
+                // fontWeight: "bold",
+              },
             }}
           />
         )}
@@ -868,6 +967,7 @@ const exportToPDF = PDFExporter({
               label={column.Header}
               name={column.accessor}
               value={formData[column.accessor] || ''} // Pre-fill with existing data
+              required={column.accessor === 'branchName'||column.accessor === 'username' || column.accessor === 'password'}              
               onChange={(e) =>
                 setFormData({ ...formData, [column.accessor]: e.target.value })
               }
@@ -878,6 +978,13 @@ const exportToPDF = PDFExporter({
                     {column.icon}
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                "& .MuiFormLabel-asterisk": {
+                  color: "red",
+                  fontSize: "1.4rem",
+                  // fontWeight: "bold",
+                },
               }}
             />
           ))}

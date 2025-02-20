@@ -13,18 +13,18 @@ import {  LocationOn, Event, Phone } from '@mui/icons-material';
 
 export const COLUMNS = () => [
 
-  {
-    Header: 'product Name',
-    accessor: 'productName',
-     icon: <FaBox />,
-    //  Cell: ({ value }) => value ? <img src={value} alt="Profile" style={{ width: 40, height: 40, borderRadius: '50%' }} /> : 'N/A',
-  },
-  {
-    Header: 'Quantity',
-    accessor: 'quantity',
-    icon: <FaHashtag />,
+  // {
+  //   Header: 'product Name',
+  //   accessor: 'productName',
+  //    icon: <FaBox />,
+  //   //  Cell: ({ value }) => value ? <img src={value} alt="Profile" style={{ width: 40, height: 40, borderRadius: '50%' }} /> : 'N/A',
+  // },
+  // {
+  //   Header: 'Quantity',
+  //   accessor: 'quantity',
+  //   icon: <FaHashtag />,
     
-  },
+  // },
   {
     Header: 'Shop Name',
     accessor: 'shopName',

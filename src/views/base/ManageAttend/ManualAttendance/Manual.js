@@ -264,7 +264,7 @@
 
 // export default Manual
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -320,12 +320,15 @@ import { COLUMNS } from './columns'
 import { StyledTablePagination } from '../../../../views/PaginationCssFile/TablePaginationStyles'
 // import { FaBriefcase   } from 'react-icons/fa';
 import { BsBuildingsFill } from 'react-icons/bs'
-import '../../ReusablecodeforTable/styles.css'
+// import '../../ReusablecodeforTable/styles.css';
+import '../../ReusablecodeforTable/Styles.css'
 import ExcelJS from 'exceljs';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 // import { BsFillPersonCheckFill } from 'react-icons/bs'
 import { BsClipboardCheck } from 'react-icons/bs';
+import debounce from 'lodash.debounce';
+
 const Manual = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -370,7 +373,7 @@ const Manual = () => {
   // ##################### getting data  ###################
   const fetchData = async (page = 1) => {
     const accessToken = Cookies.get('token');
-    const url = `https://rocketsales-server.onrender.com/api/manualattendence`;
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/manualattendence`;
 
     console.log("Token:", accessToken);
 
@@ -433,9 +436,13 @@ const Manual = () => {
   }
   
   useEffect(() => {
-    setLoading(true)
-    fetchData() // Refetch data when searchQuery changes
-  }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+    setLoading(true);
+    fetchData();
+  }, []);
+  // useEffect(() => {
+  //   setLoading(true)
+  //   fetchData() // Refetch data when searchQuery changes
+  // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
   const filterGroups = () => {
@@ -449,10 +456,43 @@ const Manual = () => {
       setCurrentPage(1)
     }
   }
-
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  const debouncedFilter = useCallback(
+    debounce((query, data) => {
+      if (!query) {
+        setFilteredData(data);
+      } else {
+        // const filtered = data.filter((item) =>
+        //   Object.values(item).some((value) =>
+        //     value.toString().toLowerCase().includes(query.toLowerCase())
+        //   )
+        // );
+        const filtered = data.filter((item) =>
+          Object.entries(item).some(([key, value]) =>
+            key !== "profileImage" && (value?.toString() ?? "").toLowerCase().includes(query.toLowerCase())
+          )
+        );            
+        
+        setFilteredData(filtered);
+      }
+    }, 500),
+    []
+  );
   useEffect(() => {
-    filterGroups(searchQuery)
-  }, [data, searchQuery])
+    if (data && data.length > 0) {
+      debouncedFilter(searchQuery, data);
+    }
+  }, [searchQuery, data, debouncedFilter]);
+  
+  useEffect(() => {
+    return () => debouncedFilter.cancel();
+  }, [debouncedFilter]);
+
+  // useEffect(() => {
+  //   filterGroups(searchQuery)
+  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -513,7 +553,7 @@ console.log("MYAA",absentData)
     const accessToken = Cookies.get('token');
 
     const response = await axios.post(
-      'https://rocketsales-server.onrender.com/api/attendence',
+      '${import.meta.env.VITE_SERVER_URL}/api/attendence',
       absentData,
       {
         headers: {
@@ -554,7 +594,7 @@ console.log("MYAA",absentData)
     const accessToken = Cookies.get('token');
 
     const response = await axios.post(
-      'https://rocketsales-server.onrender.com/api/attendence',
+      '${import.meta.env.VITE_SERVER_URL}/api/attendence',
       absentData,
       {
         headers: {
@@ -628,7 +668,9 @@ const presentButtonStyle = {
       className="form-control"
       placeholder="🔍 Search here..."
       value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
+      // onChange={(e) => setSearchQuery(e.target.value)}
+      onChange={handleSearchChange} 
+
       style={{
         height: "40px", // Ensure consistent height
         padding: "8px 12px",
@@ -759,8 +801,8 @@ const presentButtonStyle = {
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : sortedData.length > 0 ? (
-              sortedData
+            ) : filteredData.length > 0 ? (
+              filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow
