@@ -118,6 +118,7 @@ const Company = () => {
           ...item,
           createdAt: formatDate(item.createdAt),
         }));
+        console.log("company ..",formattedData)
         setData(formattedData);
         setSortedData(formattedData);
         setLoading(false);
