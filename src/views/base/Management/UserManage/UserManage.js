@@ -135,64 +135,7 @@ const [role, setRole] = useState(null);
   
     fetchRole(); // Call the function to fetch role
   }, []); 
-  // ##################### getting data  ###################
-  // const fetchData = async (page = 1) => {
-  //   const accessToken = Cookies.get('token');
-  //   const url = `https://rocketsales-server.onrender.com/api/salesman`;
   
-  //   try {
-  //     const response = await axios.get(url, {
-  //       headers: {
-  //         Authorization: 'Bearer ' + accessToken,
-  //       },
-  //     });
-  
-  //     // Log the full response data to inspect its structure
-  //     console.log("Full Response Data:", response.data);
-  
-  //     // Process the salesmandata
-  //     const salesmandata = response.data.salesmandata.map((item) => ({
-  //       ...item,
-  //       companyName: item.companyId?.companyName || null, // Extract companyName or set null
-  //       companyId: item.companyId?._id || null,          // Extract companyId or set null
-  //       branchName: item.branchId?.branchName || null,   // Extract branchName or set null
-  //       branchId: item.branchId?._id || null,            // Extract branchId or set null
-  //       supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
-  //       supervisorId: item.supervisorId?._id || null,    // Extract supervisorId or set null
-  //     }));
-  
-  //     console.log("Processed Data:", salesmandata);
-  
-  //     if (salesmandata) {
-  //       // Filter the data based on the search query if it is not empty
-  //       const filteredData = salesmandata
-  //         .map((item) => {
-  //           // Apply the formatDate method to 'createdAt' field if it exists
-  //           if (item.createdAt) {
-  //             item.createdAt = formatDate(item.createdAt); // Use your custom formatDate method
-  //           }
-  
-  //           return item;
-  //         })
-  //         .filter((item) =>
-  //           Object.values(item).some((value) =>
-  //             value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-  //           )
-  //         );
-  
-  //       setData(filteredData); // Set the filtered data to `data`
-  //       setSortedData(filteredData); // Set the filtered data to `sortedData`
-  //       setLoading(false);
-  //     } else {
-  //       console.error('Salesman data is missing or incorrectly structured.');
-  //       setLoading(false);
-  //     }
-  //   } catch (error) {
-  //     setLoading(false);
-  //     console.error('Error fetching data:', error);
-  //     throw error; // Re-throw the error for further handling if needed
-  //   }
-  // };
   const fetchData = async () => {
     const accessToken = Cookies.get('token');
     const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`;
