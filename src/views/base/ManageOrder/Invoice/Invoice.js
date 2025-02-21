@@ -19,6 +19,7 @@ import {
   InputAdornment,
 } from '@mui/material'
 import { RiEdit2Fill } from 'react-icons/ri'
+import { FaFileDownload } from "react-icons/fa";
 import { AiFillDelete } from 'react-icons/ai'
 import BusinessIcon from '@mui/icons-material/Business'
 
@@ -67,7 +68,7 @@ import jwt_decode from 'jwt-decode'
 import Cookies from 'js-cookie'
 import { FiGitBranch } from 'react-icons/fi'
 import { FiUser } from 'react-icons/fi'
-
+import InvoiceView from './InvoiceView'
 
 
 // import { DialogContent } from "@mui/material";
@@ -103,8 +104,13 @@ const [branchError, setBranchError] = useState(false)
 
 
   const [expandedRows, setExpandedRows] = useState([]);
-  
-
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const handleDownloadInvoice = (invoice) => {
+    setSelectedInvoice(invoice);
+    console.log('Selected Invoice:', invoice);
+    setInvoiceModalOpen(true);
+  };
   const styles = {
     container: {
       display: 'flex',
@@ -799,7 +805,7 @@ const handleEditModalClose = () => {
                    {col.Header}
                  </CTableHeaderCell>
                ))}
-                 {/* <CTableHeaderCell
+                 <CTableHeaderCell
                           className="text-center"
                           style={{
                             padding: '5px 12px', // Reduced padding for top and bottom
@@ -811,7 +817,7 @@ const handleEditModalClose = () => {
                           }}
                         >
                           Actions
-                 </CTableHeaderCell> */}
+                 </CTableHeaderCell>
              </CTableRow>
            </CTableHead>
  
@@ -927,18 +933,18 @@ const handleEditModalClose = () => {
                            
                          </CTableDataCell>
                        ))}
-                        {/* <CTableDataCell
+                        <CTableDataCell
                       className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
                     >
                       <IconButton
                         aria-label="edit"
-                        onClick={() => handleEditGroup(item)}
+                        onClick={() => handleDownloadInvoice(item)}
                         className="icon-button icon-button-edit"
                       >
-                        <RiEdit2Fill className="icon-button-icon" />
+                        <FaFileDownload className="icon-button-icon" />
                       </IconButton>
 
-                    </CTableDataCell> */}
+                    </CTableDataCell>
                      </CTableRow>
  
                      {/* Expanded row for product details */}
@@ -1421,6 +1427,21 @@ const handleEditModalClose = () => {
           </DialogContent>
         </Box>
       </Modal>
+      {selectedInvoice && (
+        <Dialog
+          open={invoiceModalOpen}
+          onClose={() => setInvoiceModalOpen(false)}
+          maxWidth="lg"
+          fullWidth
+          
+        >
+          <InvoiceView 
+            invoiceData={selectedInvoice}
+            onClose={() => setInvoiceModalOpen(false)}
+            onSave={fetchData} // Refresh data after save
+          />
+        </Dialog>
+      )}
      </div>
    );
 }

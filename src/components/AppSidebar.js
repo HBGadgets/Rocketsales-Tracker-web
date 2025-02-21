@@ -16,6 +16,7 @@ import CIcon from '@coreui/icons-react'
 import { AppSidebarNav } from './AppSidebarNav'
 
 import logo from 'src/assets/brand/logo.svg'
+import shortlogo from 'src/assets/brand/shortlogo.svg'
 import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
@@ -51,7 +52,7 @@ const [show, setShow] = useState(false);
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/dashboard">
           <img src={logo} alt="Logo" className="sidebar-brand-full" height={45} width={200} />
-          <img src={logo} alt="Logo" className="sidebar-brand-narrow" height={32} width={32} />
+          <img src={shortlogo} alt="Logo" className="sidebar-brand-narrow" height={32} width={32} />
           {/* <CIcon customClassName="sidebar-brand-narrow" icon={rocketimg} height={32} /> */}
         </CSidebarBrand>
         <CCloseButton

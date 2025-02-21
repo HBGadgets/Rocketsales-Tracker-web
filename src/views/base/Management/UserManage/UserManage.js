@@ -563,7 +563,7 @@ const [role, setRole] = useState(null);
                 fetchData()
               } catch (error) {
                 console.error('Error Details:', error.response || error.message)
-                toast.error('An error occurred while deleting the Company.')
+                toast.error('An error occurred while deleting the Salesman.')
               }
             }}
             style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
