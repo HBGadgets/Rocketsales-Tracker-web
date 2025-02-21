@@ -147,10 +147,89 @@ const OrderList = () => {
     }
   }
   const handleInvoiceSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    const accessToken = Cookies.get('token')
+    try {
+      // Extract form data from event
+      const formDataFromEvent = new FormData(e.target);
+      const eventData = Object.fromEntries(formDataFromEvent.entries());
   
-
-  }
+      console.log("Event Data:", eventData); // Debugging
+      console.log("Modal Form Data:", formData); // Debugging
+  
+      // Ensure products is coming from the modal form or event data
+      let products = formData.products || eventData.products || [];
+  
+      // Ensure products is an array
+      if (typeof products === "string") {
+        try {
+          products = JSON.parse(products);
+        } catch (error) {
+          console.error("Invalid product JSON format:", products);
+          alert("Error: Invalid product data format!");
+          return;
+        }
+      }
+  
+      if (!Array.isArray(products) || products.length === 0) {
+        console.error("Products array is empty!", products);
+        alert("Error: Products list is missing!");
+        return;
+      }
+  
+      // Calculate totalAmount and assign perPiecePrice as UnitPrice
+      let totalAmount = 0;
+      products = products.map((product) => {
+        const perPiecePrice = product.quantity ? product.price / product.quantity : 0;
+        totalAmount += product.price;
+        return { ...product, UnitPrice: perPiecePrice };
+      });
+  
+      // Take shopName from e and set it as customerName
+      const customerName = eventData.shopName || formData.shopName || "Unknown";
+  
+      // Combine all data
+      const requestData = {
+        ...eventData,
+        ...formData, // Include modal form data
+        products, // Properly formatted products array
+        totalAmount, // Assign calculated totalAmount
+        customerName, // Assign shopName as customerName
+      };
+  
+      console.log("Final Data Sent to API:", JSON.stringify(requestData, null, 2)); // Debugging
+  
+      // API call
+      const response = await fetch("http://104.251.218.102:8080/api/invoice", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+  
+      const responseData = await response.json(); // Parse response
+  
+      if (!response.ok) {
+        console.error("Server Error Response:", responseData);
+        throw new Error(responseData.message || "Failed to submit invoice");
+      }
+  
+      console.log("Invoice submitted successfully:", responseData);
+      alert("Invoice form created successfully");
+      fetchData();
+      handleInvoiceModalClose();
+    } catch (error) {
+      console.error("Error submitting invoice:", error);
+      alert(`Submission Error: ${error.message}`);
+    }
+  };
+  
+  
+  
+  
+  
   const styles = {
     container: {
       display: 'flex',
@@ -357,7 +436,7 @@ const OrderList = () => {
           Authorization: 'Bearer ' + accessToken,
         },
       })
-      console.log('Response:', response.data)
+      console.log('Response order:', response.data)
       if (response.data) {
         // Filter the data based on the search query if it is not empty
         const filteredData = response.data.data
@@ -369,16 +448,11 @@ const OrderList = () => {
             companyId: item.companyId ? item.companyId._id : 'N/A',
             branchName: item.branchId ? item.branchId.branchName : 'N/A',
             branchId: item.branchId ? item.branchId._id : 'N/A',
+            companyAddress: item.branchId ? item.branchId.branchLocation : 'N/A',
             supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
             supervisorId: item.supervisorId ? item.supervisorId._id : null,
             products:item.products||[],
-            
           }))
-          // .filter((item) =>
-          //   Object.values(item).some((value) =>
-          //     value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
-          //   ),
-          // )
           .filter((item) =>
             Object.values(item).some(
               (value) =>
@@ -2097,7 +2171,7 @@ const OrderList = () => {
             </IconButton>
           </div>
           <DialogContent>
-            <form onSubmit={handleEditSubmit}>
+            <form onSubmit={handleInvoiceSubmit}>
               <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <TextField
   key="gst"
