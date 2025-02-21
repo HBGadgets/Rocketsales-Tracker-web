@@ -712,10 +712,10 @@ const handleEditModalClose = () => {
            </div>
  
            {/* Add Button */}
-           <div className="add-container d-flex align-items-center" onClick={() => navigate("/manual-attendance")}>
+           {/* <div className="add-container d-flex align-items-center" onClick={() => navigate("/manual-attendance")}>
              <div className="add-icon">+</div>
              <span className="add-text ms-2">Manual Attendance</span>
-           </div>
+           </div> */}
            <CDropdown className="position-relative me-3">
              <CDropdownToggle
                color="secondary"
