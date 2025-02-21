@@ -219,12 +219,17 @@ const Supervisor = () => {
       } else {
         console.error('Supervisors data is missing or incorrectly structured.');
         setLoading(false);
+        console.error('Supervisors data is missing or incorrectly structured.');
+        setLoading(false);
       }
     } catch (error) {
       setLoading(false);
       console.error('Error fetching supervisor data:', error);
+      setLoading(false);
+      console.error('Error fetching supervisor data:', error);
     }
   };
+
   
 
   const fetchCompany = async () => {
