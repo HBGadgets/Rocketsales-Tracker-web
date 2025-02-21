@@ -69,13 +69,13 @@ import { LazyLoadImage } from 'react-lazy-load-image-component'
 // import { useNavigate } from 'react-router-dom';
 import { ShoppingCart } from '@mui/icons-material'
 import { IoShareSocialOutline } from 'react-icons/io5'
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import DeleteIcon from "@mui/icons-material/Delete";
-import './OrderList.css';
-import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import PercentIcon from "@mui/icons-material/Percent"; // Import GST percent icon
-import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
-import DiscountIcon from "@mui/icons-material/Discount";
+import AddCircleIcon from '@mui/icons-material/AddCircle'
+import DeleteIcon from '@mui/icons-material/Delete'
+import './OrderList.css'
+import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material'
+import PercentIcon from '@mui/icons-material/Percent' // Import GST percent icon
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber'
+import DiscountIcon from '@mui/icons-material/Discount'
 
 const OrderList = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -108,16 +108,18 @@ const OrderList = () => {
   const [companyData, setCompanyData] = useState([])
   const [SupervisorData, setSupervisorData] = useState([])
   const [SalesmanData, setSalesmanData] = useState([])
-  const [ProductData, setProductData] = useState([])   
-   const [expandedRows, setExpandedRows] = useState([]);  
-    const toggleRowExpansion = (id) => {
-      setExpandedRows(prev => 
-        prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
-      );
-    };
+  const [ProductData, setProductData] = useState([])
+  const [expandedRows, setExpandedRows] = useState([])
+  const [invoiceFormData, setInvoiceFormData] = useState({})
+
+  const toggleRowExpansion = (id) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
+    )
+  }
   const navigate = useNavigate()
   const handleEditModalClose = () => {
-    setFormData({ products: [{ productName: '', quantity: '', price: '' }]})
+    setFormData({ products: [{ productName: '', quantity: '', price: '' }] })
     setEditModalOpen(false)
   }
   const handleEditSubmit = async (e) => {
@@ -147,89 +149,67 @@ const OrderList = () => {
     }
   }
   const handleInvoiceSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     const accessToken = Cookies.get('token')
+
     try {
-      // Extract form data from event
-      const formDataFromEvent = new FormData(e.target);
-      const eventData = Object.fromEntries(formDataFromEvent.entries());
-  
-      console.log("Event Data:", eventData); // Debugging
-      console.log("Modal Form Data:", formData); // Debugging
-  
-      // Ensure products is coming from the modal form or event data
-      let products = formData.products || eventData.products || [];
-  
+      if (!selectedOrder) {
+        alert('Error: No order selected for invoice!')
+        return
+      }
+
+      let products = selectedOrder.products || []
+
       // Ensure products is an array
-      if (typeof products === "string") {
-        try {
-          products = JSON.parse(products);
-        } catch (error) {
-          console.error("Invalid product JSON format:", products);
-          alert("Error: Invalid product data format!");
-          return;
-        }
-      }
-  
       if (!Array.isArray(products) || products.length === 0) {
-        console.error("Products array is empty!", products);
-        alert("Error: Products list is missing!");
-        return;
+        console.error('Products array is empty!', products)
+        alert('Error: Products list is missing!')
+        return
       }
-  
+
       // Calculate totalAmount and assign perPiecePrice as UnitPrice
-      let totalAmount = 0;
+      let totalAmount = 0
       products = products.map((product) => {
-        const perPiecePrice = product.quantity ? product.price / product.quantity : 0;
-        totalAmount += product.price;
-        return { ...product, UnitPrice: perPiecePrice };
-      });
-  
-      // Take shopName from e and set it as customerName
-      const customerName = eventData.shopName || formData.shopName || "Unknown";
-  
-      // Combine all data
+        const perPiecePrice = product.quantity ? product.price / product.quantity : 0
+        totalAmount += product.price
+        return { ...product, UnitPrice: perPiecePrice }
+      })
+
       const requestData = {
-        ...eventData,
-        ...formData, // Include modal form data
-        products, // Properly formatted products array
-        totalAmount, // Assign calculated totalAmount
-        customerName, // Assign shopName as customerName
-      };
-  
-      console.log("Final Data Sent to API:", JSON.stringify(requestData, null, 2)); // Debugging
-  
-      // API call
-      const response = await fetch("http://104.251.218.102:8080/api/invoice", {
-        method: "POST",
+        ...selectedOrder,
+        products,
+        totalAmount,
+        customerName: selectedOrder.shopName || 'Unknown',
+      }
+
+      console.log('Final Data Sent to API:', JSON.stringify(requestData, null, 2))
+
+      const response = await fetch('http://104.251.218.102:8080/api/invoice', {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestData),
-      });
-  
-      const responseData = await response.json(); // Parse response
-  
+      })
+
+      const responseData = await response.json()
+
       if (!response.ok) {
-        console.error("Server Error Response:", responseData);
-        throw new Error(responseData.message || "Failed to submit invoice");
+        console.error('Server Error Response:', responseData)
+        throw new Error(responseData.message || 'Failed to submit invoice')
       }
-  
-      console.log("Invoice submitted successfully:", responseData);
-      alert("Invoice form created successfully");
-      fetchData();
-      handleInvoiceModalClose();
+
+      console.log('Invoice submitted successfully:', responseData)
+      alert('Invoice form created successfully')
+      fetchData()
+      handleInvoiceModalClose()
     } catch (error) {
-      console.error("Error submitting invoice:", error);
-      alert(`Submission Error: ${error.message}`);
+      console.error('Error submitting invoice:', error)
+      alert(`Submission Error: ${error.message}`)
     }
-  };
-  
-  
-  
-  
-  
+  }
+
   const styles = {
     container: {
       display: 'flex',
@@ -301,77 +281,98 @@ const OrderList = () => {
     setFormData({ ...item })
     console.log('this is before edit', formData)
   }
-  const haqndleIn =async (item)=>{
-    console.log("my item for invoice",item)
+  const haqndleIn = async (item) => {
+    console.log('my item for invoice', item)
     setinvoicemodalopen(true)
     setFormData({ ...item })
     console.log('this is before invoice', formData)
   }
   const handleAddModalClose = () => {
-   
-    setFormData({ products: [{ productName: '', quantity: '', price: '' }]})
+    setFormData({ products: [{ productName: '', quantity: '', price: '' }] })
     setAddModalOpen(false)
   }
+  const [selectedOrder, setSelectedOrder] = useState(null) // State to store matched order
+
   const handleAddSubmit = async (e) => {
     e.preventDefault()
     try {
       const accessToken = Cookies.get('token')
-      if (!accessToken) {
-        throw new Error('Token is missing')
-      }
-  
-      // Decode the token to get role and other details
+      if (!accessToken) throw new Error('Token is missing')
+
       const decodedToken = jwt_decode(accessToken)
-  
-      // Determine the user's role and update formData accordingly
+
       if (decodedToken.role === 2) {
-        formData.companyId = decodedToken.id // Use companyId from the token
+        formData.companyId = decodedToken.id
       } else if (decodedToken.role === 3) {
-        formData.companyId = decodedToken.companyId // Use companyId from the token
-        formData.branchId = decodedToken.id // Use branchId from the token
+        formData.companyId = decodedToken.companyId
+        formData.branchId = decodedToken.id
       } else if (decodedToken.role === 4) {
-        formData.supervisorId = decodedToken.id // Use supervisorId from the token
-        formData.companyId = decodedToken.companyId // Use companyId from the token
-        formData.branchId = decodedToken.branchId // Use branchId from the token
+        formData.supervisorId = decodedToken.id
+        formData.companyId = decodedToken.companyId
+        formData.branchId = decodedToken.branchId
       }
-  
-      // Ensure formData.products is an array of objects with productName, quantity, and price
-      const products = formData.products.map((product) => ({
-        productName: product.productName || '',
-        quantity: Number(product.quantity) || 0,
-        price: Number(product.price) || 0
-      }));
-  
+
+      const products = Array.isArray(formData.products)
+        ? formData.products.map((product) => ({
+            productName: product.productName || '',
+            quantity: Number(product.quantity) || 0,
+            price: Number(product.price) || 0,
+          }))
+        : []
+
       const orderData = {
         ...formData,
-        products: products, // Make sure products are formatted correctly
+        products,
         shopName: formData.shopName || '',
         shopAddress: formData.shopAddress || '',
         shopOwnerName: formData.shopOwnerName || '',
         phoneNo: formData.phoneNo || '',
         deliveryDate: formData.deliveryDate || '',
-      };
-  
-      // Perform the POST request
+      }
+
+      console.log('Submitting Order Data:', orderData)
+
       const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/order`, orderData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-      });
-  
+      })
+
       if (response.status === 201) {
+        const createdOrder = response.data.data._id
+        console.log('Order Created Successfully:', createdOrder)
+
         toast.success('Order is created successfully')
-        fetchData() // Refresh data
-        setFormData({ name: '' }) // Reset form data
-        setAddModalOpen(false) // Close modal
+
+        // Fetch updated order data
+        await new Promise((resolve) => setTimeout(resolve, 2000)) // Increase delay
+        const fetchedData = await fetchData()
+        console.log('Fetched Data After Order Creation:', fetchedData)
+
+        const matchedOrder = fetchedData.find(
+          (order) => order._id?.toString() === createdOrder?.toString(),
+        )
+
+        if (!matchedOrder) {
+          console.warn('New order not found in fetched data:', createdOrder)
+        } else {
+          console.log('Matched Order:', matchedOrder)
+          setSelectedOrder(matchedOrder) // Update selectedOrder state
+        }
+
+        // Reset form data
+        setFormData({ products: [{ productName: '', quantity: '', price: '' }] })
+        setAddModalOpen(false)
+      } else {
+        throw new Error(`Unexpected response status: ${response.status}`)
       }
     } catch (error) {
-      toast.error('An error occurred')
-      throw error.response ? error.response.data : new Error('An error occurred')
+      console.error('Error creating order:', error)
+      toast.error(error.response?.data?.message || 'An error occurred')
     }
-  };
-  
+  }
+
   const formatToUTCString = (dateString) => {
     if (!dateString) return ''
     return `${dateString}:00.000Z` // Keeps the entered time and adds `.000Z`
@@ -417,28 +418,28 @@ const OrderList = () => {
     setLoading(true)
     const accessToken = Cookies.get('token')
     let url
+
     console.log(selectedPeriod)
+
     if (selectedPeriod && selectedPeriod !== 'Custom') {
-      // If the period is not custom, pass the period as a filter
       url = `${import.meta.env.VITE_SERVER_URL}/api/order?filter=${selectedPeriod}`
     } else if (startDate && endDate) {
-      // For "Custom" date range, pass the startDate and endDate as query params
       url = `${import.meta.env.VITE_SERVER_URL}/api/order?startDate=${startDate}&endDate=${endDate}`
     } else {
-      // If "Custom" is selected but no dates are provided, just fetch all data
       url = `${import.meta.env.VITE_SERVER_URL}/api/order`
     }
+
     console.log('my url', url)
     console.log('Access Token:', accessToken)
+
     try {
       const response = await axios.get(url, {
-        headers: {
-          Authorization: 'Bearer ' + accessToken,
-        },
+        headers: { Authorization: 'Bearer ' + accessToken },
       })
+
       console.log('Response order:', response.data)
+
       if (response.data) {
-        // Filter the data based on the search query if it is not empty
         const filteredData = response.data.data
           .map((item) => ({
             ...item,
@@ -451,7 +452,7 @@ const OrderList = () => {
             companyAddress: item.branchId ? item.branchId.branchLocation : 'N/A',
             supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
             supervisorId: item.supervisorId ? item.supervisorId._id : null,
-            products:item.products||[],
+            products: item.products || [],
           }))
           .filter((item) =>
             Object.values(item).some(
@@ -465,13 +466,20 @@ const OrderList = () => {
         setData(filteredData) // Set the filtered data to `data`
         setSortedData(filteredData) // Set the filtered data to `sortedData`
         setLoading(false)
+
+        return filteredData // ✅ Ensure function returns an array
+      } else {
+        console.warn('API response does not contain expected data:', response.data)
+        setLoading(false)
+        return [] // ✅ Return an empty array if data is missing
       }
     } catch (error) {
       setLoading(false)
       console.error('Error fetching data:', error)
-      throw error // Re-throw the error for further handling if needed
+      return [] // ✅ Return an empty array in case of an error
     }
   }
+
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token')
     const url = `${import.meta.env.VITE_SERVER_URL}/api/company`
@@ -757,17 +765,23 @@ const OrderList = () => {
     })
   }
   const deleteProductRow = (index) => {
-    const updatedProducts = [...formData.products];
-    updatedProducts.splice(index, 1);
-    setFormData({ ...formData, products: updatedProducts });
-  };
- 
+    const updatedProducts = [...formData.products]
+    updatedProducts.splice(index, 1)
+    setFormData({ ...formData, products: updatedProducts })
+  }
 
   const handleInvoiceModalClose = () => {
     setFormData({})
     setinvoicemodalopen(false)
   }
-   
+  const handleInvoiceModalOpen = (event) => {
+    handleAddSubmit(event) // Submit the form first
+    setInvoiceFormData(formData) // Store the formData for invoice submission
+    setinvoicemodalopen(true)
+  }
+
+  // Function to close the modal
+
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -808,7 +822,6 @@ const OrderList = () => {
                 <option value="preMonth">Previous Month</option>
                 <option value="Custom">Custom</option>
               </select>
-              
             </div>
 
             {showCustomDates && (
@@ -840,7 +853,7 @@ const OrderList = () => {
                 </div>
               </>
             )}
-            
+
             <button onClick={handleApply} style={styles.button}>
               Apply
             </button>
@@ -926,7 +939,7 @@ const OrderList = () => {
         >
           <CTableHead>
             <CTableRow>
-            <CTableHeaderCell
+              <CTableHeaderCell
                 className="text-center"
                 style={{
                   backgroundColor: '#1d3d5f',
@@ -936,9 +949,7 @@ const OrderList = () => {
                   verticalAlign: 'middle',
                   color: 'white',
                 }}
-              >
-                
-              </CTableHeaderCell>
+              ></CTableHeaderCell>
               <CTableHeaderCell
                 className="text-center"
                 style={{
@@ -1004,48 +1015,31 @@ const OrderList = () => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <React.Fragment key={item._id}>
-                    
-                  <CTableRow
-                    key={index}
-                    style={{
-                      backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
-                      transition: 'background-color 0.3s ease',
-                      borderBottom: '1px solid #e0e0e0',
-                    }}
-                    hover
-                  >
-                    {/* Expand Column */}
-            <CTableDataCell 
-              style={{ 
-                padding: '0px 12px',
-                cursor: 'pointer',
-                backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
-              }}
-            >
-              <IconButton 
-                size="small" 
-                onClick={() => toggleRowExpansion(item._id)}
-              >
-                {expandedRows.includes(item._id) ? (
-                  <ArrowDropUp style={{ color: '#1d3d5f' }} />
-                ) : (
-                  <ArrowDropDown style={{ color: '#1d3d5f' }} />
-                )}
-              </IconButton>
-            </CTableDataCell>
-                    <CTableDataCell
-                      className="text-center"
+                    <CTableRow
+                      key={index}
                       style={{
-                        padding: '0px 12px',
-                        color: '#242424',
-                        fontSize: '13px',
                         backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
+                        transition: 'background-color 0.3s ease',
+                        borderBottom: '1px solid #e0e0e0',
                       }}
+                      hover
                     >
-                      {index + 1}
-                    </CTableDataCell>
-
-                    {columns.map((col) => (
+                      {/* Expand Column */}
+                      <CTableDataCell
+                        style={{
+                          padding: '0px 12px',
+                          cursor: 'pointer',
+                          backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
+                        }}
+                      >
+                        <IconButton size="small" onClick={() => toggleRowExpansion(item._id)}>
+                          {expandedRows.includes(item._id) ? (
+                            <ArrowDropUp style={{ color: '#1d3d5f' }} />
+                          ) : (
+                            <ArrowDropDown style={{ color: '#1d3d5f' }} />
+                          )}
+                        </IconButton>
+                      </CTableDataCell>
                       <CTableDataCell
                         className="text-center"
                         style={{
@@ -1055,136 +1049,152 @@ const OrderList = () => {
                           backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                         }}
                       >
-                        {col.accessor === 'attendenceStatus' ? (
-                          <button
-                            style={{
-                              padding: '6px 12px',
-                              backgroundColor: item[col.accessor] === 'Absent' ? 'red' : 'green',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '5px',
-                              cursor: 'pointer',
-                              fontSize: '13px',
-                            }}
-                            onClick={() => handleStatusClick(item)}
-                          >
-                            {item[col.accessor]}
-                          </button>
-                        ) : col.accessor === 'profileImgUrl' ? (
-                          item[col.accessor] ? (
-                            <>
-                              {console.log('mm')}
-                              <img
-                                src={`data:image/png;base64,${item[col.accessor]}`}
-                                alt="Profile"
-                                style={{
-                                  width: '80px',
-                                  height: '80px',
-                                  borderRadius: '50%',
-                                  padding: '9px',
-                                }}
-                              />
-                            </>
-                          ) : (
-                            <span>No Image</span>
-                          )
-                        ) : (
-                          item[col.accessor] || '--'
-                        )}
+                        {index + 1}
                       </CTableDataCell>
-                    ))}
-                    <CTableDataCell
-                      className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
-                    >
-                      <IconButton
-                        aria-label="edit"
-                        onClick={() => handleEditGroup(item)}
-                        className="icon-button icon-button-edit"
-                      >
-                        <RiEdit2Fill className="icon-button-icon" />
-                      </IconButton>
 
-                      <IconButton
-                        aria-label="delete"
-                        onClick={() => haqndleDeletesubmit(item)}
-                        className="icon-button icon-button-delete"
+                      {columns.map((col) => (
+                        <CTableDataCell
+                          className="text-center"
+                          style={{
+                            padding: '0px 12px',
+                            color: '#242424',
+                            fontSize: '13px',
+                            backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
+                          }}
+                        >
+                          {col.accessor === 'attendenceStatus' ? (
+                            <button
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: item[col.accessor] === 'Absent' ? 'red' : 'green',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                                fontSize: '13px',
+                              }}
+                              onClick={() => handleStatusClick(item)}
+                            >
+                              {item[col.accessor]}
+                            </button>
+                          ) : col.accessor === 'profileImgUrl' ? (
+                            item[col.accessor] ? (
+                              <>
+                                {console.log('mm')}
+                                <img
+                                  src={`data:image/png;base64,${item[col.accessor]}`}
+                                  alt="Profile"
+                                  style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '50%',
+                                    padding: '9px',
+                                  }}
+                                />
+                              </>
+                            ) : (
+                              <span>No Image</span>
+                            )
+                          ) : (
+                            item[col.accessor] || '--'
+                          )}
+                        </CTableDataCell>
+                      ))}
+                      <CTableDataCell
+                        className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
                       >
-                        <AiFillDelete className="icon-button-icon" />
-                      </IconButton>
-                      <IconButton
-                        aria-label="delete"
-                        onClick={() => haqndleIn(item)}
-                        className="icon-button icon-button-icon"
-                        style={{ backgroundColor: '#307ac4' }}
-                      >
-                        <IoShareSocialOutline className="icon-button-icon" />
-                      </IconButton>
-                      
-                    </CTableDataCell>
-                  </CTableRow>
-                  
-          {expandedRows.includes(item._id) && (
-  <CTableRow>
-    <CTableDataCell 
-      colSpan={columns.length + 3} 
-      style={{ padding: '0 24px', backgroundColor: '#f9f9f9' }}
-    >
-      <div style={{ margin: '16px 0' }}>
-        <h5 style={{ marginBottom: '12px', color: '#1d3d5f' }}>
-          Products Details
-        </h5>
-        <CTable bordered hover>
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell>Product Name</CTableHeaderCell>
-              <CTableHeaderCell>Quantity</CTableHeaderCell>
-              <CTableHeaderCell>Price</CTableHeaderCell>
-              <CTableHeaderCell>Total</CTableHeaderCell>
-            </CTableRow>
-          </CTableHead>
-          <CTableBody>
-            {item.products.map((product, pIndex) => {
-              const productTotal = product.quantity * product.price;
-              return (
-               
-                <CTableRow key={pIndex}>
-  <CTableDataCell>{product.productName}</CTableDataCell>
-  <CTableDataCell>{product.quantity}</CTableDataCell>
-  <CTableDataCell>
-  ₹{typeof product.price === 'number' ? product.price.toFixed(2) : '0.00'}
-</CTableDataCell>
-  <CTableDataCell>
-    ₹{productTotal ? productTotal.toFixed(2) : '0.00'}
-  </CTableDataCell>
-</CTableRow>
+                        <IconButton
+                          aria-label="edit"
+                          onClick={() => handleEditGroup(item)}
+                          className="icon-button icon-button-edit"
+                        >
+                          <RiEdit2Fill className="icon-button-icon" />
+                        </IconButton>
 
-              );
-            })}
-            
-            {/* Gross Total Row */}
-            {item.products.length > 0 && (
-              <CTableRow style={{ backgroundColor: '#f1f8fd' }}>
-                <CTableDataCell 
-                  colSpan={3}
-                  style={{ textAlign: 'right', fontWeight: 'bold' }}
-                >
-                  Gross Total:
-                </CTableDataCell>
-                <CTableDataCell style={{ fontWeight: 'bold' }}>
-                  ₹{item.products.reduce((sum, product) => 
-                    sum + (product.quantity * product.price), 0
-                  ).toFixed(2)}
-                </CTableDataCell>
-              </CTableRow>
-            )}
-          </CTableBody>
-        </CTable>
-      </div>
-    </CTableDataCell>
-  </CTableRow>
-)}
-          </React.Fragment>
+                        <IconButton
+                          aria-label="delete"
+                          onClick={() => haqndleDeletesubmit(item)}
+                          className="icon-button icon-button-delete"
+                        >
+                          <AiFillDelete className="icon-button-icon" />
+                        </IconButton>
+                        <IconButton
+                          aria-label="delete"
+                          onClick={() => haqndleIn(item)}
+                          className="icon-button icon-button-icon"
+                          style={{ backgroundColor: '#307ac4' }}
+                        >
+                          <IoShareSocialOutline className="icon-button-icon" />
+                        </IconButton>
+                      </CTableDataCell>
+                    </CTableRow>
 
+                    {expandedRows.includes(item._id) && (
+                      <CTableRow>
+                        <CTableDataCell
+                          colSpan={columns.length + 3}
+                          style={{ padding: '0 24px', backgroundColor: '#f9f9f9' }}
+                        >
+                          <div style={{ margin: '16px 0' }}>
+                            <h5 style={{ marginBottom: '12px', color: '#1d3d5f' }}>
+                              Products Details
+                            </h5>
+                            <CTable bordered hover>
+                              <CTableHead>
+                                <CTableRow>
+                                  <CTableHeaderCell>Product Name</CTableHeaderCell>
+                                  <CTableHeaderCell>Quantity</CTableHeaderCell>
+                                  <CTableHeaderCell>Price</CTableHeaderCell>
+                                  <CTableHeaderCell>Total</CTableHeaderCell>
+                                </CTableRow>
+                              </CTableHead>
+                              <CTableBody>
+                                {item.products.map((product, pIndex) => {
+                                  const productTotal = product.quantity * product.price
+                                  return (
+                                    <CTableRow key={pIndex}>
+                                      <CTableDataCell>{product.productName}</CTableDataCell>
+                                      <CTableDataCell>{product.quantity}</CTableDataCell>
+                                      <CTableDataCell>
+                                        ₹
+                                        {typeof product.price === 'number'
+                                          ? product.price.toFixed(2)
+                                          : '0.00'}
+                                      </CTableDataCell>
+                                      <CTableDataCell>
+                                        ₹{productTotal ? productTotal.toFixed(2) : '0.00'}
+                                      </CTableDataCell>
+                                    </CTableRow>
+                                  )
+                                })}
+
+                                {/* Gross Total Row */}
+                                {item.products.length > 0 && (
+                                  <CTableRow style={{ backgroundColor: '#f1f8fd' }}>
+                                    <CTableDataCell
+                                      colSpan={3}
+                                      style={{ textAlign: 'right', fontWeight: 'bold' }}
+                                    >
+                                      Gross Total:
+                                    </CTableDataCell>
+                                    <CTableDataCell style={{ fontWeight: 'bold' }}>
+                                      ₹
+                                      {item.products
+                                        .reduce(
+                                          (sum, product) => sum + product.quantity * product.price,
+                                          0,
+                                        )
+                                        .toFixed(2)}
+                                    </CTableDataCell>
+                                  </CTableRow>
+                                )}
+                              </CTableBody>
+                            </CTable>
+                          </div>
+                        </CTableDataCell>
+                      </CTableRow>
+                    )}
+                  </React.Fragment>
                 ))
             ) : (
               <CTableRow>
@@ -1202,10 +1212,6 @@ const OrderList = () => {
               </CTableRow>
             )}
           </CTableBody>
-     
-
-
-
         </CTable>
       </TableContainer>
 
@@ -1386,13 +1392,6 @@ const OrderList = () => {
                         disabled={!formData.branchId} // Disable if branch is not selected
                       />
                     </FormControl>
-                
-                  
-
-
-
-
-                
                   </>
                 ) : role == 2 ? (
                   <>
@@ -1519,147 +1518,146 @@ const OrderList = () => {
                     </FormControl>
                   </>
                 ) : null}
-                  <Box
-  sx={{
-    padding: 2,
-    borderRadius: 2,
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#fff',
-    maxWidth: '800px',
-    margin: '0 auto',
-  }}
->
-  <Typography
-    variant="h5"
-    gutterBottom
-    sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: 2 }}
-  >
-    Add Products
-  </Typography>
+                <Box
+                  sx={{
+                    padding: 2,
+                    borderRadius: 2,
+                    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+                    backgroundColor: '#fff',
+                    maxWidth: '800px',
+                    margin: '0 auto',
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: 2 }}
+                  >
+                    Add Products
+                  </Typography>
 
-  <FormControl variant="outlined" fullWidth>
-    {(formData.products || []).map((product, index) => (
-     <Grid
-     container
-     spacing={2}
-     key={index}
-     alignItems="center"
-     sx={{ marginBottom: 2 }}
-   >
-     {/* Product Dropdown */}
-     <Grid item xs={6} sm={6}>
-       <Autocomplete
-         id={`product-select-${index}`}
-         options={ProductData || []}
-         getOptionLabel={(option) => option.productName || ''}
-         value={
-           ProductData.find(
-             (item) => item.productName === formData.products[index].productName
-           ) || null
-         }
-         onChange={(event, newValue) => handleProductChange(index, newValue)}
-         renderInput={(params) => (
-           <TextField
-             {...params}
-             label="Select Product"
-             variant="outlined"
-             placeholder="Select Product"
-             size="small"
-             InputProps={{
-               ...params.InputProps,
-               startAdornment: (
-                 <InputAdornment position="start">
-                   <BusinessIcon />
-                 </InputAdornment>
-               ),
-             }}
-             sx={{
-               borderRadius: 2,
-               boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-             }}
-           />
-         )}
-       />
-     </Grid>
-   
-     {/* Quantity Input */}
-     <Grid item xs={2} sm={2}>
-       <TextField
-         label="Quantity"
-         variant="outlined"
-         type="number"
-         value={product.quantity}
-         onChange={(e) => handleQuantityChange(index, e.target.value)}
-         fullWidth
-         disabled={!product.productName}
-         size="small"
-         sx={{
-           borderRadius: 2,
-           boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-         }}
-         InputLabelProps={{
-           shrink: true, // This will force the label to stay "shrunk" (on top)
-         }}
-       />
-     </Grid>
-   
-     {/* Price Input */}
-     <Grid item xs={3} sm={3}>
-       <TextField
-         label="Price"
-         variant="outlined"
-         type="number"
-         value={product.price}
-         onChange={(e) => handlePriceChange(index, e.target.value)}
-         fullWidth
-         disabled={!product.productName}
-         size="small"
-         sx={{
-           borderRadius: 2,
-           boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-         }}
-         InputLabelProps={{
-           shrink: true, // This will force the label to stay "shrunk" (on top)
-         }}
-       />
-     </Grid>
-   
-     {/* Delete Product Button */}
-     <Grid item xs={1} sm={1} sx={{ textAlign: 'center' }}>
-       <IconButton
-         onClick={() => deleteProductRow(index)}
-         color="error"
-         sx={{
-           color: '#f44336', // Red color for the icon
-           '&:hover': {
-             color: '#d32f2f', // Darker red on hover
-           },
-         }}
-       >
-         <DeleteIcon fontSize="small" />
-       </IconButton>
-     </Grid>
-   </Grid>
-   
-    ))}
+                  <FormControl variant="outlined" fullWidth>
+                    {(formData.products || []).map((product, index) => (
+                      <Grid
+                        container
+                        spacing={2}
+                        key={index}
+                        alignItems="center"
+                        sx={{ marginBottom: 2 }}
+                      >
+                        {/* Product Dropdown */}
+                        <Grid item xs={6} sm={6}>
+                          <Autocomplete
+                            id={`product-select-${index}`}
+                            options={ProductData || []}
+                            getOptionLabel={(option) => option.productName || ''}
+                            value={
+                              ProductData.find(
+                                (item) => item.productName === formData.products[index].productName,
+                              ) || null
+                            }
+                            onChange={(event, newValue) => handleProductChange(index, newValue)}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Select Product"
+                                variant="outlined"
+                                placeholder="Select Product"
+                                size="small"
+                                InputProps={{
+                                  ...params.InputProps,
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <BusinessIcon />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                sx={{
+                                  borderRadius: 2,
+                                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+                                }}
+                              />
+                            )}
+                          />
+                        </Grid>
 
-    {/* Add Product Row Button */}
-    <Box sx={{ textAlign: 'center', marginTop: 0 }}>
-      <IconButton
-        onClick={addProductRow}
-        color="success"
-        sx={{
-          color: '#4caf50', // Green color for the icon
-          '&:hover': {
-            color: '#388e3c', // Darker green on hover
-          },
-        }}
-      >
-        <AddCircleIcon fontSize="large" />
-      </IconButton>
-    </Box>
-  </FormControl>
-</Box>
+                        {/* Quantity Input */}
+                        <Grid item xs={2} sm={2}>
+                          <TextField
+                            label="Quantity"
+                            variant="outlined"
+                            type="number"
+                            value={product.quantity}
+                            onChange={(e) => handleQuantityChange(index, e.target.value)}
+                            fullWidth
+                            disabled={!product.productName}
+                            size="small"
+                            sx={{
+                              borderRadius: 2,
+                              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+                            }}
+                            InputLabelProps={{
+                              shrink: true, // This will force the label to stay "shrunk" (on top)
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Price Input */}
+                        <Grid item xs={3} sm={3}>
+                          <TextField
+                            label="Price"
+                            variant="outlined"
+                            type="number"
+                            value={product.price}
+                            onChange={(e) => handlePriceChange(index, e.target.value)}
+                            fullWidth
+                            disabled={!product.productName}
+                            size="small"
+                            sx={{
+                              borderRadius: 2,
+                              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+                            }}
+                            InputLabelProps={{
+                              shrink: true, // This will force the label to stay "shrunk" (on top)
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Delete Product Button */}
+                        <Grid item xs={1} sm={1} sx={{ textAlign: 'center' }}>
+                          <IconButton
+                            onClick={() => deleteProductRow(index)}
+                            color="error"
+                            sx={{
+                              color: '#f44336', // Red color for the icon
+                              '&:hover': {
+                                color: '#d32f2f', // Darker red on hover
+                              },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Grid>
+                      </Grid>
+                    ))}
+
+                    {/* Add Product Row Button */}
+                    <Box sx={{ textAlign: 'center', marginTop: 0 }}>
+                      <IconButton
+                        onClick={addProductRow}
+                        color="success"
+                        sx={{
+                          color: '#4caf50', // Green color for the icon
+                          '&:hover': {
+                            color: '#388e3c', // Darker green on hover
+                          },
+                        }}
+                      >
+                        <AddCircleIcon fontSize="large" />
+                      </IconButton>
+                    </Box>
+                  </FormControl>
+                </Box>
                 {COLUMNS()
                   .slice(0, -5)
                   .map((column) => (
@@ -1688,6 +1686,23 @@ const OrderList = () => {
                 style={{ marginTop: '20px' }}
               >
                 Submit
+              </Button>
+
+              {/* <Button
+      variant="contained"
+      color="primary"
+      style={{ marginTop: '20px' }}
+      onClick={handleInvoiceModalOpen} // Open modal on click
+    >
+      Submit and generate invoice
+    </Button> */}
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ marginTop: '20px' }}
+                onClick={handleInvoiceModalOpen} // Submit and open modal
+              >
+                Submit and generate invoice
               </Button>
             </form>
           </DialogContent>
@@ -1976,147 +1991,146 @@ const OrderList = () => {
                     </FormControl>
                   </>
                 ) : null}
-       <Box
-  sx={{
-    padding: 2,
-    borderRadius: 2,
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#fff',
-    maxWidth: '800px',
-    margin: '0 auto',
-  }}
->
-  <Typography
-    variant="h5"
-    gutterBottom
-    sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: 2 }}
-  >
-    Add Products
-  </Typography>
+                <Box
+                  sx={{
+                    padding: 2,
+                    borderRadius: 2,
+                    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+                    backgroundColor: '#fff',
+                    maxWidth: '800px',
+                    margin: '0 auto',
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: 2 }}
+                  >
+                    Add Products
+                  </Typography>
 
-  <FormControl variant="outlined" fullWidth>
-    {(formData.products || []).map((product, index) => (
-     <Grid
-     container
-     spacing={2}
-     key={index}
-     alignItems="center"
-     sx={{ marginBottom: 2 }}
-   >
-     {/* Product Dropdown */}
-     <Grid item xs={6} sm={6}>
-       <Autocomplete
-         id={`product-select-${index}`}
-         options={ProductData || []}
-         getOptionLabel={(option) => option.productName || ''}
-         value={
-           ProductData.find(
-             (item) => item.productName === formData.products[index].productName
-           ) || null
-         }
-         onChange={(event, newValue) => handleProductChange(index, newValue)}
-         renderInput={(params) => (
-           <TextField
-             {...params}
-             label="Select Product"
-             variant="outlined"
-             placeholder="Select Product"
-             size="small"
-             InputProps={{
-               ...params.InputProps,
-               startAdornment: (
-                 <InputAdornment position="start">
-                   <BusinessIcon />
-                 </InputAdornment>
-               ),
-             }}
-             sx={{
-               borderRadius: 2,
-               boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-             }}
-           />
-         )}
-       />
-     </Grid>
-   
-     {/* Quantity Input */}
-     <Grid item xs={2} sm={2}>
-       <TextField
-         label="Quantity"
-         variant="outlined"
-         type="number"
-         value={product.quantity}
-         onChange={(e) => handleQuantityChange(index, e.target.value)}
-         fullWidth
-         disabled={!product.productName}
-         size="small"
-         sx={{
-           borderRadius: 2,
-           boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-         }}
-         InputLabelProps={{
-           shrink: true, // This will force the label to stay "shrunk" (on top)
-         }}
-       />
-     </Grid>
-   
-     {/* Price Input */}
-     <Grid item xs={3} sm={3}>
-       <TextField
-         label="Price"
-         variant="outlined"
-         type="number"
-         value={product.price}
-         onChange={(e) => handlePriceChange(index, e.target.value)}
-         fullWidth
-         disabled={!product.productName}
-         size="small"
-         sx={{
-           borderRadius: 2,
-           boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-         }}
-         InputLabelProps={{
-           shrink: true, // This will force the label to stay "shrunk" (on top)
-         }}
-       />
-     </Grid>
-   
-     {/* Delete Product Button */}
-     <Grid item xs={1} sm={1} sx={{ textAlign: 'center' }}>
-       <IconButton
-         onClick={() => deleteProductRow(index)}
-         color="error"
-         sx={{
-           color: '#f44336', // Red color for the icon
-           '&:hover': {
-             color: '#d32f2f', // Darker red on hover
-           },
-         }}
-       >
-         <DeleteIcon fontSize="small" />
-       </IconButton>
-     </Grid>
-   </Grid>
-   
-    ))}
+                  <FormControl variant="outlined" fullWidth>
+                    {(formData.products || []).map((product, index) => (
+                      <Grid
+                        container
+                        spacing={2}
+                        key={index}
+                        alignItems="center"
+                        sx={{ marginBottom: 2 }}
+                      >
+                        {/* Product Dropdown */}
+                        <Grid item xs={6} sm={6}>
+                          <Autocomplete
+                            id={`product-select-${index}`}
+                            options={ProductData || []}
+                            getOptionLabel={(option) => option.productName || ''}
+                            value={
+                              ProductData.find(
+                                (item) => item.productName === formData.products[index].productName,
+                              ) || null
+                            }
+                            onChange={(event, newValue) => handleProductChange(index, newValue)}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Select Product"
+                                variant="outlined"
+                                placeholder="Select Product"
+                                size="small"
+                                InputProps={{
+                                  ...params.InputProps,
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <BusinessIcon />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                sx={{
+                                  borderRadius: 2,
+                                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+                                }}
+                              />
+                            )}
+                          />
+                        </Grid>
 
-    {/* Add Product Row Button */}
-    <Box sx={{ textAlign: 'center', marginTop: 0 }}>
-      <IconButton
-        onClick={addProductRow}
-        color="success"
-        sx={{
-          color: '#4caf50', // Green color for the icon
-          '&:hover': {
-            color: '#388e3c', // Darker green on hover
-          },
-        }}
-      >
-        <AddCircleIcon fontSize="large" />
-      </IconButton>
-    </Box>
-  </FormControl>
-</Box>
+                        {/* Quantity Input */}
+                        <Grid item xs={2} sm={2}>
+                          <TextField
+                            label="Quantity"
+                            variant="outlined"
+                            type="number"
+                            value={product.quantity}
+                            onChange={(e) => handleQuantityChange(index, e.target.value)}
+                            fullWidth
+                            disabled={!product.productName}
+                            size="small"
+                            sx={{
+                              borderRadius: 2,
+                              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+                            }}
+                            InputLabelProps={{
+                              shrink: true, // This will force the label to stay "shrunk" (on top)
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Price Input */}
+                        <Grid item xs={3} sm={3}>
+                          <TextField
+                            label="Price"
+                            variant="outlined"
+                            type="number"
+                            value={product.price}
+                            onChange={(e) => handlePriceChange(index, e.target.value)}
+                            fullWidth
+                            disabled={!product.productName}
+                            size="small"
+                            sx={{
+                              borderRadius: 2,
+                              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+                            }}
+                            InputLabelProps={{
+                              shrink: true, // This will force the label to stay "shrunk" (on top)
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Delete Product Button */}
+                        <Grid item xs={1} sm={1} sx={{ textAlign: 'center' }}>
+                          <IconButton
+                            onClick={() => deleteProductRow(index)}
+                            color="error"
+                            sx={{
+                              color: '#f44336', // Red color for the icon
+                              '&:hover': {
+                                color: '#d32f2f', // Darker red on hover
+                              },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Grid>
+                      </Grid>
+                    ))}
+
+                    {/* Add Product Row Button */}
+                    <Box sx={{ textAlign: 'center', marginTop: 0 }}>
+                      <IconButton
+                        onClick={addProductRow}
+                        color="success"
+                        sx={{
+                          color: '#4caf50', // Green color for the icon
+                          '&:hover': {
+                            color: '#388e3c', // Darker green on hover
+                          },
+                        }}
+                      >
+                        <AddCircleIcon fontSize="large" />
+                      </IconButton>
+                    </Box>
+                  </FormControl>
+                </Box>
                 {COLUMNS()
                   .slice(0, -5)
                   .map((column) => (
@@ -2158,7 +2172,7 @@ const OrderList = () => {
         <Box sx={style}>
           <div className="d-flex justify-content-between">
             <Typography id="modal-modal-title" variant="h6" component="h2">
-             Generate Invoice
+              Generate Invoice
             </Typography>
             <IconButton onClick={handleInvoiceModalClose}>
               <CloseIcon />
@@ -2167,58 +2181,57 @@ const OrderList = () => {
           <DialogContent>
             <form onSubmit={handleInvoiceSubmit}>
               <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <TextField
-  key="gst"
-  label="GST (%)"
-  variant="outlined"
-  name="gst"
-  value={formData.gst || ""} // Ensure it doesn't show undefined
-  onChange={(e) => setFormData({ ...formData, gst: e.target.value })}
-  sx={{ marginBottom: "10px" }}
-  fullWidth
-  InputProps={{
-    startAdornment: (
-      <InputAdornment position="start">
-        <PercentIcon /> {/* GST Icon in input field */}
-      </InputAdornment>
-    ),
-  }}
-/>
-<TextField
-  key="HSNcode"
-  label="HSN Code"
-  variant="outlined"
-  name="HSNcode"
-  value={formData.HSNcode || ""}
-  onChange={(e) => setFormData({ ...formData, HSNcode: e.target.value })}
-  sx={{ marginBottom: "10px" }}
-  fullWidth
-  InputProps={{
-    startAdornment: (
-      <InputAdornment position="start">
-        <ConfirmationNumberIcon /> {/* HSN Code Icon */}
-      </InputAdornment>
-    ),
-  }}
-/>
-<TextField
-key="discount"
-label="Discount (amount)"
-variant="outlined"
-name="discount"
-value={formData.discount || ""}
-onChange={(e)=>setFormData({...formData,discount:e.target.value})}
-sx={{marginBottom:"10px"}}
-fullWidth
-InputProps={{
-startAdornment:(
-  <InputAdornment position="start">
-    <DiscountIcon /> {/* Discount Icon */}
-  </InputAdornment>
-)
-}}
-
-/>
+                <TextField
+                  key="gst"
+                  label="GST (%)"
+                  variant="outlined"
+                  name="gst"
+                  value={formData.gst || ''} // Ensure it doesn't show undefined
+                  onChange={(e) => setFormData({ ...formData, gst: e.target.value })}
+                  sx={{ marginBottom: '10px' }}
+                  fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PercentIcon /> {/* GST Icon in input field */}
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <TextField
+                  key="HSNcode"
+                  label="HSN Code"
+                  variant="outlined"
+                  name="HSNcode"
+                  value={formData.HSNcode || ''}
+                  onChange={(e) => setFormData({ ...formData, HSNcode: e.target.value })}
+                  sx={{ marginBottom: '10px' }}
+                  fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <ConfirmationNumberIcon /> {/* HSN Code Icon */}
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <TextField
+                  key="discount"
+                  label="Discount (amount)"
+                  variant="outlined"
+                  name="discount"
+                  value={formData.discount || ''}
+                  onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
+                  sx={{ marginBottom: '10px' }}
+                  fullWidth
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <DiscountIcon /> {/* Discount Icon */}
+                      </InputAdornment>
+                    ),
+                  }}
+                />
 
                 {COLUMNS()
                   .slice(0, -10)
