@@ -1190,6 +1190,11 @@ const OrderList = () => {
                                 )}
                               </CTableBody>
                             </CTable>
+                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+  <button onClick={() => haqndleIn(item)}
+ style={styles.button}>
+  Generate Invoice</button>
+</div>
                           </div>
                         </CTableDataCell>
                       </CTableRow>
