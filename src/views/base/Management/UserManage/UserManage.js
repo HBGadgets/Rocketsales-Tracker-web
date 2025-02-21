@@ -135,64 +135,7 @@ const [role, setRole] = useState(null);
   
     fetchRole(); // Call the function to fetch role
   }, []); 
-  // ##################### getting data  ###################
-  // const fetchData = async (page = 1) => {
-  //   const accessToken = Cookies.get('token');
-  //   const url = `https://rocketsales-server.onrender.com/api/salesman`;
   
-  //   try {
-  //     const response = await axios.get(url, {
-  //       headers: {
-  //         Authorization: 'Bearer ' + accessToken,
-  //       },
-  //     });
-  
-  //     // Log the full response data to inspect its structure
-  //     console.log("Full Response Data:", response.data);
-  
-  //     // Process the salesmandata
-  //     const salesmandata = response.data.salesmandata.map((item) => ({
-  //       ...item,
-  //       companyName: item.companyId?.companyName || null, // Extract companyName or set null
-  //       companyId: item.companyId?._id || null,          // Extract companyId or set null
-  //       branchName: item.branchId?.branchName || null,   // Extract branchName or set null
-  //       branchId: item.branchId?._id || null,            // Extract branchId or set null
-  //       supervisorName: item.supervisorId?.supervisorName || null, // Extract supervisorName or set null
-  //       supervisorId: item.supervisorId?._id || null,    // Extract supervisorId or set null
-  //     }));
-  
-  //     console.log("Processed Data:", salesmandata);
-  
-  //     if (salesmandata) {
-  //       // Filter the data based on the search query if it is not empty
-  //       const filteredData = salesmandata
-  //         .map((item) => {
-  //           // Apply the formatDate method to 'createdAt' field if it exists
-  //           if (item.createdAt) {
-  //             item.createdAt = formatDate(item.createdAt); // Use your custom formatDate method
-  //           }
-  
-  //           return item;
-  //         })
-  //         .filter((item) =>
-  //           Object.values(item).some((value) =>
-  //             value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-  //           )
-  //         );
-  
-  //       setData(filteredData); // Set the filtered data to `data`
-  //       setSortedData(filteredData); // Set the filtered data to `sortedData`
-  //       setLoading(false);
-  //     } else {
-  //       console.error('Salesman data is missing or incorrectly structured.');
-  //       setLoading(false);
-  //     }
-  //   } catch (error) {
-  //     setLoading(false);
-  //     console.error('Error fetching data:', error);
-  //     throw error; // Re-throw the error for further handling if needed
-  //   }
-  // };
   const fetchData = async () => {
     const accessToken = Cookies.get('token');
     const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`;
@@ -459,7 +402,7 @@ const [role, setRole] = useState(null);
       );
   
       if (response.status === 201) {
-        toast.success('Branch is created successfully');
+        toast.success('Salesman is created successfully');
         fetchData(); // Refresh data
         setFormData({ name: '' }); // Reset form data
         setAddModalOpen(false); // Close modal
@@ -504,7 +447,7 @@ const [role, setRole] = useState(null);
       )
 
       if (response.status === 200) {
-        toast.success('User is edited successfully')
+        toast.success('Salesman is edited successfully')
         fetchData()
         setFormData({ name: '' })
         setEditModalOpen(false)
@@ -528,42 +471,93 @@ const [role, setRole] = useState(null);
     console.log('this is before edit', formData)
   }
 
- 
   const haqndleDeletesubmit = async (item) => {
     if (!item._id) {
       toast.error('Invalid item selected for deletion.')
       return
     }
+  
+    toast((t) => (
+      <div>
+        <p>Do you want to delete <u><b>{item.salesmanName}</b></u> user?</p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id)
+  
+              try {
+                const accessToken = Cookies.get('token')
+                if (!accessToken) {
+                  toast.error('Authentication token is missing.')
+                  return
+                }
+  
+                const response = await axios({
+                  method: 'DELETE',
+                  url: `${import.meta.env.VITE_SERVER_URL}/api/salesman/${item._id}`,
+                  headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                  },
+                })
+  
+                // Check if deletion was successful
+                toast.success('Supervisor deleted successfully')
+                fetchData()
+              } catch (error) {
+                console.error('Error Details:', error.response || error.message)
+                toast.error('An error occurred while deleting the Salesman.')
+              }
+            }}
+            style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity });
+  };
+  // const haqndleDeletesubmit = async (item) => {
+  //   if (!item._id) {
+  //     toast.error('Invalid item selected for deletion.')
+  //     return
+  //   }
 
-    const confirmed = confirm('Do you want to delete this user?')
-    if (!confirmed) return
+  //   const confirmed = confirm('Do you want to delete this user?')
+  //   if (!confirmed) return
 
-    try {
-      const accessToken = Cookies.get('token')
-      if (!accessToken) {
-        toast.error('Authentication token is missing.')
-        return
-      }
+  //   try {
+  //     const accessToken = Cookies.get('token')
+  //     if (!accessToken) {
+  //       toast.error('Authentication token is missing.')
+  //       return
+  //     }
 
-      const response = await axios({
-        method: 'DELETE', // Explicitly specifying DELETE method
-        // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
-        url: `${import.meta.env.VITE_SERVER_URL}/api/salesman/${item._id}`,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
+  //     const response = await axios({
+  //       method: 'DELETE', // Explicitly specifying DELETE method
+  //       // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
+  //       url: `${import.meta.env.VITE_SERVER_URL}/api/salesman/${item._id}`,
+  //       headers: {
+  //         Authorization: `Bearer ${accessToken}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     })
 
-      if (response.status === 200) {
-        toast.success('Group deleted successfully')
-        fetchData()
-      }
-    } catch (error) {
-      console.error('Error Details:', error.response || error.message)
-      toast.error('An error occurred while deleting the group.')
-    }
-  }
+  //     if (response.status === 200) {
+  //       toast.success('Salesman deleted successfully')
+  //       fetchData()
+  //     }
+  //   } catch (error) {
+  //     console.error('Error Details:', error.response || error.message)
+  //     toast.error('An error occurred while deleting the group.')
+  //   }
+  // }
 
 
   

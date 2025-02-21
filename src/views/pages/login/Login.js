@@ -15,17 +15,21 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilLockLocked, cilUser } from '@coreui/icons'
 import { Link, useNavigate } from 'react-router-dom'
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'
+import logo from 'src/assets/brand/logo.svg' // Adjust the relative path if needed
+
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate() 
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const navigate = useNavigate()
+
   const handleRegisterRedirect = () => {
-    navigate('/register') // This will navigate to the /login route
+    navigate('/register')
   }
-  //handle login logic
+
+  // Handle login logic
   const handleLogin = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     try {
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/login`, {
         method: 'POST',
@@ -33,24 +37,24 @@ const Login = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        throw new Error('Login failed')
       }
 
-      const data = await response.json();
-      const { token } = data; // Assuming the response contains both token 
+      const data = await response.json()
+      const { token } = data // Assuming the response contains the token
 
-      // Store token and role in cookies
-      Cookies.set('token', token, { expires: 7 }); // Token expires in 7 days
-      localStorage.setItem('token-rs', token);
-      // Redirect to home or dashboard
-      navigate('/dashboard');
-   
+      // Store token in cookies and localStorage
+      Cookies.set('token', token, { expires: 7 })
+      localStorage.setItem('token-rs', token)
+      
+      // Redirect to dashboard
+      navigate('/dashboard')
     } catch (error) {
-      console.error('Login failed:', error);
-      alert('Login failed, please try again');
+      console.error('Login failed:', error)
+      alert('Login failed, please try again')
     }
   }
 
@@ -58,10 +62,14 @@ const Login = () => {
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
-          <CCol md={10}>
+          <CCol md={5}>
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
+                  {/* Logo Integration */}
+                  <div className="text-center mb-4">
+                    <img src={logo} alt="Logo" style={{ width: '350px' }} />
+                  </div>
                   <CForm>
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
@@ -90,11 +98,15 @@ const Login = () => {
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="primary" className="px-4"  onClick={handleLogin}>
+                        <CButton color="primary" className="px-4" onClick={handleLogin}>
                           Login
                         </CButton>
                       </CCol>
-                      <div className="d-grid" onClick={handleRegisterRedirect} style={{ cursor: 'pointer', marginTop: '10px' }}>
+                      <div 
+                        className="d-grid" 
+                        onClick={handleRegisterRedirect} 
+                        style={{ cursor: 'pointer', marginTop: '10px' }}
+                      >
                         <p>New Here? <strong>Register</strong></p>
                       </div>
                       <CCol xs={6} className="text-right">
@@ -106,7 +118,7 @@ const Login = () => {
                   </CForm>
                 </CCardBody>
               </CCard>
-              <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
+              {/* <CCard className="text-white bg-primary py-5" style={{ width: '44%' }}>
                 <CCardBody className="text-center">
                   <div>
                     <h2>Sign up</h2>
@@ -121,7 +133,7 @@ const Login = () => {
                     </Link>
                   </div>
                 </CCardBody>
-              </CCard>
+              </CCard> */}
             </CCardGroup>
           </CCol>
         </CRow>

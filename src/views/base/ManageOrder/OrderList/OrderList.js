@@ -1195,6 +1195,7 @@ const OrderList = () => {
                       </CTableRow>
                     )}
                   </React.Fragment>
+
                 ))
             ) : (
               <CTableRow>

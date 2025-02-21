@@ -19,6 +19,7 @@ import {
   InputAdornment,
 } from '@mui/material'
 import { RiEdit2Fill } from 'react-icons/ri'
+import { FaFileDownload } from "react-icons/fa";
 import { AiFillDelete } from 'react-icons/ai'
 import BusinessIcon from '@mui/icons-material/Business'
 
@@ -67,7 +68,7 @@ import jwt_decode from 'jwt-decode'
 import Cookies from 'js-cookie'
 import { FiGitBranch } from 'react-icons/fi'
 import { FiUser } from 'react-icons/fi'
-
+import InvoiceView from './InvoiceView'
 
 
 // import { DialogContent } from "@mui/material";
@@ -103,8 +104,19 @@ const [branchError, setBranchError] = useState(false)
 
 
   const [expandedRows, setExpandedRows] = useState([]);
-  
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
 
+      const toggleRowExpansion = (id) => {
+        setExpandedRows(prev => 
+          prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
+        );
+      };
+  const handleDownloadInvoice = (invoice) => {
+    setSelectedInvoice(invoice);
+    console.log('Selected Invoice:', invoice);
+    setInvoiceModalOpen(true);
+  };
   const styles = {
     container: {
       display: 'flex',
@@ -799,7 +811,7 @@ const handleEditModalClose = () => {
                    {col.Header}
                  </CTableHeaderCell>
                ))}
-                 {/* <CTableHeaderCell
+                 <CTableHeaderCell
                           className="text-center"
                           style={{
                             padding: '5px 12px', // Reduced padding for top and bottom
@@ -811,7 +823,7 @@ const handleEditModalClose = () => {
                           }}
                         >
                           Actions
-                 </CTableHeaderCell> */}
+                 </CTableHeaderCell>
              </CTableRow>
            </CTableHead>
  
@@ -844,16 +856,37 @@ const handleEditModalClose = () => {
                          borderBottom: "1px solid #e0e0e0",
                          cursor: "pointer",
                        }}
-                     ><IconButton 
+                     >
+                                 {/* Expand Column */}
+                                  <CTableDataCell 
+                                    style={{ 
+                                      padding: '0px 12px',
+                                      cursor: 'pointer',
+                                      backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
+                                    }}
+                                  >
+                                    <IconButton 
+                                      size="small" 
+                                      onClick={() => toggleRowExpansion(item._id)}
+                                    >
+                                      {expandedRows.includes(item._id) ? (
+                                        <ArrowDropUp style={{ color: '#1d3d5f' }} />
+                                      ) : (
+                                        <ArrowDropDown style={{ color: '#1d3d5f' }} />
+                                      )}
+                                    </IconButton>
+                                  </CTableDataCell>
+                      {/* <IconButton 
                      size="small" 
                     //  onClick={() => toggleRowExpansion(item._id)}
                    >
+                    
                      {expandedRows.includes(index) ? (
                        <ArrowDropUp style={{ color: '#1d3d5f' }} />
                      ) : (
                        <ArrowDropDown style={{ color: '#1d3d5f' }} />
                      )}
-                   </IconButton>
+                   </IconButton> */}
                        <CTableDataCell
                          className="text-center"
                          style={{
@@ -927,24 +960,26 @@ const handleEditModalClose = () => {
                            
                          </CTableDataCell>
                        ))}
-                        {/* <CTableDataCell
+                        <CTableDataCell
                       className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
                     >
                       <IconButton
                         aria-label="edit"
-                        onClick={() => handleEditGroup(item)}
+                        onClick={() => handleDownloadInvoice(item)}
                         className="icon-button icon-button-edit"
                       >
-                        <RiEdit2Fill className="icon-button-icon" />
+                        <FaFileDownload className="icon-button-icon" />
                       </IconButton>
 
-                    </CTableDataCell> */}
+                    </CTableDataCell>
                      </CTableRow>
  
                      {/* Expanded row for product details */}
+                     
                      {expandedRows.includes(index) && (
+                     
                        <CTableRow key={`expanded-${index}`}>
-                         <CTableDataCell colSpan={columns.length + 1} style={{ backgroundColor: "#f9f9f9", padding: "10px" }}>
+                         <CTableDataCell colSpan={columns.length + 3} style={{ backgroundColor: "#f9f9f9", padding: "20px" }}>
                            {item.products && item.products.length > 0 ? (
                              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
                                <thead>
@@ -959,10 +994,10 @@ const handleEditModalClose = () => {
                                  {item.products.map((prod, pIndex) => (
                                    <tr key={pIndex}>
                                      <td style={{ border: "1px solid #ccc", padding: "5px" }}>{prod.productName}</td>
-                                     <td style={{ border: "1px solid #ccc", padding: "5px", textAlign: "center" }}>{prod.quantity}</td>
-                                     <td style={{ border: "1px solid #ccc", padding: "5px", textAlign: "right" }}>{prod.price}</td>{console.log("AAAAAAAAAAAAAAAA",prod.price,prod)}
-                                     <td style={{ border: "1px solid #ccc", padding: "5px", textAlign: "right" }}>
-                                       {Number(prod.quantity) * Number(prod.price)}
+                                     <td style={{ border: "1px solid #ccc", padding: "5px", }}>{prod.quantity}</td>
+                                     <td style={{ border: "1px solid #ccc", padding: "5px",  }}>₹ {prod.price}</td>{console.log("AAAAAAAAAAAAAAAA",prod.price,prod)}
+                                     <td style={{ border: "1px solid #ccc", padding: "5px",  }}>
+                                     ₹ {Number(prod.quantity) * Number(prod.price)}
                                      </td>
                                    </tr>
                                  ))}
@@ -982,11 +1017,11 @@ const handleEditModalClose = () => {
                                      style={{
                                        border: "1px solid #ccc",
                                        padding: "5px",
-                                       textAlign: "right",
+                                      //  textAlign: "right",
                                        fontWeight: "bold",
                                      }}
                                    >
-                                     {item.products.reduce(
+                                     ₹ {item.products.reduce(
                                        (sum, prod) => sum + Number(prod.quantity) * Number(prod.price),
                                        0
                                      )}
@@ -1002,6 +1037,72 @@ const handleEditModalClose = () => {
                            
                        </CTableRow>
           
+                     )}
+                     {expandedRows.includes(item._id) && (
+                       <CTableRow >
+                         <CTableDataCell 
+                           colSpan={columns.length + 3} 
+                           style={{ padding: '0 24px', backgroundColor: '#f9f9f9' }}
+                         >
+                           <div style={{ margin: '16px 0' }}>
+                             <h5 style={{ marginBottom: '12px', color: '#1d3d5f' }}>
+                               Products Details
+                             </h5>
+                             <CTable bordered hover>
+                               <CTableHead>
+                                 <CTableRow>
+                                   <CTableHeaderCell>Product Name</CTableHeaderCell>
+                                   <CTableHeaderCell>Quantity</CTableHeaderCell>
+                                   <CTableHeaderCell>Price</CTableHeaderCell>
+                                   <CTableHeaderCell>Total</CTableHeaderCell>
+                                 </CTableRow>
+                               </CTableHead>
+                               <CTableBody>
+                                 {item.products.map((product, pIndex) => {
+                                   const productTotal = product.quantity * product.price;
+                                   return (
+                                    
+                                     <CTableRow key={pIndex}>
+                       <CTableDataCell>{product.productName}</CTableDataCell>
+                       <CTableDataCell>{product.quantity}</CTableDataCell>
+                       <CTableDataCell>
+                       ₹{typeof product.price === 'number' ? product.price.toFixed(2) : '0.00'}
+                     </CTableDataCell>
+                       <CTableDataCell>
+                         ₹{productTotal ? productTotal.toFixed(2) : '0.00'}
+                       </CTableDataCell>
+                     </CTableRow>
+                     
+                                   );
+                                 })}
+                                 
+                                 {/* Gross Total Row */}
+                                 {item.products.length > 0 && (
+                                   <CTableRow style={{ backgroundColor: '#f1f8fd' }}>
+                                     <CTableDataCell 
+                                       colSpan={3}
+                                       style={{ textAlign: 'right', fontWeight: 'bold' }}
+                                     >
+                                       Gross Total:
+                                     </CTableDataCell>
+                                     <CTableDataCell style={{ fontWeight: 'bold' }}>
+                                       ₹{item.products.reduce((sum, product) => 
+                                         sum + (product.quantity * product.price), 0
+                                       ).toFixed(2)}
+                                     </CTableDataCell>
+                                   </CTableRow>
+                                 )}
+                               </CTableBody>
+                             </CTable>
+                             <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                       <button onClick={() => haqndleIn(item)}
+                      style={styles.button}>
+                       Generate Invoice</button>
+                     </div>
+                           </div>
+                          
+                         </CTableDataCell>
+                       </CTableRow>
                      )}
                    </React.Fragment>
                  ))
@@ -1421,6 +1522,21 @@ const handleEditModalClose = () => {
           </DialogContent>
         </Box>
       </Modal>
+      {selectedInvoice && (
+        <Dialog
+          open={invoiceModalOpen}
+          onClose={() => setInvoiceModalOpen(false)}
+          maxWidth="lg"
+          fullWidth
+          
+        >
+          <InvoiceView 
+            invoiceData={selectedInvoice}
+            onClose={() => setInvoiceModalOpen(false)}
+            onSave={fetchData} // Refresh data after save
+          />
+        </Dialog>
+      )}
      </div>
    );
 }

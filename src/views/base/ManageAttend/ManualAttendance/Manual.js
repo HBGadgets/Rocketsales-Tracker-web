@@ -547,13 +547,16 @@ const handleMarkAbsent = async (item) => {
     const absentData = {
       salesmanId: item._id,
       salesmanName: item.salesmanName,
+      companyId: item.companyId !== "N/A" ? item.companyId : null,
+      branchId: item.branchId !== "N/A" ? item.branchId : null,
+      supervisorId: item.supervisorId !== "N/A" ? item.supervisorId : null,
       attendenceStatus: 'Absent',
     };
 console.log("MYAA",absentData)
     const accessToken = Cookies.get('token');
 
     const response = await axios.post(
-      '${import.meta.env.VITE_SERVER_URL}/api/attendence',
+      `${import.meta.env.VITE_SERVER_URL}/api/attendence`,
       absentData,
       {
         headers: {
@@ -563,7 +566,21 @@ console.log("MYAA",absentData)
     );
 
     if (response.status == 201) {
-      alert(`${item.salesmanName} has been marked as absent successfully!`);
+      // toast.success(`${item.salesmanName} has been marked as absent successfully!`);
+      // toast.success(
+      //   <span>
+         
+      //     <span style={{ color: 'red', fontWeight: 'bold' }}> {item.salesmanName} has been marked as{' '} Absent successfully!</span> 
+      //   </span>
+      // );
+      toast.success(
+        <span>
+          {item.salesmanName} has been marked as{' '}
+          <span style={{ color: 'red', fontWeight: 'bold' }}>Absent</span> successfully!
+        </span>
+      );
+    
+
       fetchData();
     }
 
@@ -588,13 +605,16 @@ const handleMarkPresent = async (item) => {
     const absentData = {
       salesmanId: item._id,
       salesmanName: item.salesmanName,
+      companyId: item.companyId !== "N/A" ? item.companyId : null,
+      branchId: item.branchId !== "N/A" ? item.branchId : null,
+      supervisorId: item.supervisorId !== "N/A" ? item.supervisorId : null,
       attendenceStatus: 'Present',
     };
 console.log("MYAA",absentData)
     const accessToken = Cookies.get('token');
 
     const response = await axios.post(
-      '${import.meta.env.VITE_SERVER_URL}/api/attendence',
+      `${import.meta.env.VITE_SERVER_URL}/api/attendence`,
       absentData,
       {
         headers: {
@@ -604,7 +624,13 @@ console.log("MYAA",absentData)
     );
 
     if (response.status == 201) {
-      alert(`${item.salesmanName} has been marked as present successfully!`);
+      // toast.success(`${item.salesmanName} has been marked as present successfully!`);
+      toast.success(
+        <span>
+          {item.salesmanName} has been marked as{' '}
+          <span style={{ color: 'green', fontWeight: 'bold' }}>Present</span> successfully!
+        </span>
+      );
       fetchData();
     }
 
