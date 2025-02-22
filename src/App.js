@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect,useState } from 'react'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux'
+import ProtectedRoute from './components/ProtectedRoute'
 import Cookies from 'js-cookie'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
@@ -49,7 +50,11 @@ const App = () => {
           <Route exact path="/register" name="Register Page" element={<Register />} />
           <Route exact path="/404" name="Page 404" element={<Page404 />} />
           <Route exact path="/500" name="Page 500" element={<Page500 />} />
+             {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
           <Route path="*" name="Home" element={<DefaultLayout />} />
+        </Route>
+          {/* <Route path="*" name="Home" element={<DefaultLayout />} /> */}
          
         </Routes>
       </Suspense>
