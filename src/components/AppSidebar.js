@@ -51,8 +51,8 @@ const [show, setShow] = useState(false);
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/dashboard">
-          <img src={logo} alt="Logo" className="sidebar-brand-full" height={45} width={200} />
-          <img src={shortlogo} alt="Logo" className="sidebar-brand-narrow" height={32} width={32} />
+          <img src={logo} alt="Logo" className="sidebar-brand-full" height={40} width={200} />
+          <img src={shortlogo} alt="Logo" className="sidebar-brand-narrow" height={40} width={32} />
           {/* <CIcon customClassName="sidebar-brand-narrow" icon={rocketimg} height={32} /> */}
         </CSidebarBrand>
         <CCloseButton

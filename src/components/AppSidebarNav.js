@@ -209,7 +209,7 @@ import 'simplebar-react/dist/simplebar.min.css'
 import { useSelector } from 'react-redux'
 import { CBadge, CNavLink, CSidebarNav } from '@coreui/react'
 import { useDispatch } from 'react-redux';
-
+import { FaSearch } from "react-icons/fa";
 
 
 export const AppSidebarNav = ({ items }) => {
@@ -267,7 +267,7 @@ export const AppSidebarNav = ({ items }) => {
             placeholder="🔍 Search here..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="sidebar-search-input"
+            className="sidebar-search-input sidebar-brand-full"
             style={{
               margin: '10px',
               height: '40px', // Ensure consistent height
@@ -297,6 +297,7 @@ export const AppSidebarNav = ({ items }) => {
     `}
           </style>
         </div>
+        
 
         {filteredSubItems?.map((subItem, subIndex) =>
           subItem.items ? navGroup(subItem, subIndex) : navItem(subItem, subIndex, true),

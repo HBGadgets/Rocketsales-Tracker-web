@@ -60,7 +60,14 @@ const Login = () => {
 
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
-      <CContainer>
+      <CContainer 
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleLogin(e); // Call the function when Enter is pressed
+          }
+        }}
+        // Ensures the container can listen for key events
+      >
         <CRow className="justify-content-center">
           <CCol md={5}>
             <CCardGroup>
