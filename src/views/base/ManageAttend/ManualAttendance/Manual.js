@@ -321,7 +321,7 @@ import { StyledTablePagination } from '../../../../views/PaginationCssFile/Table
 // import { FaBriefcase   } from 'react-icons/fa';
 import { BsBuildingsFill } from 'react-icons/bs'
 // import '../../ReusablecodeforTable/styles.css';
-import '../../ReusablecodeforTable/Styles.css'
+import '../../ReusablecodeforTable/styles.css'
 import ExcelJS from 'exceljs';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
