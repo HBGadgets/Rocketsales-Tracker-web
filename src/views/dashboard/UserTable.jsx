@@ -60,18 +60,20 @@ const UserTable = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate()
 
-  const handleTrackSalesman = (salesman) => {
-    // Temporary dummy coordinates for testing
-    const salesmanWithDummyLocation = {
-      ...salesman,
-      location: {
-        coordinates: [78.4867, 17.3850] // [longitude, latitude]
-      }
-    }
+  // const handleTrackSalesman = (salesman) => {
+  //   // Temporary dummy coordinates for testing
+  //   const salesmanWithDummyLocation = {
+  //     ...salesman,
+  //     location: {
+  //       coordinates: [78.4867, 17.3850] // [longitude, latitude]
+  //     }
+  //   }
     
-    navigate('/live-map', { state: { salesman: salesmanWithDummyLocation } })
+  //   navigate('/live-map', { state: { salesman: salesmanWithDummyLocation } })
+  // }
+  const handleTrackSalesman = (salesman) => {
+    navigate('/live-map', { state: { salesman } })
   }
- 
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10)
     setRowsPerPage(newRowsPerPage === -1 ? data.length : newRowsPerPage) // Set to full length
