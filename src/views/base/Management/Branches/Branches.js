@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -54,17 +54,17 @@ import '../../../../../src/app.css'
 import { COLUMNS } from './columns'
 import { StyledTablePagination } from '../../../../views/PaginationCssFile/TablePaginationStyles'
 // import { FaBriefcase   } from 'react-icons/fa';
-import { FiGitBranch } from 'react-icons/fi';
-import BusinessIcon from '@mui/icons-material/Business';
-import '../../ReusablecodeforTable/styles.css';
-import ExcelJS from 'exceljs';
+import { FiGitBranch } from 'react-icons/fi'
+import BusinessIcon from '@mui/icons-material/Business'
+import '../../ReusablecodeforTable/styles.css'
+import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
-import jwt_decode from 'jwt-decode';
+import jwt_decode from 'jwt-decode'
 import { Token } from '@mui/icons-material'
-import debounce from 'lodash.debounce';
+import debounce from 'lodash.debounce'
 
-const token=Cookies.get("token");
+const token = Cookies.get('token')
 // let role=null
 // if(token){
 //   const decodetoken=jwt_decode(token);
@@ -88,7 +88,9 @@ const Branches = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25)
   const columns = COLUMNS()
   const [sortedData, setSortedData] = useState([])
-  const [companyData, setCompanyData] = useState([]);
+  const [companyData, setCompanyData] = useState([])
+  const [sortBy, setSortBy] = useState('')
+  const [sortOrder, setSortOrder] = useState('asc')
   const handleEditModalClose = () => {
     setFormData({})
     setEditModalOpen(false)
@@ -98,21 +100,21 @@ const Branches = () => {
     setFormData({})
     setAddModalOpen(false)
   }
-const [role, setRole] = useState(null);
+  const [role, setRole] = useState(null)
 
   useEffect(() => {
     const fetchRole = () => {
-      const token = Cookies.get("token");
+      const token = Cookies.get('token')
       if (token) {
-        const decodedToken = jwt_decode(token);
-        setRole(decodedToken.role);
+        const decodedToken = jwt_decode(token)
+        setRole(decodedToken.role)
       } else {
-        setRole(null);
+        setRole(null)
       }
-    };
-  
-    fetchRole(); // Call the function to fetch role
-  }, []); 
+    }
+
+    fetchRole() // Call the function to fetch role
+  }, [])
   const style = {
     position: 'absolute',
     top: '50%',
@@ -135,26 +137,26 @@ const [role, setRole] = useState(null);
   // const fetchData = async (page = 1) => {
   //   const accessToken = Cookies.get('token');
   //   const url = `https://rocketsales-server.onrender.com/api/branch`;
-  
+
   //   try {
   //     const response = await axios.get(url, {
   //       headers: {
   //         Authorization: 'Bearer ' + accessToken,
   //       },
   //     });
-  
+
   //     // Log to check the full structure of the response
   //     console.log("Full Response Data:", response.data);
-  
+
   //     // Accessing the 'Branches' directly from the response data
   //     const allData = response.data.Branches?.map((item) => ({
   //       ...item,
   //       companyName: item.companyId.companyName, // Extract company name from companyId object
   //       companyId: item.companyId._id, // Extract companyId from companyId object
   //     }));
-  
+
   //     console.log("Processed Data:", allData);
-  
+
   //     if (allData) {
   //       // Filter the data based on the search query if it is not empty
   //       const filteredData = allData
@@ -163,7 +165,7 @@ const [role, setRole] = useState(null);
   //           if (item.createdAt) {
   //             item.createdAt = formatDate(item.createdAt);
   //           }
-            
+
   //           return item;
   //         })
   //         .filter((item) =>
@@ -171,7 +173,7 @@ const [role, setRole] = useState(null);
   //             value.toString().toLowerCase().includes(searchQuery.toLowerCase())
   //           )
   //         );
-  
+
   //       setData(filteredData); // Set the filtered data to `data`
   //       setSortedData(filteredData); // Set the filtered data to `sortedData`
   //       setLoading(false);
@@ -179,7 +181,7 @@ const [role, setRole] = useState(null);
   //       console.error('Branches data is missing or incorrectly structured.');
   //       setLoading(false);
   //     }
-  
+
   //   } catch (error) {
   //     setLoading(false);
   //     console.error('Error fetching data:', error);
@@ -187,85 +189,79 @@ const [role, setRole] = useState(null);
   //   }
   // };
   const fetchData = async () => {
-    const accessToken = Cookies.get('token');
-    const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`;
-  
+    const accessToken = Cookies.get('token')
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/branch`
+
     try {
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${accessToken}` },
-      });
-  
+      })
+
       // Ensure that the response contains a 'Branches' array
       if (response.data && response.data.Branches) {
         const formattedData = response.data.Branches.map((item) => ({
           ...item,
           companyName: item.companyId?.companyName, // Extract the company name
-          companyId: item.companyId?._id,             // Extract the company ID
+          companyId: item.companyId?._id, // Extract the company ID
           createdAt: item.createdAt ? formatDate(item.createdAt) : item.createdAt,
-        }));
-  
-        setData(formattedData);
-        setSortedData(formattedData);
-        setLoading(false);
+        }))
+
+        setData(formattedData)
+        setSortedData(formattedData)
+        setLoading(false)
       } else {
-        console.error('Branches data is missing or incorrectly structured.');
-        setLoading(false);
+        console.error('Branches data is missing or incorrectly structured.')
+        setLoading(false)
       }
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching branch data:', error);
+      setLoading(false)
+      console.error('Error fetching branch data:', error)
     }
-  };
-  
-  
-  
-  
-  
+  }
+
   const fetchCompany = async () => {
-    const accessToken = Cookies.get('token');
-    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`;
-  
+    const accessToken = Cookies.get('token')
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/company`
+
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: 'Bearer ' + accessToken,
         },
-      });
-  console.log("my data response",response.data)
+      })
+      console.log('my data response', response.data)
       if (response.data) {
-      
         // const companydata1 = response.data
-        setCompanyData( response.data);
-       
+        setCompanyData(response.data)
       }
-      console.log("companies are",companyData);
+      console.log('companies are', companyData)
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error // Re-throw the error for further handling if needed
     }
-  };
+  }
   useEffect(() => {
-    fetchCompany();
-  }, []);
+    fetchCompany()
+  }, [])
   // Format the date into DD-MM-YYYY format
   function formatDate(date) {
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0'); // Add leading zero if single digit
-    const month = String(d.getMonth() + 1).padStart(2, '0'); // Add leading zero to month
-    const year = d.getFullYear();
-    return `${day}-${month}-${year}`;
+    const d = new Date(date)
+    const day = String(d.getDate()).padStart(2, '0') // Add leading zero if single digit
+    const month = String(d.getMonth() + 1).padStart(2, '0') // Add leading zero to month
+    const year = d.getFullYear()
+    return `${day}-${month}-${year}`
   }
-  
+
   // Example: parsing the formatted date string back to a Date object if needed
   function parseDate(dateString) {
-    const [day, month, year] = dateString.split('-').map(Number);
-    return new Date(year, month - 1, day);
+    const [day, month, year] = dateString.split('-').map(Number)
+    return new Date(year, month - 1, day)
   }
-   useEffect(() => {
-      setLoading(true);
-      fetchData();
-    }, []); 
+  useEffect(() => {
+    setLoading(true)
+    fetchData()
+  }, [])
   // useEffect(() => {
   //   setLoading(true)
   //   // fetchcompany()
@@ -284,33 +280,33 @@ const [role, setRole] = useState(null);
       setCurrentPage(1)
     }
   }
-const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value)
+  }
   const debouncedFilter = useCallback(
     debounce((query, data) => {
       if (!query) {
-        setFilteredData(data);
+        setFilteredData(data)
       } else {
         const filtered = data.filter((item) =>
           Object.values(item).some((value) =>
-            value.toString().toLowerCase().includes(query.toLowerCase())
-          )
-        );
-        setFilteredData(filtered);
+            value.toString().toLowerCase().includes(query.toLowerCase()),
+          ),
+        )
+        setFilteredData(filtered)
       }
     }, 500),
-    []
-  );
+    [],
+  )
   useEffect(() => {
     if (data && data.length > 0) {
-      debouncedFilter(searchQuery, data);
+      debouncedFilter(searchQuery, data)
     }
-  }, [searchQuery, data, debouncedFilter]);
-  
+  }, [searchQuery, data, debouncedFilter])
+
   useEffect(() => {
-    return () => debouncedFilter.cancel();
-  }, [debouncedFilter]);
+    return () => debouncedFilter.cancel()
+  }, [debouncedFilter])
 
   // useEffect(() => {
   //   filterGroups(searchQuery)
@@ -323,7 +319,7 @@ const handleSearchChange = (e) => {
     setLoading(true)
     fetchData(page)
   }
-  
+
   // const handleAddSubmit = async (e) => {
   //   e.preventDefault()
   //   console.log(formData)
@@ -351,27 +347,27 @@ const handleSearchChange = (e) => {
 
   // ###################################################################
   // ######################### Edit Group #########################
- 
+
   const handleAddSubmit = async (e) => {
-    e.preventDefault();
-  
+    e.preventDefault()
+
     try {
       const accessToken = Cookies.get('token')
       // const accessToken = token;
-      console.log("MYTT",token)
-      let updatedFormData = { ...formData }; // Copy existing formData
-  
+      console.log('MYTT', token)
+      let updatedFormData = { ...formData } // Copy existing formData
+
       if (token) {
-        const decodedToken = jwt_decode(token); // Decode the token
+        const decodedToken = jwt_decode(token) // Decode the token
         // const role = decodedToken.role;
-  
+
         if (role == 2) {
-          updatedFormData.companyId = decodedToken.id; // Add companyId from the token
+          updatedFormData.companyId = decodedToken.id // Add companyId from the token
         }
       }
-  
-      console.log('FormData to be submitted:', updatedFormData);
-  
+
+      console.log('FormData to be submitted:', updatedFormData)
+
       const response = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/branch`,
         updatedFormData,
@@ -380,26 +376,26 @@ const handleSearchChange = (e) => {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-        }
-      );
-  
+        },
+      )
+
       if (response.status === 201) {
-        toast.success('Branch is created successfully');
-        fetchData(); // Refresh data
-        setFormData({ name: '' }); // Reset form
-        setAddModalOpen(false); // Close modal
+        toast.success('Branch is created successfully')
+        fetchData() // Refresh data
+        setFormData({ name: '' }) // Reset form
+        setAddModalOpen(false) // Close modal
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error:', error)
       const errorMessage =
-      error.response && error.response.data && error.response.data.message
-        ? error.response.data.message
-        : 'An error occurred. Please try again.';
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'An error occurred. Please try again.'
 
-        toast.error(errorMessage);
+      toast.error(errorMessage)
     }
-  };
-  
+  }
+
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10)
     setRowsPerPage(newRowsPerPage === -1 ? sortedData.length : newRowsPerPage) // Set to all rows if -1
@@ -434,11 +430,11 @@ const handleSearchChange = (e) => {
       // toast.error('An error occured')
       // throw error.response ? error.response.data : new Error('An error occurred')
       const errorMessage =
-      error.response && error.response.data && error.response.data.message
-        ? error.response.data.message
-        : 'An error occurred. Please try again.';
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'An error occurred. Please try again.'
 
-        toast.error(errorMessage);
+      toast.error(errorMessage)
     }
   }
 
@@ -449,59 +445,81 @@ const handleSearchChange = (e) => {
     console.log('this is before edit', formData)
   }
 
- 
   const haqndleDeletesubmit = async (item) => {
     if (!item._id) {
       toast.error('Invalid item selected for deletion.')
       return
     }
-  
-    toast((t) => (
-      <div>
-        <p>Do you want to delete <u><b>{item.branchName}</b></u> user?</p>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-          <button
-            onClick={async () => {
-              toast.dismiss(t.id)
-  
-              try {
-                const accessToken = Cookies.get('token')
-                if (!accessToken) {
-                  toast.error('Authentication token is missing.')
-                  return
+
+    toast(
+      (t) => (
+        <div>
+          <p>
+            Do you want to delete{' '}
+            <u>
+              <b>{item.branchName}</b>
+            </u>{' '}
+            user?
+          </p>
+          <div
+            style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}
+          >
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id)
+
+                try {
+                  const accessToken = Cookies.get('token')
+                  if (!accessToken) {
+                    toast.error('Authentication token is missing.')
+                    return
+                  }
+
+                  const response = await axios({
+                    method: 'DELETE',
+                    url: `${import.meta.env.VITE_SERVER_URL}/api/branch/${item._id}`,
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                      'Content-Type': 'application/json',
+                    },
+                  })
+
+                  // Check if deletion was successful
+                  toast.success('Branch deleted successfully')
+                  fetchData()
+                } catch (error) {
+                  console.error('Error Details:', error.response || error.message)
+                  toast.error('An error occurred while deleting the Company.')
                 }
-  
-                const response = await axios({
-                  method: 'DELETE',
-                  url: `${import.meta.env.VITE_SERVER_URL}/api/branch/${item._id}`,
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json',
-                  },
-                })
-  
-                // Check if deletion was successful
-                toast.success('Branch deleted successfully')
-                fetchData()
-              } catch (error) {
-                console.error('Error Details:', error.response || error.message)
-                toast.error('An error occurred while deleting the Company.')
-              }
-            }}
-            style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
-          >
-            Confirm
-          </button>
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
-          >
-            Cancel
-          </button>
+              }}
+              style={{
+                background: '#4CAF50',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: 'none',
+              }}
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                background: '#f44336',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: 'none',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
-      </div>
-    ), { duration: Infinity });
-  };
+      ),
+      { duration: Infinity },
+    )
+  }
   // const haqndleDeletesubmit = async (item) => {
   //   if (!item._id) {
   //     toast.error('Invalid item selected for deletion.')
@@ -538,22 +556,45 @@ const handleSearchChange = (e) => {
   //   }
   // }
 
-
-  
   const exportToExcel = ExcelExporter({
-  
     columns: COLUMNS(),
     data: filteredData,
     fileName: 'Branches_data.xlsx',
-    mytitle:'Branches Data Report',
-  });
+    mytitle: 'Branches Data Report',
+  })
 
-const exportToPDF = PDFExporter({
-  title: 'Branches Data Report',
-  columns: COLUMNS(),
-  data: filteredData,
-  fileName: 'Branches_data_report.pdf',
-});
+  const exportToPDF = PDFExporter({
+    title: 'Branches Data Report',
+    columns: COLUMNS(),
+    data: filteredData,
+    fileName: 'Branches_data_report.pdf',
+  })
+
+  const handleSort = (accessor) => {
+    if (sortBy === accessor) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(accessor)
+      setSortOrder('asc')
+    }
+  }
+  useEffect(() => {
+    if (sortBy) {
+      const sorted = [...filteredData].sort((a, b) => {
+        const aValue = a[sortBy]
+        const bValue = b[sortBy]
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          return sortOrder === 'asc' ? aValue - bValue : aValue - bValue
+        }
+        return sortOrder==='asc'
+        ? String(aValue).localeCompare(String(bValue))
+        : String(bValue).localeCompare(String(aValue));
+      });
+      setSortedData(sorted);
+    } else {
+      setSortedData(filteredData);
+    }
+  }, [filteredData, sortBy, sortOrder])
 
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
@@ -570,60 +611,59 @@ const exportToPDF = PDFExporter({
               fontFamily: "'Poppins', sans-serif",
             }}
           >
-            <FiGitBranch  style={{ fontSize: '24px', color: '#4c637c' }} />
+            <FiGitBranch style={{ fontSize: '24px', color: '#4c637c' }} />
             Branches
           </h2>
         </div>
 
+        <div className="d-flex align-items-center">
+          <div className="me-3 d-none d-md-block">
+            <input
+              type="search"
+              className="form-control"
+              placeholder="🔍 Search here..."
+              value={searchQuery}
+              // onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
+              style={{
+                height: '40px', // Ensure consistent height
+                padding: '8px 12px',
+                fontSize: '16px',
+                borderRadius: '8px',
+                border: '1px solid #ccc',
+              }}
+            />
+          </div>
 
-<div className="d-flex align-items-center">
- 
-  <div className="me-3 d-none d-md-block">
-    <input
-      type="search"
-      className="form-control"
-      placeholder="🔍 Search here..."
-      value={searchQuery}
-      // onChange={(e) => setSearchQuery(e.target.value)}
-      onChange={handleSearchChange} 
-      style={{
-        height: "40px", // Ensure consistent height
-        padding: "8px 12px",
-        fontSize: "16px",
-        borderRadius: "8px",
-        border: "1px solid #ccc",
-      }}
-    />
-  </div>
+          {/* Settings Dropdown */}
 
-  {/* Settings Dropdown */}
-
-
-  {/* Add Button */}
-  <div className="add-container d-flex align-items-center" onClick={() => setAddModalOpen(true)}>
-    <div className="add-icon">+</div>
-    <span className="add-text ms-2">ADD</span>
-  </div>
-  <CDropdown className="position-relative me-3">
-    <CDropdownToggle
-      color="secondary"
-      style={{
-        borderRadius: '50%',
-        padding: '10px',
-        height: '48px',
-        width: '48px',
-        marginLeft:'12px'
-      }}
-    >
-      <CIcon icon={cilSettings} />
-    </CDropdownToggle>
-    <CDropdownMenu>
-      <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
-      <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
-    </CDropdownMenu>
-  </CDropdown>
-</div>
-
+          {/* Add Button */}
+          <div
+            className="add-container d-flex align-items-center"
+            onClick={() => setAddModalOpen(true)}
+          >
+            <div className="add-icon">+</div>
+            <span className="add-text ms-2">ADD</span>
+          </div>
+          <CDropdown className="position-relative me-3">
+            <CDropdownToggle
+              color="secondary"
+              style={{
+                borderRadius: '50%',
+                padding: '10px',
+                height: '48px',
+                width: '48px',
+                marginLeft: '12px',
+              }}
+            >
+              <CIcon icon={cilSettings} />
+            </CDropdownToggle>
+            <CDropdownMenu>
+              <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
+              <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
+            </CDropdownMenu>
+          </CDropdown>
+        </div>
       </div>
       <div className="d-md-none mb-2">
         <input
@@ -640,7 +680,6 @@ const exportToPDF = PDFExporter({
         sx={{
           height: 'auto',
           overflowX: 'auto',
-
         }}
       >
         <CTable
@@ -684,8 +723,10 @@ const exportToPDF = PDFExporter({
                     backgroundColor: '#1d3d5f',
                     color: 'white',
                   }}
+                  onClick={() => handleSort(col.accessor)}
                 >
                   {col.Header}
+                  {sortBy === col.accessor && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
                 </CTableHeaderCell>
               ))}
               <CTableHeaderCell
@@ -719,14 +760,14 @@ const exportToPDF = PDFExporter({
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : filteredData.length > 0 ? (
-              filteredData
+            ) : sortedData.length > 0 ? (
+              sortedData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow
                     key={index}
                     style={{
-                      backgroundColor: index % 2 === 0 ? 'transparent':  '#f1f8fd', // Grey for even rows, transparent for odd rows
+                      backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd', // Grey for even rows, transparent for odd rows
                       transition: 'background-color 0.3s ease',
                       borderBottom: '1px solid #e0e0e0',
                     }}
@@ -738,7 +779,7 @@ const exportToPDF = PDFExporter({
                         padding: '0px 12px',
                         color: '#242424',
                         fontSize: '13px',
-                        backgroundColor: index % 2 === 0 ? 'transparent':'#f1f8fd'  ,
+                        backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                       }}
                     >
                       {index + 1}
@@ -752,34 +793,32 @@ const exportToPDF = PDFExporter({
                           padding: '0px 12px',
                           color: '#242424',
                           fontSize: '13px',
-                          backgroundColor: index % 2 === 0 ?'transparent' : '#f1f8fd',
+                          backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                         }}
                       >
                         {item[col.accessor] || '--'}
                       </CTableDataCell>
                     ))}
 
-                   
-  <CTableDataCell
-      className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
-    >
-      <IconButton
-        aria-label="edit"
-        onClick={() => handleEditGroup(item)}
-        className="icon-button icon-button-edit"
-      >
-        <RiEdit2Fill className="icon-button-icon" />
-      </IconButton>
+                    <CTableDataCell
+                      className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
+                    >
+                      <IconButton
+                        aria-label="edit"
+                        onClick={() => handleEditGroup(item)}
+                        className="icon-button icon-button-edit"
+                      >
+                        <RiEdit2Fill className="icon-button-icon" />
+                      </IconButton>
 
-      <IconButton
-        aria-label="delete"
-        onClick={() => haqndleDeletesubmit(item)}
-        className="icon-button icon-button-delete"
-      >
-        <AiFillDelete className="icon-button-icon" />
-      </IconButton>
-    </CTableDataCell>
-
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => haqndleDeletesubmit(item)}
+                        className="icon-button icon-button-delete"
+                      >
+                        <AiFillDelete className="icon-button-icon" />
+                      </IconButton>
+                    </CTableDataCell>
                   </CTableRow>
                 ))
             ) : (
@@ -801,8 +840,6 @@ const exportToPDF = PDFExporter({
         </CTable>
       </TableContainer>
 
-     
-
       <StyledTablePagination>
         <TablePagination
           rowsPerPageOptions={[{ label: 'All', value: -1 }, 1, 10, 25, 100, 1000]}
@@ -820,241 +857,228 @@ const exportToPDF = PDFExporter({
           }}
         />
       </StyledTablePagination>
-     
+
       <Modal
-  open={addModalOpen}
-  onClose={handleAddModalClose}
-  aria-labelledby="modal-modal-title"
-  aria-describedby="modal-modal-description"
->
-  <Box sx={style}>
-    <div className="d-flex justify-content-between">
-      <Typography id="modal-modal-title" variant="h6" component="h2">
-        Add New Branches
-      </Typography>
-      <IconButton onClick={handleAddModalClose}>
-        <CloseIcon />
-      </IconButton>
-    </div>
-    <DialogContent>
-      <form onSubmit={handleAddSubmit}>
+        open={addModalOpen}
+        onClose={handleAddModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="d-flex justify-content-between">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Add New Branches
+            </Typography>
+            <IconButton onClick={handleAddModalClose}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <DialogContent>
+            <form onSubmit={handleAddSubmit}>
+              <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {role == 1 ? (
+                  <>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-company-select"
+                        options={Array.isArray(companyData) ? companyData : []} // Ensure companyData is an array
+                        getOptionLabel={(option) => option.companyName || ''} // Display company name
+                        value={
+                          Array.isArray(companyData)
+                            ? companyData.find((company) => company._id == formData.companyId)
+                            : null
+                        } // Safely find the selected company
+                        onChange={(event, newValue) => {
+                          setFormData({
+                            ...formData,
+                            companyId: newValue?._id || '',
+                          })
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Company Name"
+                            variant="outlined"
+                            name="companyId"
+                            required
+                            placeholder="Select Company" // Dynamic placeholder
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <BusinessIcon />
+                                </InputAdornment>
+                              ),
+                            }}
+                            sx={{
+                              '& .MuiFormLabel-asterisk': {
+                                color: 'red',
+                                fontSize: '1.4rem',
+                                // fontWeight: "bold",
+                              },
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  </>
+                ) : null}
 
-        <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {role==1?
-          (
-            <>
-           
-               <FormControl
-      variant="outlined"
-      sx={{ marginBottom: "10px" }}
-      fullWidth
-    >
-      <Autocomplete
-        id="searchable-company-select"
-        options={Array.isArray(companyData) ? companyData : []} // Ensure companyData is an array
-        getOptionLabel={(option) => option.companyName || ""} // Display company name
-        value={
-          Array.isArray(companyData)
-            ? companyData.find((company) => company._id == formData.companyId)
-            : null
-        } // Safely find the selected company
-        onChange={(event, newValue) => {
-          setFormData({
-            ...formData,
-            companyId: newValue?._id || "",
-          });
-        }}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Company Name"
-            variant="outlined"
-            name="companyId"
-            required
-            placeholder="Select Company" // Dynamic placeholder
-            InputProps={{
-              ...params.InputProps,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <BusinessIcon />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiFormLabel-asterisk": {
-                color: "red",
-                fontSize: "1.4rem",
-                // fontWeight: "bold",
-              },
-            }}
-          />
-        )}
-      />
-    </FormControl>
-              </>
-          )
-          :null}
-         
-          {COLUMNS().slice(1).map((column) => (
-            <TextField
-              key={column.accessor}
-              label={column.Header}
-              name={column.accessor}
-              value={formData[column.accessor] || ''}
-              required={column.accessor === 'branchName'||column.accessor === 'username' || column.accessor === 'password'}
-              onChange={(e) =>
-                setFormData({ ...formData, [column.accessor]: e.target.value })
-              }
-              // Remove required attribute
-              placeholder={`Enter ${column.Header}`} // Dynamic placeholder
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {column.icon}
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                "& .MuiFormLabel-asterisk": {
-                  color: "red",
-                  fontSize: "1.4rem",
-                  // fontWeight: "bold",
-                },
-              }}
-            />
-          ))}
-         
-        </FormControl>
-        
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          style={{ marginTop: '20px' }}
-        >
-          Submit
-        </Button>
-      </form>
-    </DialogContent>
-  </Box>
-</Modal>
+                {COLUMNS()
+                  .slice(1)
+                  .map((column) => (
+                    <TextField
+                      key={column.accessor}
+                      label={column.Header}
+                      name={column.accessor}
+                      value={formData[column.accessor] || ''}
+                      required={
+                        column.accessor === 'branchName' ||
+                        column.accessor === 'username' ||
+                        column.accessor === 'password'
+                      }
+                      onChange={(e) =>
+                        setFormData({ ...formData, [column.accessor]: e.target.value })
+                      }
+                      // Remove required attribute
+                      placeholder={`Enter ${column.Header}`} // Dynamic placeholder
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">{column.icon}</InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        '& .MuiFormLabel-asterisk': {
+                          color: 'red',
+                          fontSize: '1.4rem',
+                          // fontWeight: "bold",
+                        },
+                      }}
+                    />
+                  ))}
+              </FormControl>
 
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                style={{ marginTop: '20px' }}
+              >
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Box>
+      </Modal>
 
-
-    
-<Modal
-  open={editModalOpen}
-  onClose={handleEditModalClose}
-  aria-labelledby="modal-modal-title"
-  aria-describedby="modal-modal-description"
->
-  <Box sx={style}>
-    <div className="d-flex justify-content-between">
-      <Typography id="modal-modal-title" variant="h6" component="h2">
-        Edit Branches
-      </Typography>
-      <IconButton onClick={handleEditModalClose}>
-        <CloseIcon />
-      </IconButton>
-    </div>
-    <DialogContent>
-      <form onSubmit={handleEditSubmit}>
-        <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          
-        {role==1?
-          (
-            <>
-                  <FormControl
-      variant="outlined"
-      sx={{ marginBottom: "10px" }}
-      fullWidth
-    >
-      <Autocomplete
-        id="searchable-company-select"
-        options={Array.isArray(companyData) ? companyData : []} // Ensure companyData is an array
-        getOptionLabel={(option) => option.companyName || ""} // Display company name
-        value={
-          Array.isArray(companyData)
-            ? companyData.find((company) => company._id == formData.companyId)
-            : null
-        } // Safely find the selected company
-        onChange={(event, newValue) => {
-          setFormData({
-            ...formData,
-            companyId: newValue?._id || "",
-          });
-        }}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Company Name"
-            variant="outlined"
-            name="companyId"
-            required
-            InputProps={{
-              ...params.InputProps,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <BusinessIcon />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiFormLabel-asterisk": {
-                color: "red",
-                fontSize: "1.4rem",
-                // fontWeight: "bold",
-              },
-            }}
-          />
-        )}
-      />
-    </FormControl>
-              </>
-          )
-          :null}
-          {COLUMNS().slice(1).map((column) => (
-            <TextField
-              key={column.accessor}
-              label={column.Header}
-              name={column.accessor}
-              value={formData[column.accessor] || ''} // Pre-fill with existing data
-              required={column.accessor === 'branchName'||column.accessor === 'username' || column.accessor === 'password'}              
-              onChange={(e) =>
-                setFormData({ ...formData, [column.accessor]: e.target.value })
-              }
-              // Remove the required attribute
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    {column.icon}
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                "& .MuiFormLabel-asterisk": {
-                  color: "red",
-                  fontSize: "1.4rem",
-                  // fontWeight: "bold",
-                },
-              }}
-            />
-          ))}
-        </FormControl>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          style={{ marginTop: '20px' }}
-        >
-          Submit
-        </Button>
-      </form>
-    </DialogContent>
-  </Box>
-</Modal>
-
-
+      <Modal
+        open={editModalOpen}
+        onClose={handleEditModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div className="d-flex justify-content-between">
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Edit Branches
+            </Typography>
+            <IconButton onClick={handleEditModalClose}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <DialogContent>
+            <form onSubmit={handleEditSubmit}>
+              <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {role == 1 ? (
+                  <>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                      <Autocomplete
+                        id="searchable-company-select"
+                        options={Array.isArray(companyData) ? companyData : []} // Ensure companyData is an array
+                        getOptionLabel={(option) => option.companyName || ''} // Display company name
+                        value={
+                          Array.isArray(companyData)
+                            ? companyData.find((company) => company._id == formData.companyId)
+                            : null
+                        } // Safely find the selected company
+                        onChange={(event, newValue) => {
+                          setFormData({
+                            ...formData,
+                            companyId: newValue?._id || '',
+                          })
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Company Name"
+                            variant="outlined"
+                            name="companyId"
+                            required
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <BusinessIcon />
+                                </InputAdornment>
+                              ),
+                            }}
+                            sx={{
+                              '& .MuiFormLabel-asterisk': {
+                                color: 'red',
+                                fontSize: '1.4rem',
+                                // fontWeight: "bold",
+                              },
+                            }}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  </>
+                ) : null}
+                {COLUMNS()
+                  .slice(1)
+                  .map((column) => (
+                    <TextField
+                      key={column.accessor}
+                      label={column.Header}
+                      name={column.accessor}
+                      value={formData[column.accessor] || ''} // Pre-fill with existing data
+                      required={
+                        column.accessor === 'branchName' ||
+                        column.accessor === 'username' ||
+                        column.accessor === 'password'
+                      }
+                      onChange={(e) =>
+                        setFormData({ ...formData, [column.accessor]: e.target.value })
+                      }
+                      // Remove the required attribute
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">{column.icon}</InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        '& .MuiFormLabel-asterisk': {
+                          color: 'red',
+                          fontSize: '1.4rem',
+                          // fontWeight: "bold",
+                        },
+                      }}
+                    />
+                  ))}
+              </FormControl>
+              <Button
+                variant="contained"
+                color="primary"
+                type="submit"
+                style={{ marginTop: '20px' }}
+              >
+                Submit
+              </Button>
+            </form>
+          </DialogContent>
+        </Box>
+      </Modal>
     </div>
   )
 }

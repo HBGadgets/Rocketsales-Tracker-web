@@ -1,0 +1,45 @@
+/* LiveMap.css */
+.live-map-container {
+  height: 85vh;
+  width: 100%;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 15px;
+}
+
+.back-button {
+  background-color: #1d3d5f;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.back-button:hover {
+  background-color: #162a43;
+}
+
+.map-container {
+  height: 100%;
+  width: 100%;
+}
+
+.popup-content h4 {
+  margin: 5px 0;
+}
+
+.popup-content p {
+  margin: 3px 0;
+  font-size: 0.9em;
+  color: #666;
+}

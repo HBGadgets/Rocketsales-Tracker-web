@@ -61,7 +61,7 @@ import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode'
-import debounce from 'lodash.debounce';
+import debounce from 'lodash.debounce'
 
 const Supervisor = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -86,7 +86,8 @@ const Supervisor = () => {
   const [BranchData, setBranchData] = useState([])
 
   const [role, setRole] = useState(null)
-
+  const [sortBy, setSortBy] = useState('')
+  const [sortOrder, setSortOrder] = useState('asc')
   useEffect(() => {
     const fetchRole = () => {
       const token = Cookies.get('token')
@@ -129,108 +130,50 @@ const Supervisor = () => {
     marginTop: '8px',
   }
 
-  // ##################### getting data  ###################
-  // const fetchData = async (page = 1) => {
-  //   const accessToken = Cookies.get('token')
-  //   const url = `https://rocketsales-server.onrender.com/api/supervisor`
-
-  //   try {
-  //     const response = await axios.get(url, {
-  //       headers: {
-  //         Authorization: 'Bearer ' + accessToken,
-  //       },
-  //     })
-
-  //     // Log the full response data to inspect its structure
-  //     console.log('Full Response Data:', response.data)
-
-  //     // Flattening the supervisor data and adding companyName and branchName
-  //     const allData = response.data.supervisors.map((item) => ({
-  //       ...item,
-  //       companyName: item.companyId.companyName, // Extract companyName from companyId
-  //       companyId: item.companyId._id, // Extract companyId from companyId
-  //       branchName: item.branchId.branchName, // Extract branchName from branchId
-  //       branchId: item.branchId._id, // Extract branchId from branchId
-  //     }))
-
-  //     console.log('Processed Data:', allData)
-
-  //     if (allData) {
-  //       // Filter the data based on the search query if it is not empty
-  //       const filteredData = allData
-  //         .map((item) => {
-  //           // Apply the formatDate method to 'createdAt' field if it exists
-  //           if (item.createdAt) {
-  //             item.createdAt = formatDate(item.createdAt) // Use your custom formatDate method
-  //           }
-
-  //           return item
-  //         })
-  //         .filter((item) =>
-  //           Object.values(item).some((value) =>
-  //             value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
-  //           ),
-  //         )
-
-  //       setData(filteredData) // Set the filtered data to `data`
-  //       setSortedData(filteredData) // Set the filtered data to `sortedData`
-  //       setLoading(false)
-  //     } else {
-  //       console.error('Supervisors data is missing or incorrectly structured.')
-  //       setLoading(false)
-  //     }
-  //   } catch (error) {
-  //     setLoading(false)
-  //     console.error('Error fetching data:', error)
-  //     throw error // Re-throw the error for further handling if needed
-  //   }
-  // }
   const fetchData = async () => {
-    const accessToken = Cookies.get('token');
+    const accessToken = Cookies.get('token')
     // const url = `https://rocketsales-server.onrender.com/api/supervisor`;
     const url = `${import.meta.env.VITE_SERVER_URL}/api/supervisor`
-    
+
     try {
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${accessToken}` },
-      });
-  
+      })
+
       // Check that the response data contains the supervisors array
       if (response.data && response.data.supervisors) {
         const formattedData = response.data.supervisors.map((item) => ({
           ...item,
           companyName: item.companyId?.companyName, // Extract companyName from companyId object
-          companyId: item.companyId?._id,             // Extract companyId from companyId object
-          branchName: item.branchId?.branchName,       // Extract branchName from branchId object
-          branchId: item.branchId?._id,                // Extract branchId from branchId object
+          companyId: item.companyId?._id, // Extract companyId from companyId object
+          branchName: item.branchId?.branchName, // Extract branchName from branchId object
+          branchId: item.branchId?._id, // Extract branchId from branchId object
           createdAt: item.createdAt ? formatDate(item.createdAt) : item.createdAt, // Format createdAt if available
-        }));
-  
+        }))
+
         // Filter the data based on the search query (if one is provided)
         const filteredData = formattedData.filter((item) =>
           Object.values(item).some((value) =>
-            value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        );
-  
-        setData(filteredData);
-        setSortedData(filteredData);
-        setLoading(false);
+            value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+          ),
+        )
+
+        setData(filteredData)
+        setSortedData(filteredData)
+        setLoading(false)
       } else {
-        console.error('Supervisors data is missing or incorrectly structured.');
-        setLoading(false);
-        console.error('Supervisors data is missing or incorrectly structured.');
-        setLoading(false);
+        console.error('Supervisors data is missing or incorrectly structured.')
+        setLoading(false)
+        console.error('Supervisors data is missing or incorrectly structured.')
+        setLoading(false)
       }
     } catch (error) {
-      setLoading(false);
-      console.error('Error fetching supervisor data:', error);
-      setLoading(false);
-      console.error('Error fetching supervisor data:', error);
+      setLoading(false)
+      console.error('Error fetching supervisor data:', error)
+      setLoading(false)
+      console.error('Error fetching supervisor data:', error)
     }
-  };
-
-  
+  }
 
   const fetchCompany = async () => {
     const accessToken = Cookies.get('token')
@@ -295,16 +238,16 @@ const Supervisor = () => {
     const [day, month, year] = dateString.split('-').map(Number)
     return new Date(year, month - 1, day)
   }
-useEffect(() => {
-    setLoading(true);
-    fetchData();
-  }, []);
+  useEffect(() => {
+    setLoading(true)
+    fetchData()
+  }, [])
   // useEffect(() => {
   //   setLoading(true)
   //   // fetchcompany()
   //   fetchData()
   //  // Refetch data when searchQuery changes
-  // }, [searchQuery]) 
+  // }, [searchQuery])
   // // Dependency array ensures the effect runs whenever searchQuery changes
 
   // ##################### Filter data by search query #######################
@@ -320,32 +263,32 @@ useEffect(() => {
     }
   }
   const handleSearchChange = (e) => {
-      setSearchQuery(e.target.value);
-    };
-    const debouncedFilter = useCallback(
-      debounce((query, data) => {
-        if (!query) {
-          setFilteredData(data);
-        } else {
-          const filtered = data.filter((item) =>
-            Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(query.toLowerCase())
-            )
-          );
-          setFilteredData(filtered);
-        }
-      }, 500),
-      []
-    );
-    useEffect(() => {
-      if (data && data.length > 0) {
-        debouncedFilter(searchQuery, data);
+    setSearchQuery(e.target.value)
+  }
+  const debouncedFilter = useCallback(
+    debounce((query, data) => {
+      if (!query) {
+        setFilteredData(data)
+      } else {
+        const filtered = data.filter((item) =>
+          Object.values(item).some((value) =>
+            value.toString().toLowerCase().includes(query.toLowerCase()),
+          ),
+        )
+        setFilteredData(filtered)
       }
-    }, [searchQuery, data, debouncedFilter]);
-    
-    useEffect(() => {
-      return () => debouncedFilter.cancel();
-    }, [debouncedFilter]);
+    }, 500),
+    [],
+  )
+  useEffect(() => {
+    if (data && data.length > 0) {
+      debouncedFilter(searchQuery, data)
+    }
+  }, [searchQuery, data, debouncedFilter])
+
+  useEffect(() => {
+    return () => debouncedFilter.cancel()
+  }, [debouncedFilter])
 
   // useEffect(() => {
   //   filterGroups(searchQuery)
@@ -404,11 +347,11 @@ useEffect(() => {
       // toast.error('An error occurred')
       // throw error.response ? error.response.data : new Error('An error occurred')
       const errorMessage =
-      error.response && error.response.data && error.response.data.message
-        ? error.response.data.message
-        : 'An error occurred. Please try again.';
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'An error occurred. Please try again.'
 
-        toast.error(errorMessage);
+      toast.error(errorMessage)
     }
   }
 
@@ -446,11 +389,11 @@ useEffect(() => {
       // toast.error('An error occured')
       // throw error.response ? error.response.data : new Error('An error occurred')
       const errorMessage =
-      error.response && error.response.data && error.response.data.message
-        ? error.response.data.message
-        : 'An error occurred. Please try again.';
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'An error occurred. Please try again.'
 
-        toast.error(errorMessage);
+      toast.error(errorMessage)
     }
   }
 
@@ -465,88 +408,76 @@ useEffect(() => {
       toast.error('Invalid item selected for deletion.')
       return
     }
-  
-    toast((t) => (
-      <div>
-        <p>Do you want to delete <u><b>{item.supervisorName}</b></u> user?</p>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-          <button
-            onClick={async () => {
-              toast.dismiss(t.id)
-  
-              try {
-                const accessToken = Cookies.get('token')
-                if (!accessToken) {
-                  toast.error('Authentication token is missing.')
-                  return
+
+    toast(
+      (t) => (
+        <div>
+          <p>
+            Do you want to delete{' '}
+            <u>
+              <b>{item.supervisorName}</b>
+            </u>{' '}
+            user?
+          </p>
+          <div
+            style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}
+          >
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id)
+
+                try {
+                  const accessToken = Cookies.get('token')
+                  if (!accessToken) {
+                    toast.error('Authentication token is missing.')
+                    return
+                  }
+
+                  const response = await axios({
+                    method: 'DELETE',
+                    url: `${import.meta.env.VITE_SERVER_URL}/api/supervisor/${item._id}`,
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                      'Content-Type': 'application/json',
+                    },
+                  })
+
+                  // Check if deletion was successful
+                  toast.success('Supervisor deleted successfully')
+                  fetchData()
+                } catch (error) {
+                  console.error('Error Details:', error.response || error.message)
+                  toast.error('An error occurred while deleting the Company.')
                 }
-  
-                const response = await axios({
-                  method: 'DELETE',
-                  url: `${import.meta.env.VITE_SERVER_URL}/api/supervisor/${item._id}`,
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json',
-                  },
-                })
-  
-                // Check if deletion was successful
-                toast.success('Supervisor deleted successfully')
-                fetchData()
-              } catch (error) {
-                console.error('Error Details:', error.response || error.message)
-                toast.error('An error occurred while deleting the Company.')
-              }
-            }}
-            style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
-          >
-            Confirm
-          </button>
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
-          >
-            Cancel
-          </button>
+              }}
+              style={{
+                background: '#4CAF50',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: 'none',
+              }}
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                background: '#f44336',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: 'none',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
-      </div>
-    ), { duration: Infinity });
-  };
-  // const haqndleDeletesubmit = async (item) => {
-  //   if (!item._id) {
-  //     toast.error('Invalid item selected for deletion.')
-  //     return
-  //   }
-
-  //   const confirmed = confirm('Do you want to delete this user?')
-  //   if (!confirmed) return
-
-  //   try {
-  //     const accessToken = Cookies.get('token')
-  //     if (!accessToken) {
-  //       toast.error('Authentication token is missing.')
-  //       return
-  //     }
-
-  //     const response = await axios({
-  //       method: 'DELETE', // Explicitly specifying DELETE method
-  //       // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
-  //       url: `${import.meta.env.VITE_SERVER_URL}/api/supervisor/${item._id}`,
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //         'Content-Type': 'application/json',
-  //       },
-  //     })
-
-  //     if (response.status === 200) {
-  //       toast.success('Supervisor deleted successfully')
-  //       fetchData()
-  //     }
-  //   } catch (error) {
-  //     console.error('Error Details:', error.response || error.message)
-  //     toast.error('An error occurred while deleting the group.')
-  //   }
-  // }
+      ),
+      { duration: Infinity },
+    )
+  }
 
   const exportToExcel = ExcelExporter({
     columns: COLUMNS(),
@@ -565,7 +496,41 @@ useEffect(() => {
     ? BranchData.filter((branch) => branch.companyId._id === formData.companyId)
     : []
 
-    
+  const handleSort = (accessor) => {
+    if (sortBy === accessor) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(accessor)
+      setSortOrder('asc')
+    }
+  }
+useEffect(() => {
+  if (sortBy) {
+    const sorted = [...filteredData].sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+      
+      // Handle different data types
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Handle dates
+      if (aValue instanceof Date && bValue instanceof Date) {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Default string comparison
+      return sortOrder === 'asc' 
+        ? String(aValue).localeCompare(String(bValue))
+        : String(bValue).localeCompare(String(aValue));
+    });
+
+    setSortedData(sorted);
+  } else {
+    setSortedData(filteredData);
+  }
+}, [filteredData, sortBy, sortOrder]);
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -594,8 +559,7 @@ useEffect(() => {
               placeholder="🔍 Search here..."
               value={searchQuery}
               // onChange={(e) => setSearchQuery(e.target.value)}
-                onChange={handleSearchChange} 
-
+              onChange={handleSearchChange}
               style={{
                 height: '40px', // Ensure consistent height
                 padding: '8px 12px',
@@ -694,8 +658,12 @@ useEffect(() => {
                     backgroundColor: '#1d3d5f',
                     color: 'white',
                   }}
+                  onClick={() => handleSort(col.accessor)}
                 >
                   {col.Header}
+                  {sortBy === col.accessor && (
+                    <span style={{ marginLeft: '5px' }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                  )}
                 </CTableHeaderCell>
               ))}
               <CTableHeaderCell
@@ -729,8 +697,8 @@ useEffect(() => {
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) :  filteredData.length > 0 ? (
-              filteredData
+            ) : sortedData.length > 0 ? (
+              sortedData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow
@@ -871,7 +839,7 @@ useEffect(() => {
                             variant="outlined"
                             name="companyId"
                             required
-                            placeholder="Select Company" 
+                            placeholder="Select Company"
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -881,9 +849,9 @@ useEffect(() => {
                               ),
                             }}
                             sx={{
-                              "& .MuiFormLabel-asterisk": {
-                                color: "red",
-                                fontSize: "1.4rem",
+                              '& .MuiFormLabel-asterisk': {
+                                color: 'red',
+                                fontSize: '1.4rem',
                                 // fontWeight: "bold",
                               },
                             }}
@@ -934,9 +902,9 @@ useEffect(() => {
                               ),
                             }}
                             sx={{
-                              "& .MuiFormLabel-asterisk": {
-                                color: "red",
-                                fontSize: "1.4rem",
+                              '& .MuiFormLabel-asterisk': {
+                                color: 'red',
+                                fontSize: '1.4rem',
                                 // fontWeight: "bold",
                               },
                             }}
@@ -977,7 +945,6 @@ useEffect(() => {
                             variant="outlined"
                             name="branchId"
                             required
-
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
@@ -987,9 +954,9 @@ useEffect(() => {
                               ),
                             }}
                             sx={{
-                              "& .MuiFormLabel-asterisk": {
-                                color: "red",
-                                fontSize: "1.4rem",
+                              '& .MuiFormLabel-asterisk': {
+                                color: 'red',
+                                fontSize: '1.4rem',
                                 // fontWeight: "bold",
                               },
                             }}
@@ -1007,7 +974,11 @@ useEffect(() => {
                       label={column.Header}
                       name={column.accessor}
                       value={formData[column.accessor] || ''}
-                      required={column.accessor === 'supervisorName'||column.accessor === 'username' || column.accessor === 'password'}
+                      required={
+                        column.accessor === 'supervisorName' ||
+                        column.accessor === 'username' ||
+                        column.accessor === 'password'
+                      }
                       onChange={(e) =>
                         setFormData({ ...formData, [column.accessor]: e.target.value })
                       }
@@ -1017,9 +988,9 @@ useEffect(() => {
                         ),
                       }}
                       sx={{
-                        "& .MuiFormLabel-asterisk": {
-                          color: "red",
-                          fontSize: "1.4rem",
+                        '& .MuiFormLabel-asterisk': {
+                          color: 'red',
+                          fontSize: '1.4rem',
                           // fontWeight: "bold",
                         },
                       }}
@@ -1124,7 +1095,7 @@ useEffect(() => {
                         )}
                       />
                     </FormControl> */}
-                       <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
+                    <FormControl variant="outlined" sx={{ marginBottom: '10px' }} fullWidth>
                       <Autocomplete
                         id="searchable-company-select"
                         options={Array.isArray(companyData) ? companyData : []}
@@ -1156,9 +1127,9 @@ useEffect(() => {
                               ),
                             }}
                             sx={{
-                              "& .MuiFormLabel-asterisk": {
-                                color: "red",
-                                fontSize: "1.4rem",
+                              '& .MuiFormLabel-asterisk': {
+                                color: 'red',
+                                fontSize: '1.4rem',
                                 // fontWeight: "bold",
                               },
                             }}
@@ -1209,9 +1180,9 @@ useEffect(() => {
                               ),
                             }}
                             sx={{
-                              "& .MuiFormLabel-asterisk": {
-                                color: "red",
-                                fontSize: "1.4rem",
+                              '& .MuiFormLabel-asterisk': {
+                                color: 'red',
+                                fontSize: '1.4rem',
                                 // fontWeight: "bold",
                               },
                             }}
@@ -1259,9 +1230,9 @@ useEffect(() => {
                               ),
                             }}
                             sx={{
-                              "& .MuiFormLabel-asterisk": {
-                                color: "red",
-                                fontSize: "1.4rem",
+                              '& .MuiFormLabel-asterisk': {
+                                color: 'red',
+                                fontSize: '1.4rem',
                                 // fontWeight: "bold",
                               },
                             }}
@@ -1281,7 +1252,11 @@ useEffect(() => {
                       label={column.Header}
                       name={column.accessor}
                       value={formData[column.accessor] || ''}
-                      required={column.accessor === 'supervisorName'||column.accessor === 'username' || column.accessor === 'password'}
+                      required={
+                        column.accessor === 'supervisorName' ||
+                        column.accessor === 'username' ||
+                        column.accessor === 'password'
+                      }
                       onChange={(e) =>
                         setFormData({ ...formData, [column.accessor]: e.target.value })
                       }
@@ -1291,9 +1266,9 @@ useEffect(() => {
                         ),
                       }}
                       sx={{
-                        "& .MuiFormLabel-asterisk": {
-                          color: "red",
-                          fontSize: "1.4rem",
+                        '& .MuiFormLabel-asterisk': {
+                          color: 'red',
+                          fontSize: '1.4rem',
                           // fontWeight: "bold",
                         },
                       }}

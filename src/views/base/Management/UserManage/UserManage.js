@@ -65,12 +65,7 @@ import { FiUser } from "react-icons/fi";
 import debounce from 'lodash.debounce';
 
 const token=Cookies.get("token");
-// let role=null
-// if(token){
-//   const decodetoken=jwt_decode(token);
-//    role=decodetoken.role;
-// }
-// console.log("n",role)
+
 const UserManage = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -93,6 +88,8 @@ const UserManage = () => {
   const [companyData, setCompanyData] = useState([]);
   const [BranchData, setBranchData] = useState([]);
   const [SupervisorData, setSupervisorData] = useState([]);
+   const [sortBy,setSortBy]=useState('');
+    const [sortOrder,setSortOrder]=useState('asc');
   const handleEditModalClose = () => {
     setFormData({})
     setEditModalOpen(false)
@@ -279,13 +276,7 @@ const [role, setRole] = useState(null);
       setLoading(true);
       fetchData();
     }, []);
-  // useEffect(() => {
-  //   setLoading(true)
-  //   // fetchcompany()
-  //   fetchData() // Refetch data when searchQuery changes
-  // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
-
-  // ##################### Filter data by search query #######################
+ 
   const filterGroups = () => {
     if (!searchQuery) {
       setFilteredData(data) // No query, show all drivers
@@ -330,9 +321,7 @@ const [role, setRole] = useState(null);
       useEffect(() => {
         return () => debouncedFilter.cancel();
       }, [debouncedFilter]);
-  // useEffect(() => {
-  //   filterGroups(searchQuery)
-  // }, [data, searchQuery])
+  
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -341,31 +330,7 @@ const [role, setRole] = useState(null);
     setLoading(true)
     fetchData(page)
   }
-
-  // const handleAddSubmit = async (e) => {
-  //   e.preventDefault()
-  //   console.log(formData)
-  //   try {
-  //     const accessToken = Cookies.get('token')
-  //     const response = await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/salesman`, formData, {
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //         'Content-Type': 'application/json',
-  //       },
-  //     })
-
-  //     if (response.status === 201) {
-  //       toast.success('Branch is created successfully')
-  //       fetchData()
-  //       setFormData({ name: '' })
-  //       setAddModalOpen(false)
-  //     }
-  //     fetchData();
-  //   } catch (error) {
-  //     toast.error('An error occured')
-  //     throw error.response ? error.response.data : new Error('An error occurred')
-  //   }
-  // }
+ 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -408,8 +373,7 @@ const [role, setRole] = useState(null);
         setAddModalOpen(false); // Close modal
       }
     } catch (error) {
-      // toast.error('An error occurred');
-      // throw error.response ? error.response.data : new Error('An error occurred');
+    
       const errorMessage =
       error.response && error.response.data && error.response.data.message
         ? error.response.data.message
@@ -523,44 +487,7 @@ const [role, setRole] = useState(null);
       </div>
     ), { duration: Infinity });
   };
-  // const haqndleDeletesubmit = async (item) => {
-  //   if (!item._id) {
-  //     toast.error('Invalid item selected for deletion.')
-  //     return
-  //   }
-
-  //   const confirmed = confirm('Do you want to delete this user?')
-  //   if (!confirmed) return
-
-  //   try {
-  //     const accessToken = Cookies.get('token')
-  //     if (!accessToken) {
-  //       toast.error('Authentication token is missing.')
-  //       return
-  //     }
-
-  //     const response = await axios({
-  //       method: 'DELETE', // Explicitly specifying DELETE method
-  //       // url: `${import.meta.env.VITE_SERVER_URL}/api/delete-branch/${item._id}`,
-  //       url: `${import.meta.env.VITE_SERVER_URL}/api/salesman/${item._id}`,
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //         'Content-Type': 'application/json',
-  //       },
-  //     })
-
-  //     if (response.status === 200) {
-  //       toast.success('Salesman deleted successfully')
-  //       fetchData()
-  //     }
-  //   } catch (error) {
-  //     console.error('Error Details:', error.response || error.message)
-  //     toast.error('An error occurred while deleting the group.')
-  //   }
-  // }
-
-
-  
+ 
   const exportToExcel = ExcelExporter({
   
     columns: COLUMNS(),
@@ -578,6 +505,42 @@ const exportToPDF = PDFExporter({
 const filteredBranches = formData.companyId
 ? BranchData.filter((branch) => branch.companyId._id === formData.companyId)
 : []
+
+const handleSort=(accessor)=>{
+  if(sortBy===accessor){
+    setSortOrder(sortOrder==='asc'?'desc':'asc')
+  }else{
+    setSortBy(accessor);
+    setSortOrder('asc');
+  }
+}
+useEffect(() => {
+  if (sortBy) {
+    const sorted = [...filteredData].sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+      
+      // Handle different data types
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Handle dates
+      if (aValue instanceof Date && bValue instanceof Date) {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Default string comparison
+      return sortOrder === 'asc' 
+        ? String(aValue).localeCompare(String(bValue))
+        : String(bValue).localeCompare(String(aValue));
+    });
+
+    setSortedData(sorted);
+  } else {
+    setSortedData(filteredData);
+  }
+}, [filteredData, sortBy, sortOrder]);
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -707,8 +670,14 @@ const filteredBranches = formData.companyId
                     backgroundColor: '#1d3d5f',
                     color: 'white',
                   }}
+                  onClick={()=>handleSort(col.accessor)}
                 >
                   {col.Header}
+                  {sortBy===col.accessor && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
                 </CTableHeaderCell>
               ))}
               <CTableHeaderCell
@@ -742,8 +711,8 @@ const filteredBranches = formData.companyId
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : filteredData.length > 0 ? (
-              filteredData
+            ) : sortedData.length > 0 ? (
+              sortedData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow

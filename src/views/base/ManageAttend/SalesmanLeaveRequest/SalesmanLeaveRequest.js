@@ -84,7 +84,8 @@ const SalesmanLeaveRequest = () => {
     const [endDate, setEndDate] = useState('')
     const [selectedPeriod, setSelectedPeriod] = useState('all')
     const [showCustomDates, setShowCustomDates] = useState(false)
-  
+  const [sortBy, setSortBy] = useState('')
+      const [sortOrder, setSortOrder] = useState('asc')
     const styles = {
       container: {
         display: 'flex',
@@ -381,41 +382,7 @@ const exportToPDF = PDFExporter({
 });
 
 
-// const handleMarkApprove = async (item) => {
-//   try {
-//     console.log(`Request Approved Successfully!`);
-//     console.log("mnb",`${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`)
-//     const absentData = {
-//       leaveRequestStatus: 'Approve',
-//     };
-// console.log("MYAA",absentData)
-//     const accessToken = Cookies.get('token');
 
-//     const response = await axios.put(
-//       `${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`,
-//       absentData,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${accessToken}`,
-//         },
-//       }
-//     );
-
-//     if (response.status == 200) {
-//       alert(`${item.salesmanName} Request Approved successfully!`);
-//       fetchData();
-//     }
-
-   
-    
-//   } catch (error) {
-//     console.error('Error marking salesman request approve:', error);
-//     if (error.response) {
-//       console.error('Error Response:', error.response.data);
-//     }
-//     alert('Failed to mark the salesman request approve');
-//   }
-// };
 const handleMarkApprove = async (item) => {
   toast((t) => (
     <div>
@@ -464,42 +431,7 @@ const handleMarkApprove = async (item) => {
 
 
 
-// Handler for marking a salesman as present
-// const handleMarkReject= async (item) => {
-//   try {
-//     console.log(`Request Rejected Successfully!`);
-    
-//     const absentData = {
-//       leaveRequestStatus: 'Reject',
-//     };
-// console.log("MYAA",absentData)
-//     const accessToken = Cookies.get('token');
 
-//     const response = await axios.put(
-//       `${import.meta.env.VITE_SERVER_URL}/api/leaverequest/${item._id}`,
-//       absentData,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${accessToken}`,
-//         },
-//       }
-//     );
-
-//     if (response.status == 200) {
-//       alert(`${item.salesmanName} Request Rejected successfully!`);
-//       fetchData();
-//     }
-
-   
-    
-//   } catch (error) {
-//     console.error('Error marking salesman as Reject:', error);
-//     if (error.response) {
-//       console.error('Error Response:', error.response.data);
-//     }
-//     alert('Failed to mark the salesman request reject');
-//   }
-// };
 const handleMarkReject = async (item) => {
   toast((t) => (
     <div>
@@ -565,7 +497,41 @@ const rejectButtonStyle = {
   cursor: 'pointer',
   borderRadius:'17px'
 };
+const handleSort=(accessor)=>{
+  if(sortBy===accessor){
+    setSortOrder(sortOrder==='asc'?'desc':'asc')
+  }else{
+    setSortBy(accessor);
+    setSortOrder('asc');
+  }
+}
+useEffect(() => {
+  if (sortBy) {
+    const sorted = [...filteredData].sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+      
+      // Handle different data types
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Handle dates
+      if (aValue instanceof Date && bValue instanceof Date) {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Default string comparison
+      return sortOrder === 'asc' 
+        ? String(aValue).localeCompare(String(bValue))
+        : String(bValue).localeCompare(String(aValue));
+    });
 
+    setSortedData(sorted);
+  } else {
+    setSortedData(filteredData);
+  }
+}, [filteredData, sortBy, sortOrder]);
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -755,8 +721,14 @@ const rejectButtonStyle = {
                     backgroundColor: '#1d3d5f',
                     color: 'white',
                   }}
+                  onClick={()=>handleSort(col.accessor)}
                 >
                   {col.Header}
+                  {sortBy===col.accessor && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
                 </CTableHeaderCell>
               ))}
               <CTableHeaderCell
@@ -790,8 +762,8 @@ const rejectButtonStyle = {
                   Loading...
                 </CTableDataCell>
               </CTableRow>
-            ) : filteredData.length > 0 ? (
-              filteredData
+            ) : sortedData.length > 0 ? (
+              sortedData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow
