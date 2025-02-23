@@ -635,7 +635,7 @@ const handleEditGroup = async (item) => {
             </h2>
           </div>
 
-          <div style={styles.container}>
+          {/* <div style={styles.container}>
             <div style={styles.inputGroup}>
               <label htmlFor="period" style={styles.label}>
                 Period:
@@ -689,7 +689,7 @@ const handleEditGroup = async (item) => {
             <button onClick={handleApply} style={styles.button}>
               Apply
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="d-flex align-items-center">
@@ -1295,7 +1295,7 @@ const handleEditGroup = async (item) => {
           </>
 
           ): null}
-          {COLUMNS().slice(0, -2).map((column) => (
+          {COLUMNS().slice(0, -3).map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}
@@ -1601,7 +1601,7 @@ const handleEditGroup = async (item) => {
 
           ): null}
          
-          {COLUMNS().slice(0, -2).map((column) => (
+          {COLUMNS().slice(0, -3).map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}

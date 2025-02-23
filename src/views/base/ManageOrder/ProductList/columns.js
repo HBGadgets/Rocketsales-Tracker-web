@@ -4,6 +4,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import VpnKeyIcon from '@mui/icons-material/VpnKey'; // Icon for password
 import { FiGitBranch } from 'react-icons/fi';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber'
 import EmailIcon from '@mui/icons-material/Email';
 import { PhoneAndroid } from '@mui/icons-material';
 import { FaBox } from 'react-icons/fa';
@@ -15,6 +16,13 @@ export const COLUMNS = () => [
     Header: 'product Name',
     accessor: 'productName',
     icon: <FaBox />,
+    //  Cell: ({ value }) => value ? <img src={value} alt="Profile" style={{ width: 40, height: 40, borderRadius: '50%' }} /> : 'N/A',
+  },
+  {
+    Header: 'HSN Code',
+    accessor: 'hsnCode',
+    
+    icon:   <ConfirmationNumberIcon /> ,
     //  Cell: ({ value }) => value ? <img src={value} alt="Profile" style={{ width: 40, height: 40, borderRadius: '50%' }} /> : 'N/A',
   },
   {
@@ -66,6 +74,11 @@ export const COLUMNS = () => [
   {
     Header: 'Company Name',
     accessor: 'companyName', // Nested accessor for company name
+    icon: <BusinessIcon />, // Business icon represents the company
+  },
+  {
+    Header: 'Branch Name',
+    accessor: 'branchName', // Nested accessor for company name
     icon: <BusinessIcon />, // Business icon represents the company
   },
   // {
