@@ -475,6 +475,7 @@ const LiveMap = () => {
     });
 
     socket.on('liveSalesmanData', (data) => {
+      console.log("mydata",data);
       const updatedSalesman = data.find(s =>
         String(s.salesmanName).trim().toLowerCase() === String(initialSalesman.salesmanName).trim().toLowerCase()
       );
