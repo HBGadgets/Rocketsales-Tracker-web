@@ -1098,7 +1098,7 @@ console.log(data)
             </div>
           </Popup>
         </ReactLeafletDriftMarker>
-        <Polyline 
+        {/* <Polyline 
   ref={polylineRef} 
   positions={path} 
   color="#0066cc"  // Darker blue color
@@ -1120,8 +1120,14 @@ console.log(data)
       });
     }
   }}
-/>
-
+/> */}
+    <Polyline 
+          ref={polylineRef} 
+          positions={path} 
+          color="#3388ff" 
+          weight={3} 
+          dashArray="5, 7" 
+        />
         <MapController
           coordinates={coordinates}
           previousPosition={previousPosition}
