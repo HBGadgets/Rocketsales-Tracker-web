@@ -43,3 +43,12 @@
   font-size: 0.9em;
   color: #666;
 }
+.live-map-container {
+  height: 100vh;
+  width: 100%;
+}
+
+.map-container {
+  height: calc(100vh - 60px);
+  width: 100%;
+}

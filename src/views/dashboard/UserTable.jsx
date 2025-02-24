@@ -72,8 +72,12 @@ const UserTable = () => {
   //   navigate('/live-map', { state: { salesman: salesmanWithDummyLocation } })
   // }
   const handleTrackSalesman = (salesman) => {
-    navigate('/live-map', { state: { salesman } })
-  }
+    console.log("Navigating with salesman:", salesman);
+    console.log("notifiacation",salesman._id);
+    navigate('/live-map', { state: { salesman } });
+};
+
+  
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10)
     setRowsPerPage(newRowsPerPage === -1 ? data.length : newRowsPerPage) // Set to full length
@@ -131,11 +135,12 @@ const UserTable = () => {
         
         const modifiedData = data.map(item => ({
           ...item,
+          _id:item._id || 'unknown',
           companyName: item.companyId?.companyName || 'Unknown',
           branchName: item.branchId?.branchName || 'Unknown',
           supervisorName: item.supervisorId?.supervisorName || 'Unknown',
         }));
-  
+  console.log("modifiedData",modifiedData)
         setData(modifiedData);
         setLoading(false); // Data received, stop loading
       });
