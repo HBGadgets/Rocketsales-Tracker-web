@@ -293,8 +293,8 @@ const pulsingIcon = L.divIcon({
       html: `<img src="https://cdn-icons-png.flaticon.com/512/271/271226.png" 
              style="width:20px; height:20px; transform: rotate(${rotation}deg)" />`,
       className: '',
-      iconSize: [10, 10],
-      iconAnchor: [10, 10]
+      iconSize: [5, 5],
+      iconAnchor: [5, 5]
     });
 // const calculateBearing = (pointA, pointB) => {
 //   const toRad = (deg) => deg * (Math.PI / 180);
@@ -426,28 +426,28 @@ console.log(data)
           Number(updatedSalesman.longitude)
         ];
        
-        // setSalesman(updatedSalesman);
-        // setCoordinates(newCoordinates);
-        // setLastUpdated(new Date());
-
-        // pathRef.current = [...pathRef.current, newCoordinates];
-        // if (pathRef.current.length % 5 === 0) {
-        //    setPath([...pathRef.current]);
-        // }
-      }
-      socket2.on('testing live track', (data) => {
-        console.log("😎✅ track Data",data);
-        const newDummyCord = [data.latitude, data.longitude];
-        setCoordinates(newDummyCord);
-        pathRef.current = [...pathRef.current, newDummyCord];
-        setPath([...pathRef.current]);
-        if (pathRef.current.length % 5 === 0) {
-          // setPath([...pathRef.current]);
-        }
+        setSalesman(updatedSalesman);
+        setCoordinates(newCoordinates);
         setLastUpdated(new Date());
+
+        pathRef.current = [...pathRef.current, newCoordinates];
+        if (pathRef.current.length % 5 === 0) {
+           setPath([...pathRef.current]);
         }
-        );
-    });
+      }
+    //   socket2.on('testing live track', (data) => {
+    //     console.log("😎✅ track Data",data);
+    //     const newDummyCord = [data.latitude, data.longitude];
+    //     setCoordinates(newDummyCord);
+    //     pathRef.current = [...pathRef.current, newDummyCord];
+    //     setPath([...pathRef.current]);
+    //     if (pathRef.current.length % 5 === 0) {
+    //       // setPath([...pathRef.current]);
+    //     }
+    //     setLastUpdated(new Date());
+    //     }
+    //     );
+    // });
 
     return () => {
       socket.disconnect();
