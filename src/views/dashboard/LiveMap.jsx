@@ -261,21 +261,63 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { io } from 'socket.io-client';
 import ReactLeafletDriftMarker from 'react-leaflet-drift-marker';
+import locationIcon from 'src/assets/location.png';
 
 // Set up default Leaflet marker
 const DefaultIcon = L.icon({
-  iconUrl: markerIcon,
+  iconUrl: locationIcon,
   shadowUrl: markerShadow,
-  iconSize: [25, 41],
+  iconSize: [51, 51],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
+const pulsingIcon = L.divIcon({
+  className: '', // Leave empty to avoid default styles
+  html: `
+    <div class="marker-container">
+      <img src="${locationIcon}" alt="marker icon" style="width:51px; height:51px;">
+      <div class="pulse-effect"></div>
+    </div>
+  `,
+  iconSize: [51, 51],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+// const getRotatedIcon = (rotation) =>
+//   L.divIcon({
+//     html: `<img src="https://cdn-icons-png.flaticon.com/512/271/271226.png" style="width:20px; height:20px; transform: rotate(${rotation}deg);" />`,
+//     className: '',
+//     iconSize: [10, 10],
+//     iconAnchor: [10, 10]
+//   });
+  const getRotatedIcon = (rotation) =>
+    L.divIcon({
+      html: `<img src="https://cdn-icons-png.flaticon.com/512/271/271226.png" 
+             style="width:20px; height:20px; transform: rotate(${rotation}deg)" />`,
+      className: '',
+      iconSize: [10, 10],
+      iconAnchor: [10, 10]
+    });
+// const calculateBearing = (pointA, pointB) => {
+//   const toRad = (deg) => deg * (Math.PI / 180);
+//   const lat1 = toRad(pointA[0]);
+//   const lon1 = toRad(pointA[1]);
+//   const lat2 = toRad(pointB[0]);
+//   const lon2 = toRad(pointB[1]);
 
-L.Marker.prototype.options.icon = DefaultIcon;
-
+//   const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+//   const x = Math.cos(lat1) * Math.sin(lat2) - 
+//            Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+//   let bearing = Math.atan2(y, x);
+//   bearing = bearing * (180 / Math.PI);
+//   return (bearing + 360) % 360;
+// };
 const DEFAULT_POSITION = [17.3850, 78.4867];
 const SOCKET_SERVER_URL = 'http://104.251.218.102:8080';
+
+const STIMULATOR = 'http://104.251.218.94:9000';
+
 
 // Animation Controller Component
 const MapController = ({ coordinates, previousPosition, polylineRef, autoFocus }) => {
@@ -290,7 +332,7 @@ const MapController = ({ coordinates, previousPosition, polylineRef, autoFocus }
       const targetPosition = coordinates;
       
       if (previousPosition.current) {
-        const duration = 1000; // 2 seconds animation
+        const duration = 2000; // 2 seconds animation
         let startTime;
 
         const animateMarker = (timestamp) => {
@@ -354,6 +396,8 @@ const LiveMap = () => {
   const polylineRef = useRef(null);
   const pathRef = useRef([]);
 
+  const [dummyData,setDummyData] = useState({});
+
   useEffect(() => {
     if (initialSalesman?.latitude && initialSalesman?.longitude) {
       const newCoordinates = [
@@ -371,6 +415,7 @@ const LiveMap = () => {
     if (!initialSalesman?.salesmanName) return;
 
     const socket = io(SOCKET_SERVER_URL, { transports: ['websocket'] });
+    const socket2 = io(STIMULATOR, { transports: ['websocket'] });
 
     socket.on('liveSalesmanData', (data) => {
       const updatedSalesman = data.find(
@@ -383,46 +428,72 @@ console.log(data)
           Number(updatedSalesman.latitude),
           Number(updatedSalesman.longitude)
         ];
+       
+        // setSalesman(updatedSalesman);
+        // setCoordinates(newCoordinates);
+        // setLastUpdated(new Date());
 
-        setSalesman(updatedSalesman);
-        setCoordinates(newCoordinates);
-        setLastUpdated(new Date());
-
-        pathRef.current = [...pathRef.current, newCoordinates];
-        if (pathRef.current.length % 5 === 0) {
-          setPath([...pathRef.current]);
-        }
+        // pathRef.current = [...pathRef.current, newCoordinates];
+        // if (pathRef.current.length % 5 === 0) {
+        //    setPath([...pathRef.current]);
+        // }
       }
+      socket2.on('testing live track', (data) => {
+        console.log("😎✅ track Data",data);
+        const newDummyCord = [data.latitude, data.longitude];
+        setCoordinates(newDummyCord);
+        pathRef.current = [...pathRef.current, newDummyCord];
+        setPath([...pathRef.current]);
+        if (pathRef.current.length % 5 === 0) {
+          // setPath([...pathRef.current]);
+        }
+        setLastUpdated(new Date());
+        }
+        );
     });
 
-    return () => socket.disconnect();
+    return () => {
+      socket.disconnect();
+      socket2.disconnect();
+    };
   }, [initialSalesman?.salesmanName, autoFocus]);
 
   const handleBackToDashboard = () => navigate('/dashboard');
 
   // Add this new icon configuration above the LiveMap component
-  const ForwardIcon = L.icon({
-    iconUrl: 'https://cdn-icons-png.flaticon.com/512/271/271226.png', // Use any forward arrow icon
-    iconSize: [25, 25],
-    iconAnchor: [12, 12],
-    className: 'direction-arrow'
-  });
+  // const ForwardIcon = L.icon({
+  //   iconUrl: 'https://cdn-icons-png.flaticon.com/512/271/271226.png', // Use any forward arrow icon
+  //   iconSize: [25, 25],
+  //   iconAnchor: [12, 12],
+  //   className: 'direction-arrow'
+  // });
   
   // Add this function above the LiveMap component
-  const calculateBearing = (pointA, pointB) => {
-    const toRad = deg => deg * (Math.PI / 180);
-    const lat1 = toRad(pointA[0]);
-    const lon1 = toRad(pointA[1]);
-    const lat2 = toRad(pointB[0]);
-    const lon2 = toRad(pointB[1]);
+  // const calculateBearing = (pointA, pointB) => {
+  //   const toRad = deg => deg * (Math.PI / 180);
+  //   const lat1 = toRad(pointA[0]);
+  //   const lon1 = toRad(pointA[1]);
+  //   const lat2 = toRad(pointB[0]);
+  //   const lon2 = toRad(pointB[1]);
   
-    const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
-    const x = Math.cos(lat1) * Math.sin(lat2) - 
-             Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
-    let bearing = Math.atan2(y, x);
-    bearing = bearing * (180 / Math.PI);
+  //   const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+  //   const x = Math.cos(lat1) * Math.sin(lat2) - 
+  //            Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+  //   let bearing = Math.atan2(y, x);
+  //   bearing = bearing * (180 / Math.PI);
+  //   return (bearing + 360) % 360;
+  // };
+  const calculateBearing = (prevCoords, newCoords) => {
+    const [prevLat, prevLng] = prevCoords;
+    const [newLat, newLng] = newCoords;
+    const y = Math.sin((newLng - prevLng) * Math.PI / 180) * Math.cos(newLat * Math.PI / 180);
+    const x = Math.cos(prevLat * Math.PI / 180) * Math.sin(newLat * Math.PI / 180) -
+              Math.sin(prevLat * Math.PI / 180) * Math.cos(newLat * Math.PI / 180) *
+              Math.cos((newLng - prevLng) * Math.PI / 180);
+    let bearing = Math.atan2(y, x) * 180 / Math.PI;
     return (bearing + 360) % 360;
   };
+  
   return (
     <div className="live-map-container">
       <div className="header-container">
@@ -452,8 +523,8 @@ console.log(data)
 
         <ReactLeafletDriftMarker
           position={coordinates}
-          icon={DefaultIcon}
-          duration={1000}
+          icon={pulsingIcon}
+          duration={2000}
         >
           <Popup>
             <div className="popup-content">
@@ -501,28 +572,51 @@ console.log(data)
           weight={3} 
           dashArray="5, 7" 
         />
-        {path.map((coord, index) => {
-  if ((index + 1) % 10 === 0 && index < path.length - 1) {
+        
+        {/* {path.map((coord, index) => {
+  if ((index + 1) % 1 === 0 && index < path.length - 1) {
     const nextCoord = path[index + 1];
-    const rotation = calculateBearing(coord, nextCoord);
-    
+    const bearing = calculateBearing(coord, nextCoord);
+    const rotation = bearing - 90; // Adjust for East-facing icon
+
     return (
+      // <RotatedMarker
+      //   key={`direction-${index}`}
+      //   position={coord}
+      //   icon={L.icon({
+      //     iconUrl: 'https://cdn-icons-png.flaticon.com/512/271/271226.png',
+      //     iconSize: [20, 20],
+      //     iconAnchor: [12, 12],
+      //     className: `direction-arrow-${index}`
+      //   })}
+      //   rotationAngle={rotation}
+      //   rotationOrigin="center"
+      // />
       <Marker
-        key={`direction-${index}`}
+        // key={`direction-${index}`}
+        key={`direction-${index}-${coord[0]}-${coord[1]}`}
         position={coord}
-        icon={L.icon({
-          ...ForwardIcon.options,
-          iconUrl: ForwardIcon.options.iconUrl,
-          iconSize: [20, 20],
-          className: `direction-arrow-${index}`
-        })}
-        rotationAngle={rotation}
-        rotationOrigin="center"
+        icon={getRotatedIcon(rotation)}
       />
     );
   }
-  return null;
-})}
+ 
+})} */}
+{path.slice(0, -1).map((coord, index) => {
+    const nextCoord = path[index + 1];
+    const bearing = calculateBearing(coord, nextCoord);
+    const rotation = bearing - 90; // Adjust for East-facing icon
+
+    return (
+      <Marker
+        key={`direction-${index}-${coord[0]}-${coord[1]}`}
+        position={coord}
+        icon={getRotatedIcon(rotation)}
+      />
+    );
+  })}
+  
+
         <MapController
           coordinates={coordinates}
           previousPosition={previousPosition}
