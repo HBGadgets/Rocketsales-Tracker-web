@@ -259,6 +259,7 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { io } from 'socket.io-client';
 import ReactLeafletDriftMarker from 'react-leaflet-drift-marker';
 import locationIcon from 'src/assets/location.png';
+import Cookies from 'js-cookie'
 
 // Set up default Leaflet marker
 const DefaultIcon = L.icon({
@@ -413,40 +414,42 @@ const LiveMap = () => {
 
     const socket = io(SOCKET_SERVER_URL, { transports: ['websocket'] });
     const socket2 = io(STIMULATOR, { transports: ['websocket'] });
-
+    const token = Cookies.get('token');
+    socket.emit("authenticate",token);
     socket.on('liveSalesmanData', (data) => {
       const updatedSalesman = data.find(
         s => String(s.username).trim().toLowerCase() === 
              String(initialSalesman.username).trim().toLowerCase()
       );
-console.log(data)
+         console.log("😎✅ track Data",data);
+        // console.log(data)
       if (updatedSalesman) {
         const newCoordinates = [
           Number(updatedSalesman.latitude),
           Number(updatedSalesman.longitude)
         ];
        
-        // setSalesman(updatedSalesman);
-        // setCoordinates(newCoordinates);
-        // setLastUpdated(new Date());
-
-        // pathRef.current = [...pathRef.current, newCoordinates];
-        // if (pathRef.current.length % 5 === 0) {
-        //    setPath([...pathRef.current]);
-        // }
-      }
-      socket2.on('testing live track', (data) => {
-        console.log("😎✅ track Data",data);
-        const newDummyCord = [data.latitude, data.longitude];
-        setCoordinates(newDummyCord);
-        pathRef.current = [...pathRef.current, newDummyCord];
-        setPath([...pathRef.current]);
-        if (pathRef.current.length % 5 === 0) {
-          // setPath([...pathRef.current]);
-        }
+        setSalesman(updatedSalesman);
+        setCoordinates(newCoordinates);
         setLastUpdated(new Date());
+
+        pathRef.current = [...pathRef.current, newCoordinates];
+        if (pathRef.current.length % 5 === 0) {
+           setPath([...pathRef.current]);
         }
-        );
+      }
+      // socket2.on('testing live track', (data) => {
+      //   console.log("😎✅ track Data",data);
+      //   const newDummyCord = [data.latitude, data.longitude];
+      //   setCoordinates(newDummyCord);
+      //   pathRef.current = [...pathRef.current, newDummyCord];
+      //   setPath([...pathRef.current]);
+      //   if (pathRef.current.length % 5 === 0) {
+      //     // setPath([...pathRef.current]);
+      //   }
+      //   setLastUpdated(new Date());
+      //   }
+      //   );
     });
 
     return () => {
@@ -528,7 +531,11 @@ console.log(data)
               <h4>{salesman?.salesmanName}</h4>
               <p>Latitude: {coordinates[0]?.toFixed(6)}</p>
               <p>Longitude: {coordinates[1]?.toFixed(6)}</p>
+              <p>Speed: {salesman?.speed}</p>
+              <p>Battary: {salesman?.batteryLevel}</p>
+              <p>Network: {salesman?.mobileNetwork }</p>
               <p>Last updated: {lastUpdated.toLocaleTimeString()}</p>
+
               {salesman?.profileImage && (
                 <img
                   src={`data:image/png;base64,${salesman.profileImage}`}
