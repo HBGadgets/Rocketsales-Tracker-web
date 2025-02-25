@@ -294,8 +294,8 @@ const pulsingIcon = L.divIcon({
       html: `<img src="https://cdn-icons-png.flaticon.com/512/271/271226.png" 
              style="width:20px; height:20px; transform: rotate(${rotation}deg)" />`,
       className: '',
-      iconSize: [10, 10],
-      iconAnchor: [10, 10]
+      iconSize: [5, 5],
+      iconAnchor: [5, 5]
     });
 // const calculateBearing = (pointA, pointB) => {
 //   const toRad = (deg) => deg * (Math.PI / 180);
