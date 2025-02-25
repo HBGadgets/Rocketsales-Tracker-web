@@ -125,7 +125,9 @@ const UserTable = () => {
   const SOCKET_SERVER_URL = 'http://104.251.218.102:8080'
   useEffect(() => {
     const socket = io(SOCKET_SERVER_URL, { transports: ['websocket'] });
-  
+    const token = Cookies.get('token');
+    console.log("token",token)
+    socket.emit("authenticate",token);
     socket.on('connect', () => {
       console.log('✅ Connected to Socket Server:', socket.id);
   
