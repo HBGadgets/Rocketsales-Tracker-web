@@ -227,15 +227,17 @@ const handleEditGroup = async (item) => {
         formData.companyId = decodedToken.companyId; // Use companyId from the token
         formData.branchId = decodedToken.id; // Use branchId from the token
       } else if (decodedToken.role === 4) {
-        formData.supervisorId = decodedToken.id; // Use supervisorId from the token
+        // formData.supervisorId = decodedToken.id; // Use supervisorId from the token
         formData.companyId = decodedToken.companyId; // Use companyId from the token
         formData.branchId = decodedToken.branchId; // Use branchId from the token
       }
-  
+      const finalData = {
+        products: [formData],
+      };
       // Perform the POST request
       const response = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/product`,
-        formData,
+        finalData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -245,7 +247,7 @@ const handleEditGroup = async (item) => {
       );
   
       if (response.status === 201) {
-        toast.success('Order is created successfully');
+        toast.success('Product is created successfully');
         fetchData(); // Refresh data
         setFormData({ name: '' }); // Reset form data
         setAddModalOpen(false); // Close modal
@@ -331,7 +333,7 @@ const handleEditGroup = async (item) => {
             companyId: item.companyId ? item.companyId._id : 'N/A',
             branchName: item.branchId ? item.branchId.branchName : 'N/A',
             branchId: item.branchId ? item.branchId._id : 'N/A',
-            supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
+            supervisorName: item.supervisorId ? item.supervisorId.supervisorName : 'N/A',
             supervisorId: item.supervisorId ? item.supervisorId._id : 'N/A',
           }))
           // .filter((item) =>
@@ -1037,7 +1039,7 @@ useEffect(() => {
         ...formData,
         companyId: newValue?._id || '',
         branchId: '', // Reset branch when company changes
-        supervisorId: '', // Reset supervisor when company changes
+        // supervisorId: '', // Reset supervisor when company changes
         // salesmanId: '', // Reset salesman when company changes
     })
       setBranchError(false) // Clear branch error
@@ -1075,7 +1077,7 @@ useEffect(() => {
         setFormData({ 
           ...formData, 
           branchId: newValue?._id || '', 
-          supervisorId: '', // Reset supervisor when branch changes
+          // supervisorId: '', // Reset supervisor when branch changes
         //   salesmanId: '' ,// Reset salesman when branch changes  
         })
         setBranchError(false)
@@ -1230,7 +1232,7 @@ useEffect(() => {
       setFormData({
         ...formData,
         branchId: newValue?._id || '', // Update branch
-        supervisorId: '', // Reset supervisor
+        // supervisorId: '', // Reset supervisor
       })
     }
     renderInput={(params) => (
@@ -1401,7 +1403,7 @@ useEffect(() => {
         ...formData,
         companyId: newValue?._id || '',
         branchId: '', // Reset branch when company changes
-        supervisorId: '', // Reset supervisor when company changes
+        // supervisorId: '', // Reset supervisor when company changes
       })
       setBranchError(false) // Clear branch error
     }}
@@ -1438,7 +1440,7 @@ useEffect(() => {
         setFormData({ 
           ...formData, 
           branchId: newValue?._id || '', 
-          supervisorId: '' // Reset supervisor when branch changes
+          // supervisorId: '' // Reset supervisor when branch changes
         })
         setBranchError(false)
       }
@@ -1537,7 +1539,7 @@ useEffect(() => {
       setFormData({
         ...formData,
         branchId: newValue?._id || '',
-        supervisorId: '', // Reset supervisor when branch changes
+        // supervisorId: '', // Reset supervisor when branch changes
       })
     }
     renderInput={(params) => (

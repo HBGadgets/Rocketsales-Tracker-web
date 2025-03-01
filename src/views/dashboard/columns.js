@@ -1,8 +1,8 @@
 export const columns = [
-  {
-    Header: 'Profile',
-    accessor: 'profileImage',
-  },
+  // {
+  //   Header: 'Profile',
+  //   accessor: 'profileImage',
+  // },
   {
     Header: 'Name',
     accessor: 'salesmanName',
