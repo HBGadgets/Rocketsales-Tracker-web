@@ -1,0 +1,15 @@
+/* Add sorting animation */
+th:hover {
+    background-color: #1a3249 !important;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Sorting arrow styling */
+  th span {
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+  }
+  
+  th:hover span {
+    color: #fff;
+  }

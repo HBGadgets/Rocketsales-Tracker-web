@@ -73,6 +73,7 @@
 import debounce from 'lodash.debounce';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+<img src={myGif} alt="Animated GIF" width="100" />
 // import { set } from 'core-js/core/dict'
 
   // const token = Cookies.get('token')
@@ -109,6 +110,8 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
     const [selectedRow, setSelectedRow] = useState([])
     const [taskAddModalOpen, setTaskAddModalOpen] = useState(false)
     const [tokenData, setTokenData] = useState([])
+     const [sortBy, setSortBy] = useState('')
+        const [sortOrder, setSortOrder] = useState('asc')
     const [newTask, setNewTask] = useState({
       taskDescription: '',
       deadline: '',
@@ -860,7 +863,41 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
       
     })
    
+    const handleSort=(accessor)=>{
+      if(sortBy===accessor){
+        setSortOrder(sortOrder==='asc'?'desc':'asc')
+      }else{
+        setSortBy(accessor);
+        setSortOrder('asc');
+      }
+    }
+    useEffect(() => {
+      if (sortBy) {
+        const sorted = [...filteredData].sort((a, b) => {
+          const aValue = a[sortBy];
+          const bValue = b[sortBy];
+          
+          // Handle different data types
+          if (typeof aValue === 'number' && typeof bValue === 'number') {
+            return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+          }
+          
+          // Handle dates
+          if (aValue instanceof Date && bValue instanceof Date) {
+            return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+          }
+          
+          // Default string comparison
+          return sortOrder === 'asc' 
+            ? String(aValue).localeCompare(String(bValue))
+            : String(bValue).localeCompare(String(aValue));
+        });
     
+        setSortedData(sorted);
+      } else {
+        setSortedData(filteredData);
+      }
+    }, [filteredData, sortBy, sortOrder]);
     
 
     return (
@@ -991,8 +1028,14 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
                       backgroundColor: '#1d3d5f',
                       color: 'white',
                     }}
+                    onClick={()=>handleSort(col.accessor)}
                   >
                     {col.Header}
+                    {sortBy===col.accessor && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
                   </CTableHeaderCell>
                 ))}
                 <CTableHeaderCell
@@ -1036,11 +1079,10 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
                       color: '#999',
                     }}
                   >
-                    Loading...
-                  </CTableDataCell>
+<img src={myGif} alt="Animated GIF" width="100" />                  </CTableDataCell>
                 </CTableRow>
-              ) : filteredData.length > 0 ? (
-                filteredData
+              ) : sortedData.length > 0 ? (
+                sortedData
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((item, index) => (
                     <CTableRow
@@ -1084,35 +1126,12 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
                         </CTableDataCell>
                       ))}
 
-                      {/* <CTableDataCell
-          className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
-        >
-          <IconButton
-            aria-label="edit"
-            onClick={() => handleEditGroup(item)}
-            className="icon-button icon-button-edit"
-          >
-            <RiEdit2Fill className="icon-button-icon" />
-          </IconButton>
-
-        
-        </CTableDataCell>          */}
+                     
                       <CTableDataCell
                         className={`text-center table-cell ${index % 2 === 0 ? 'table-cell-even' : 'table-cell-odd'}`}
                       >
                         {role === 5 ? (<>
-    {/* <IconButton
-      aria-label="edit"
-      className="icon-button icon-button-edit"
-    >
-      <CheckCircleIcon className="icon-button-icon" />
-    </IconButton>
-     <IconButton
-     aria-label="edit"
-     className="icon-button icon-button-delete"
-   >
-     <RadioButtonUncheckedIcon className="icon-button-icon" />
-   </IconButton> */}
+  
    <IconButton
   aria-label="status"
   className="icon-button icon-button-status"
@@ -1134,13 +1153,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
   </IconButton>)}
                        
 
-                        {/* <IconButton
-                          aria-label="delete"
-                          onClick={() => haqndleDeletesubmit(item)}
-                          className="icon-button icon-button-delete"
-                        >
-                          <AiFillDelete className="icon-button-icon" />
-                        </IconButton> */}
+                       
                       </CTableDataCell>
                     </CTableRow>
                   ))
@@ -1761,15 +1774,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
                       <Typography variant="subtitle1" component="h3">
                         <strong>{task.taskDescription}</strong>
                       </Typography>
-                      {/* <div
-                  style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    backgroundColor:
-                      task.status === "Completed" ? "green" : "offwhite",
-                  }}
-                ></div> */}
+                    
                     </div>
                     
                     <Typography variant="body2" color="textSecondary" style={{ marginTop: '5px' }}>
@@ -1793,17 +1798,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
                     
                     {/* Edit and Delete Icons */}
                     <div className="d-flex justify-content-end" style={{ marginTop: '1px' }}>
-                      {/* <IconButton
-                  onClick={() => alert(`Edit task with ID: ${task._id}`)}
-                  style={{ marginRight: "10px" }}
-                >
-                  <EditIcon />
-                </IconButton>
-                <IconButton
-                  onClick={() => alert(`Delete task with ID: ${task._id}`)}
-                >
-                  <DeleteIcon />
-                </IconButton> */}
+                    
                      
                      
                     </div>
@@ -1839,16 +1834,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 </div>
 
 
-                    {/* Company, Branch, and Supervisor Info */}
-                    {/* <Typography variant="body2" style={{ marginTop: "5px" }}>
-                <strong>Company:</strong> {task.companyId?.companyName}
-              </Typography>
-              <Typography variant="body2" style={{ marginTop: "5px" }}>
-                <strong>Branch:</strong> {task.branchId?.branchName}
-              </Typography>
-              <Typography variant="body2" style={{ marginTop: "5px" }}>
-                <strong>Supervisor:</strong> {task.supervisorId?.supervisorName}
-              </Typography> */}
+                    
                   </div>
                 ))
               ) : (
@@ -1932,27 +1918,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
                   ),
                 }}
               />
-  {/* <TextField
-    label="Latitude"
-    name="latitude"
-    value={newTask.latitude ?? ""} // Handle null by showing empty string
-    onChange={handleTaskFieldChange}
-    fullWidth
-    margin="normal"
-    type="number"
-    inputProps={{ step: "any" }} // Allow decimal values
-  />
-
-  <TextField
-    label="Longitude"
-    name="longitude"
-    value={newTask.longitude ?? ""} // Handle null by showing empty string
-    onChange={handleTaskFieldChange}
-    fullWidth
-    margin="normal"
-    type="number"
-    inputProps={{ step: "any" }} // Allow decimal values
-  /> */}
+  
 
               <Button variant="contained" color="primary" type="submit" style={{ marginTop: '20px' }}>
                 Submit
@@ -2028,51 +1994,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
             ),
           }}
         />
-  {/* Add a Checkbox to manage the task status */}
  
-        
-         
-        
-        
-      
-
-        {/* <TextField
-          label="Latitude"
-          name="latitude"
-          type="number"
-          value={editTaskData.latitude || ''}
-          onChange={(e) => setEditTaskData({...editTaskData, latitude: parseFloat(e.target.value) || null})}
-          fullWidth
-          margin="normal"
-          inputProps={{ step: "any" }}
-        /> */}
-
-        {/* <TextField
-          label="Longitude"
-          name="longitude"
-          type="number"
-          value={editTaskData.longitude || ''}
-          onChange={(e) => setEditTaskData({...editTaskData, longitude: parseFloat(e.target.value) || null})}
-          fullWidth
-          margin="normal"
-          inputProps={{ step: "any" }}
-        /> */}
-        {/* <FormControlLabel
-    control={
-      <Checkbox
-        checked={editTaskData.status === 'Completed'}
-        onChange={(e) => 
-          setEditTaskData({
-            ...editTaskData,
-            status: e.target.checked ? 'Completed' : 'Pending'
-          })
-        }
-        color="primary"
-      />
-    }
-    label="Completed"
-    style={{ marginTop: '10px' }}
-  /> */}
    <Box 
           sx={{
             display: 'flex',
@@ -2116,14 +2038,6 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
             Update Task
           </Button>
         </Box>
-        {/* <Button 
-          variant="contained" 
-          color="primary" 
-          type="submit" 
-          style={{ marginTop: '20px' }}
-        >
-          Update Task
-        </Button> */}
       </form>
     </Box>
   </Modal>

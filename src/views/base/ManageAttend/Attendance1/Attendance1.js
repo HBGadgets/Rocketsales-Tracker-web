@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import {
   TableContainer,
@@ -60,7 +60,10 @@ import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import emptyimage from '../../images/emptyimage.jpg'
-import debounce from 'lodash.debounce';
+import debounce from 'lodash.debounce'
+import { number } from 'prop-types'
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
+// import { String } from 'core-js/shim'
 // import { DialogContent } from "@mui/material";
 // import { useNavigate } from 'react-router-dom';
 const Attendance1 = () => {
@@ -84,6 +87,8 @@ const Attendance1 = () => {
   const [endDate, setEndDate] = useState('')
   const [selectedPeriod, setSelectedPeriod] = useState('today')
   const [showCustomDates, setShowCustomDates] = useState(false)
+  const [sortBy, setSortBy] = useState('')
+  const [sortOrder, setSortOrder] = useState('asc')
   const navigate = useNavigate()
 
   const styles = {
@@ -226,8 +231,8 @@ const Attendance1 = () => {
             ...item,
             createdAt: item.createdAt ? formatDate(item.createdAt) : null,
             salesmanName: item.salesmanId ? item.salesmanId.salesmanName : null,
-            companyName: item.companyId?item.companyId.companyName:'N/A',
-            branchName: item.branchId?item.branchId.branchName:'N/A',
+            companyName: item.companyId ? item.companyId.companyName : 'N/A',
+            branchName: item.branchId ? item.branchId.branchName : 'N/A',
             supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
           }))
           .filter((item) =>
@@ -262,8 +267,8 @@ const Attendance1 = () => {
     return new Date(year, month - 1, day)
   }
   useEffect(() => {
-    fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
-  }, []);
+    fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
+  }, [])
   // useEffect(() => {
   //   setLoading(true)
   //   // fetchData() // Refetch data when searchQuery changes
@@ -282,43 +287,42 @@ const Attendance1 = () => {
       setCurrentPage(1)
     }
   }
-   // Debounced filtering function
+  // Debounced filtering function
   const debouncedFilter = useCallback(
     debounce((query, sourceData) => {
       if (!query) {
-        setFilteredData(sourceData);
-        return;
+        setFilteredData(sourceData)
+        return
       }
       // const filtered = sourceData.filter(item =>
       //   Object.values(item).some(value =>
       //     value?.toString().toLowerCase().includes(query.toLowerCase())
       //   )
       // );
-      const filtered = sourceData.filter(item =>
+      const filtered = sourceData.filter((item) =>
         Object.entries(item).some(([key, value]) => {
-          if (key === 'profileImgUrl') return false; // Skip searching the profileImage field
-          return value?.toString().toLowerCase().includes(query.toLowerCase());
-        })
-      );
-      
-      
-      setFilteredData(filtered);
+          if (key === 'profileImgUrl') return false // Skip searching the profileImage field
+          return value?.toString().toLowerCase().includes(query.toLowerCase())
+        }),
+      )
+
+      setFilteredData(filtered)
     }, 500),
-    []
-  );
+    [],
+  )
   // Handle search input changes
   const handleSearchChange = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    debouncedFilter(query, data);
-  };
+    const query = e.target.value
+    setSearchQuery(query)
+    debouncedFilter(query, data)
+  }
 
   // Cancel debounce on component unmount
   useEffect(() => {
-    return () => debouncedFilter.cancel();
-  }, [debouncedFilter]);
+    return () => debouncedFilter.cancel()
+  }, [debouncedFilter])
   useEffect(() => {
-    setFilteredData(data);
+    setFilteredData(data)
   }, [data])
   // useEffect(() => {
   //   filterGroups(searchQuery)
@@ -344,8 +348,6 @@ const Attendance1 = () => {
     setPage(newPage)
   }
 
- 
-
   const exportToExcel = ExcelExporter({
     mytitle: 'Attendance Data Report',
     columns: COLUMNS().slice(1),
@@ -353,7 +355,6 @@ const Attendance1 = () => {
     fileName: 'Attendance_data.xlsx',
   })
 
-  
   const exportToPDF = PDFExporter({
     title: 'Company Data Report',
     columns: COLUMNS().slice(1),
@@ -361,183 +362,138 @@ const Attendance1 = () => {
     fileName: 'Attendance_report.pdf',
   })
 
-  // Use in Dropdown
-  // <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>;
-
-  // const handleStatusClick = async (item) => {
-  //   try {
-  //     // Show a confirmation message
-  //     const confirmChange = window.confirm("Do you want to change the attendance status?");
-      
-  //     if (!confirmChange) {
-  //       return; // If user cancels, exit function
-  //     }
-  
-  //     // Toggle the attendance status between 'Absent' and 'Present'
-  //     const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent';
-  
-  //     // Prepare the data for the PUT request
-  //     const updatedData = {
-  //       attendenceStatus: updatedStatus, // Update the attendenceStatus field
-  //     };
-  
-  //     // Get access token from cookies
-  //     const accessToken = Cookies.get('token');
-  
-  //     // Make the PUT request to update the attendance status
-  //     const response = await axios.put(
-  //       `${import.meta.env.VITE_SERVER_URL}/api/attendence/${item._id}`, 
-  //       updatedData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken}`, // Include Bearer token in the header
-  //         },
-  //       }
-  //     );
-  
-  //     // Handle the response
-  //     if (response.status === 200) {
-  //       alert("Attendance status updated successfully!");
-  //       // Refresh data after update
-  //       fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
-  //     }
-  //   } catch (error) {
-  //     alert("Failed to update attendance status");
-  //   }
-  // };
-  // const handleStatusClick = async (item) => {
-  //   toast((t) => (
-  //     <div>
-  //       <p>Do you want to change the attendance status for <b>{item.salesmanName}</b>?</p>
-  //       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-  //         <button 
-  //           onClick={async () => {
-  //             toast.dismiss(t.id); // Close confirmation toast
-  
-  //             try {
-  //               // Toggle status
-  //               const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent';
-  
-  //               // Prepare update data
-  //               const updatedData = { attendenceStatus: updatedStatus };
-  
-  //               // Get access token
-  //               const accessToken = Cookies.get('token');
-  
-  //               // Send update request
-  //               const response = await axios.put(
-  //                 `${import.meta.env.VITE_SERVER_URL}/api/attendence/${item._id}`, 
-  //                 updatedData,
-  //                 {
-  //                   headers: { Authorization: `Bearer ${accessToken}` },
-  //                 }
-  //               );
-  
-  //               if (response.status === 200) {
-  //                 toast.success(
-  //                   <span>
-  //                     Attendance status updated to{' '}
-  //                     <span style={{ color: updatedStatus === 'Absent' ? 'red' : 'green', fontWeight: 'bold' }}>
-  //                       {updatedStatus}
-  //                     </span>{' '}
-  //                     successfully!
-  //                   </span>
-  //                 );
-  //                 fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
-                  
-  //               }
-  //             } catch (error) {
-  //               toast.error('Failed to update attendance status.');
-  //             }
-  //           }} 
-  //           style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
-  //         >
-  //           Confirm
-  //         </button>
-  
-  //         <button 
-  //           onClick={() => toast.dismiss(t.id)} 
-  //           style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
-  //         >
-  //           Cancel
-  //         </button>
-  //       </div>
-  //     </div>
-  //   ), { duration: Infinity });
-  // };
   const handleStatusClick = async (item) => {
-    toast((t) => (
-      <div>
-        <p>Do you want to change the attendance status for <b>{item.salesmanName}</b>?</p>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-          <button 
-            onClick={async () => {
-              toast.dismiss(t.id);
-  
-              try {
-                const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent';
-                const accessToken = Cookies.get('token');
-  
-                await axios.put(
-                  `${import.meta.env.VITE_SERVER_URL}/api/attendence/${item._id}`, 
-                  { attendenceStatus: updatedStatus },
-                  { headers: { Authorization: `Bearer ${accessToken}` } }
-                );
-  
-                // Update local state directly
-                setData(prevData => 
-                  prevData.map(d => 
-                    d._id === item._id ? { ...d, attendenceStatus: updatedStatus } : d
-                  )
-                );
-                setFilteredData(prevFiltered => 
-                  prevFiltered.map(d => 
-                    d._id === item._id ? { ...d, attendenceStatus: updatedStatus } : d
-                  )
-                );
-  
-                toast.success(
-                  <span>
-                    Status updated to{' '}
-                    <span style={{ color: updatedStatus === 'Absent' ? 'red' : 'green', fontWeight: 'bold' }}>
-                      {updatedStatus}
-                    </span>
-                  </span>
-                );
-              } catch (error) {
-                toast.error('Failed to update status');
-              }
-            }} 
-            style={{ background: '#4CAF50', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
+    toast(
+      (t) => (
+        <div>
+          <p>
+            Do you want to change the attendance status for <b>{item.salesmanName}</b>?
+          </p>
+          <div
+            style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}
           >
-            Confirm
-          </button>
-          <button 
-            onClick={() => toast.dismiss(t.id)} 
-            style={{ background: '#f44336', color: 'white', padding: '5px 10px', borderRadius: '5px', border: 'none' }}
-          >
-            Cancel
-          </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id)
+
+                try {
+                  const updatedStatus = item.attendenceStatus === 'Absent' ? 'Present' : 'Absent'
+                  const accessToken = Cookies.get('token')
+
+                  await axios.put(
+                    `${import.meta.env.VITE_SERVER_URL}/api/attendence/${item._id}`,
+                    { attendenceStatus: updatedStatus },
+                    { headers: { Authorization: `Bearer ${accessToken}` } },
+                  )
+
+                  // Update local state directly
+                  setData((prevData) =>
+                    prevData.map((d) =>
+                      d._id === item._id ? { ...d, attendenceStatus: updatedStatus } : d,
+                    ),
+                  )
+                  setFilteredData((prevFiltered) =>
+                    prevFiltered.map((d) =>
+                      d._id === item._id ? { ...d, attendenceStatus: updatedStatus } : d,
+                    ),
+                  )
+
+                  toast.success(
+                    <span>
+                      Status updated to{' '}
+                      <span
+                        style={{
+                          color: updatedStatus === 'Absent' ? 'red' : 'green',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {updatedStatus}
+                      </span>
+                    </span>,
+                  )
+                } catch (error) {
+                  toast.error('Failed to update status')
+                }
+              }}
+              style={{
+                background: '#4CAF50',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: 'none',
+              }}
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                background: '#f44336',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: 'none',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
-      </div>
-    ), { duration: Infinity });
-  };
-  
+      ),
+      { duration: Infinity },
+    )
+  }
+
   // Function to handle image click
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedImage, setSelectedImage] = useState(null)
 
   // Function to handle image click
   const handleImageClick = (imageUrl) => {
-    setSelectedImage(imageUrl);
-    setIsOpen(true);
-  };
+    setSelectedImage(imageUrl)
+    setIsOpen(true)
+  }
 
   // Function to close image popup
   const closePopup = () => {
-    setIsOpen(false);
-    setSelectedImage(null);
-  };
+    setIsOpen(false)
+    setSelectedImage(null)
+  }
+const handleSort=(accessor)=>{
+  if(sortBy===accessor){
+    setSortOrder(sortOrder==='asc'?'desc':'asc')
+  }else{
+    setSortBy(accessor);
+    setSortOrder('asc');
+  }
+}
+useEffect(() => {
+  if (sortBy) {
+    const sorted = [...filteredData].sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+      
+      // Handle different data types
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Handle dates
+      if (aValue instanceof Date && bValue instanceof Date) {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Default string comparison
+      return sortOrder === 'asc' 
+        ? String(aValue).localeCompare(String(bValue))
+        : String(bValue).localeCompare(String(aValue));
+    });
+
+    setSortedData(sorted);
+  } else {
+    setSortedData(filteredData);
+  }
+}, [filteredData, sortBy, sortOrder]);
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -725,23 +681,16 @@ const Attendance1 = () => {
                     backgroundColor: '#1d3d5f',
                     color: 'white',
                   }}
+                  onClick={()=>handleSort(col.accessor)}
                 >
+                  {sortBy===col.accessor && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
                   {col.Header}
                 </CTableHeaderCell>
               ))}
-              {/* <CTableHeaderCell
-                className="text-center"
-                style={{
-                  padding: '5px 12px', // Reduced padding for top and bottom
-                  borderBottom: '1px solid #e0e0e0', // Light border under headers
-                  textAlign: 'center', // Center header text
-                  verticalAlign: 'middle',
-                  backgroundColor: '#1d3d5f',
-                  color: 'white',
-                }}
-              >
-                Actions
-              </CTableHeaderCell> */}
             </CTableRow>
           </CTableHead>
 
@@ -757,11 +706,11 @@ const Attendance1 = () => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                  <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
-            ) : filteredData.length > 0 ? (
-              filteredData
+            ) : sortedData.length > 0 ? (
+              sortedData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow
@@ -796,129 +745,124 @@ const Attendance1 = () => {
                           backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
                         }}
                       >
-                    {col.accessor === "attendenceStatus" ? (
-        <button
-          style={{
-            padding: "6px 12px",
-            backgroundColor: item[col.accessor] === "Absent" ? "red" : "green",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "13px",
-          }}
-          onClick={() => handleStatusClick(item)}
-        >
-          {item[col.accessor]}
-        </button>
-      ) : col.accessor === "profileImgUrl" ? (
-        item[col.accessor] ? (
-          <img
-            src={`data:image/png;base64,${item[col.accessor]}`}
-            alt="Profile"
-            style={{
-              width: "80px",
-              height: "80px",
-              borderRadius: "50%",
-              padding: "9px",
-              cursor: "pointer",
-            }}
-            onClick={() =>
-              handleImageClick(`data:image/png;base64,${item[col.accessor]}`)
-            }
-          />
-        ) : (
-          <div style={{ textAlign: 'center' }}>
-            <img
-              src={emptyimage}
-              alt="Empty"
-              style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
-                padding: '9px',
-              }}
-              onClick={() =>
-                handleImageClick(`${emptyimage}`)
-              }
-            />
-          </div>
-        )
-      ) : (
-        item[col.accessor] || "--"
-      )}
+                        {col.accessor === 'attendenceStatus' ? (
+                          <button
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: item[col.accessor] === 'Absent' ? 'red' : 'green',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '5px',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                            }}
+                            onClick={() => handleStatusClick(item)}
+                          >
+                            {item[col.accessor]}
+                          </button>
+                        ) : col.accessor === 'profileImgUrl' ? (
+                          item[col.accessor] ? (
+                            <img
+                              src={`data:image/png;base64,${item[col.accessor]}`}
+                              alt="Profile"
+                              style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '50%',
+                                padding: '9px',
+                                cursor: 'pointer',
+                              }}
+                              onClick={() =>
+                                handleImageClick(`data:image/png;base64,${item[col.accessor]}`)
+                              }
+                            />
+                          ) : (
+                            <div style={{ textAlign: 'center' }}>
+                              <img
+                                src={emptyimage}
+                                alt="Empty"
+                                style={{
+                                  width: '80px',
+                                  height: '80px',
+                                  borderRadius: '50%',
+                                  padding: '9px',
+                                }}
+                                onClick={() => handleImageClick(`${emptyimage}`)}
+                              />
+                            </div>
+                          )
+                        ) : (
+                          item[col.accessor] || '--'
+                        )}
 
-      {/* Custom Image Popup */}
-      {isOpen && (
-        <div
-          onClick={closePopup} // Clicking outside closes the popup
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "transparent",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside
-            style={{
-              position: "relative",
-              width: "500px",
-              height: "500px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: "white",
-              borderRadius: "10px",
-              overflow: "hidden",
-            }}
-          >
-            {/* Close Button */}
-            <button
-              onClick={closePopup}
-              style={{
-                position: "absolute",
-                top: "10px",
-                right: "10px",
-                background: "white",
-                border: "none",
-                borderRadius: "50%",
-                width: "30px",
-                height: "30px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                cursor: "pointer",
-                boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)",
-              }}
-            >
-              <CloseIcon />
-            </button>
+                        {/* Custom Image Popup */}
+                        {isOpen && (
+                          <div
+                            onClick={closePopup} // Clicking outside closes the popup
+                            style={{
+                              position: 'fixed',
+                              top: 0,
+                              left: 0,
+                              width: '100vw',
+                              height: '100vh',
+                              backgroundColor: 'transparent',
+                              display: 'flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              zIndex: 1000,
+                            }}
+                          >
+                            <div
+                              onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside
+                              style={{
+                                position: 'relative',
+                                width: '500px',
+                                height: '500px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                backgroundColor: 'white',
+                                borderRadius: '10px',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              {/* Close Button */}
+                              <button
+                                onClick={closePopup}
+                                style={{
+                                  position: 'absolute',
+                                  top: '10px',
+                                  right: '10px',
+                                  background: 'white',
+                                  border: 'none',
+                                  borderRadius: '50%',
+                                  width: '30px',
+                                  height: '30px',
+                                  display: 'flex',
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  cursor: 'pointer',
+                                  boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)',
+                                }}
+                              >
+                                <CloseIcon />
+                              </button>
 
-            {/* Fixed Size Image */}
-            <img
-              src={selectedImage}
-              alt="Profile"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-            />
-          </div>
-        </div>
-      )}
-   
+                              {/* Fixed Size Image */}
+                              <img
+                                src={selectedImage}
+                                alt="Profile"
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover',
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </CTableDataCell>
                     ))}
-
-                   
                   </CTableRow>
                 ))
             ) : (

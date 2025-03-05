@@ -65,7 +65,7 @@ import jwt_decode from 'jwt-decode';
 import BusinessIcon from '@mui/icons-material/Business';
 import { FiUser } from "react-icons/fi";
 
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 import { FiGitBranch } from 'react-icons/fi';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
@@ -101,7 +101,8 @@ const [branchError, setBranchError] = useState(false)
     const [companyData, setCompanyData] = useState([]);
     const [SupervisorData, setSupervisorData] = useState([]);
     const [SalesmanData, setSalesmanData] = useState([]);
-
+  const [sortBy, setSortBy] = useState('')
+    const [sortOrder, setSortOrder] = useState('asc')
   const navigate = useNavigate()
   const handleEditModalClose = () => {
     setFormData({})
@@ -226,15 +227,17 @@ const handleEditGroup = async (item) => {
         formData.companyId = decodedToken.companyId; // Use companyId from the token
         formData.branchId = decodedToken.id; // Use branchId from the token
       } else if (decodedToken.role === 4) {
-        formData.supervisorId = decodedToken.id; // Use supervisorId from the token
+        // formData.supervisorId = decodedToken.id; // Use supervisorId from the token
         formData.companyId = decodedToken.companyId; // Use companyId from the token
         formData.branchId = decodedToken.branchId; // Use branchId from the token
       }
-  
+      const finalData = {
+        products: [formData],
+      };
       // Perform the POST request
       const response = await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/product`,
-        formData,
+        finalData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -244,7 +247,7 @@ const handleEditGroup = async (item) => {
       );
   
       if (response.status === 201) {
-        toast.success('Order is created successfully');
+        toast.success('Product is created successfully');
         fetchData(); // Refresh data
         setFormData({ name: '' }); // Reset form data
         setAddModalOpen(false); // Close modal
@@ -330,7 +333,7 @@ const handleEditGroup = async (item) => {
             companyId: item.companyId ? item.companyId._id : 'N/A',
             branchName: item.branchId ? item.branchId.branchName : 'N/A',
             branchId: item.branchId ? item.branchId._id : 'N/A',
-            supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
+            supervisorName: item.supervisorId ? item.supervisorId.supervisorName : 'N/A',
             supervisorId: item.supervisorId ? item.supervisorId._id : 'N/A',
           }))
           // .filter((item) =>
@@ -613,7 +616,41 @@ const handleEditGroup = async (item) => {
       alert('Failed to update attendance status')
     }
   }
+const handleSort=(accessor)=>{
+  if(sortBy===accessor){
+    setSortOrder(sortOrder==='asc'?'desc':'asc')
+  }else{
+    setSortBy(accessor);
+    setSortOrder('asc');
+  }
+}
+useEffect(() => {
+  if (sortBy) {
+    const sorted = [...filteredData].sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+      
+      // Handle different data types
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Handle dates
+      if (aValue instanceof Date && bValue instanceof Date) {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Default string comparison
+      return sortOrder === 'asc' 
+        ? String(aValue).localeCompare(String(bValue))
+        : String(bValue).localeCompare(String(aValue));
+    });
 
+    setSortedData(sorted);
+  } else {
+    setSortedData(filteredData);
+  }
+}, [filteredData, sortBy, sortOrder]);
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -635,7 +672,7 @@ const handleEditGroup = async (item) => {
             </h2>
           </div>
 
-          <div style={styles.container}>
+          {/* <div style={styles.container}>
             <div style={styles.inputGroup}>
               <label htmlFor="period" style={styles.label}>
                 Period:
@@ -689,7 +726,7 @@ const handleEditGroup = async (item) => {
             <button onClick={handleApply} style={styles.button}>
               Apply
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="d-flex align-items-center">
@@ -796,8 +833,14 @@ const handleEditGroup = async (item) => {
                     backgroundColor: '#1d3d5f',
                     color: 'white',
                   }}
+                  onClick={()=>handleSort(col.accessor)}
                 >
                   {col.Header}
+                  {sortBy===col.accessor && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
                 </CTableHeaderCell>
               ))}
                <CTableHeaderCell
@@ -828,7 +871,7 @@ const handleEditGroup = async (item) => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                  <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (
@@ -996,7 +1039,7 @@ const handleEditGroup = async (item) => {
         ...formData,
         companyId: newValue?._id || '',
         branchId: '', // Reset branch when company changes
-        supervisorId: '', // Reset supervisor when company changes
+        // supervisorId: '', // Reset supervisor when company changes
         // salesmanId: '', // Reset salesman when company changes
     })
       setBranchError(false) // Clear branch error
@@ -1034,7 +1077,7 @@ const handleEditGroup = async (item) => {
         setFormData({ 
           ...formData, 
           branchId: newValue?._id || '', 
-          supervisorId: '', // Reset supervisor when branch changes
+          // supervisorId: '', // Reset supervisor when branch changes
         //   salesmanId: '' ,// Reset salesman when branch changes  
         })
         setBranchError(false)
@@ -1189,7 +1232,7 @@ const handleEditGroup = async (item) => {
       setFormData({
         ...formData,
         branchId: newValue?._id || '', // Update branch
-        supervisorId: '', // Reset supervisor
+        // supervisorId: '', // Reset supervisor
       })
     }
     renderInput={(params) => (
@@ -1295,7 +1338,7 @@ const handleEditGroup = async (item) => {
           </>
 
           ): null}
-          {COLUMNS().slice(0, -2).map((column) => (
+          {COLUMNS().slice(0, -3).map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}
@@ -1360,7 +1403,7 @@ const handleEditGroup = async (item) => {
         ...formData,
         companyId: newValue?._id || '',
         branchId: '', // Reset branch when company changes
-        supervisorId: '', // Reset supervisor when company changes
+        // supervisorId: '', // Reset supervisor when company changes
       })
       setBranchError(false) // Clear branch error
     }}
@@ -1397,7 +1440,7 @@ const handleEditGroup = async (item) => {
         setFormData({ 
           ...formData, 
           branchId: newValue?._id || '', 
-          supervisorId: '' // Reset supervisor when branch changes
+          // supervisorId: '' // Reset supervisor when branch changes
         })
         setBranchError(false)
       }
@@ -1496,7 +1539,7 @@ const handleEditGroup = async (item) => {
       setFormData({
         ...formData,
         branchId: newValue?._id || '',
-        supervisorId: '', // Reset supervisor when branch changes
+        // supervisorId: '', // Reset supervisor when branch changes
       })
     }
     renderInput={(params) => (
@@ -1601,7 +1644,7 @@ const handleEditGroup = async (item) => {
 
           ): null}
          
-          {COLUMNS().slice(0, -2).map((column) => (
+          {COLUMNS().slice(0, -3).map((column) => (
             <TextField
               key={column.accessor}
               label={column.Header}

@@ -55,10 +55,12 @@ import { StyledTablePagination } from '../../../../views/PaginationCssFile/Table
 // import { FaBriefcase   } from 'react-icons/fa';
 import { BsBuildingsFill } from 'react-icons/bs'
 import '../../ReusablecodeforTable/styles.css';
+import './company.css';
 import ExcelJS from 'exceljs';
 import debounce from 'lodash.debounce';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 const Company = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -76,6 +78,8 @@ const Company = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25)
   const columns = COLUMNS()
   const [sortedData, setSortedData] = useState([])
+   const [sortBy, setSortBy] = useState('')
+    const [sortOrder, setSortOrder] = useState('asc')
   const handleEditModalClose = () => {
     setFormData({})
     setEditModalOpen(false)
@@ -147,13 +151,7 @@ const Company = () => {
     setLoading(true);
     fetchData();
   }, []); 
-  // useEffect(() => {
-  //   setLoading(true)
-  //   fetchData() // Refetch data when searchQuery changes
-  // }, [searchQuery])
-  //  // Dependency array ensures the effect runs whenever searchQuery changes
-
-  // ##################### Filter data by search query #######################
+ 
   const filterGroups = () => {
     if (!searchQuery) {
       setFilteredData(data) // No query, show all drivers
@@ -193,15 +191,6 @@ const Company = () => {
     return () => debouncedFilter.cancel();
   }, [debouncedFilter]);
 
-  // useEffect(() => {
-  //   return () => {
-  //     debouncedFetchData.cancel(); // Cleanup on unmount
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   filterGroups(searchQuery)
-  // }, [data, searchQuery])
 
   const handlePageClick = (e) => {
     console.log(e.selected + 1)
@@ -230,8 +219,7 @@ const Company = () => {
         setAddModalOpen(false)
       }
     } catch (error) {
-      // toast.error('An error occured')
-      // throw error.response ? error.response.data : new Error('An error occurred')
+    
       const errorMessage =
       error.response && error.response.data && error.response.data.message
         ? error.response.data.message
@@ -241,8 +229,7 @@ const Company = () => {
     }
   }
 
-  // ###################################################################
-  // ######################### Edit Group #########################
+
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10)
     setRowsPerPage(newRowsPerPage === -1 ? sortedData.length : newRowsPerPage) // Set to all rows if -1
@@ -275,8 +262,7 @@ const Company = () => {
         setEditModalOpen(false)
       }
     } catch (error) {
-      // toast.error('An error occured')
-      // throw error.response ? error.response.data : new Error('An error occurred')
+      
       const errorMessage =
       error.response && error.response.data && error.response.data.message
         ? error.response.data.message
@@ -346,47 +332,7 @@ const Company = () => {
     ), { duration: Infinity });
   };
   
-  // const haqndleDeletesubmit = async (item) => {
-  //   if (!item._id) {
-  //     toast.error('Invalid item selected for deletion.')
-  //     return
-  //   }
-
-  //   const confirmed = confirm('Do you want to delete this user?')
-  //   if (!confirmed) return
-
-  //   try {
-  //     const accessToken = Cookies.get('token')
-  //     if (!accessToken) {
-  //       toast.error('Authentication token is missing.')
-  //       return
-  //     }
-
-  //     const response = await axios({
-  //       method: 'DELETE', // Explicitly specifying DELETE method
-  //       url: `${import.meta.env.VITE_SERVER_URL}/api/company/${item._id}`,
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //         'Content-Type': 'application/json',
-  //       },
-  //     })
-
-  //     // if (response.status === 200) {
-  //       toast.success('Group deleted successfully')
-  //       fetchData()
-  //     // }
-  //   } catch (error) {
-  //     console.error('Error Details:', error.response || error.message)
-  //     toast.error('An error occurred while deleting the group.')
-  //   }
-  // }
   
-
- 
-  
-  
-
-
   
   const exportToExcel = ExcelExporter({
     mytitle:'Branches Data Report',
@@ -403,6 +349,41 @@ const exportToPDF = PDFExporter({
   fileName: 'Company_data_report.pdf',
 });
 
+const handleSort=(accessor)=>{
+  if(sortBy===accessor){
+    setSortOrder(sortOrder==='asc'?'desc':'asc')
+  }else{
+    setSortBy(accessor);
+    setSortOrder('asc');
+  }
+}
+useEffect(() => {
+  if (sortBy) {
+    const sorted = [...filteredData].sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+      
+      // Handle different data types
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Handle dates
+      if (aValue instanceof Date && bValue instanceof Date) {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // Default string comparison
+      return sortOrder === 'asc' 
+        ? String(aValue).localeCompare(String(bValue))
+        : String(bValue).localeCompare(String(aValue));
+    });
+
+    setSortedData(sorted);
+  } else {
+    setSortedData(filteredData);
+  }
+}, [filteredData, sortBy, sortOrder]);
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -532,8 +513,14 @@ const exportToPDF = PDFExporter({
                     backgroundColor: '#1d3d5f',
                     color: 'white',
                   }}
+                  onClick={()=>handleSort(col.accessor)}
                 >
                   {col.Header}
+                  {sortBy===col.accessor && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
                 </CTableHeaderCell>
               ))}
               <CTableHeaderCell
@@ -564,11 +551,11 @@ const exportToPDF = PDFExporter({
                     color: '#999',
                   }}
                 >
-                  Loading...
+                 <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
-            ) : filteredData.length > 0 ? (
-              filteredData
+            ) : sortedData.length > 0 ? (
+              sortedData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((item, index) => (
                   <CTableRow

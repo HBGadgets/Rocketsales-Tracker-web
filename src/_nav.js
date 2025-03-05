@@ -13,14 +13,27 @@ import {
   cilSpeedometer,
   cilStar,
 } from '@coreui/icons';
+import { GoThumbsup } from "react-icons/go";
+import { GoThumbsdown } from "react-icons/go";
+import { FiUserCheck } from "react-icons/fi";
+import { FcLeave } from "react-icons/fc";
+import { CiCalendarDate } from "react-icons/ci";
+import { FaMoneyBillWave, FaRegThumbsUp } from 'react-icons/fa';
 import { FaBoxes, FaUserTie } from 'react-icons/fa';
+import { PiShoppingCartSimpleDuotone } from "react-icons/pi";
+import { PiRoadHorizonDuotone } from "react-icons/pi";
+
 import { IoLocationOutline } from 'react-icons/io5';
 import { BsWindowFullscreen } from 'react-icons/bs';
 import { BsChatDots } from 'react-icons/bs';
+import { IoChatbubblesOutline } from "react-icons/io5";
+import { GiTakeMyMoney } from "react-icons/gi";
+import { CiViewList } from "react-icons/ci";
+import { LiaFileInvoiceDollarSolid, LiaUserCheckSolid } from "react-icons/lia";
 import { FiList } from 'react-icons/fi';
 import { FaRegEdit } from 'react-icons/fa';
 import { PiListStarLight } from 'react-icons/pi';
-import { LiaFileInvoiceDollarSolid } from 'react-icons/lia';
+import { PiWalletDuotone } from "react-icons/pi";
 import { TbReport } from 'react-icons/tb';
 import { TbSettings } from 'react-icons/tb';
 import { MdOutlineSupportAgent } from "react-icons/md";
@@ -247,26 +260,7 @@ const createNav = () => {
         ),
       },
      
-      // {
-      //   component: CNavItem,
-      //   name: 'Supervisor',
-      //   to: '/Supervisor',
-      //   icon: (
-      //     <div style={{ display: 'flex', alignItems: 'center' }}>
-      //       <FaUserTie style={{ marginRight: '15px', fontSize: '20px' }} />
-      //     </div>
-      //   ),
-      // },
-      //  {
-      //   component: CNavItem,
-      //   name: 'Manage User',
-      //   to: '/UserManage',
-      //   icon: (
-      //     <div style={{ display: 'flex', alignItems: 'center' }}>
-      //       <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
-      //     </div>
-      //   ),
-      // },
+    
     ];
   } else {
     managementItems = [
@@ -280,16 +274,7 @@ const createNav = () => {
           </div>
         ),
       },
-      // {
-      //   component: CNavItem,
-      //   name: 'Manage User',
-      // to: '/UserManage',
-      //   icon: (
-      //     <div style={{ display: 'flex', alignItems: 'center' }}>
-      //       <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
-      //     </div>
-      //   ),
-      // },
+    
     ];
   }
 
@@ -328,7 +313,7 @@ const createNav = () => {
           visible: true,
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaUserGroup style={{ marginRight: '15px', fontSize: '25px' }} />
+              <FiUserCheck  style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
@@ -338,7 +323,7 @@ const createNav = () => {
           to: '/manual-attendance',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaEdit style={{ marginRight: '15px', fontSize: '25px' }} />
+              <LiaUserCheckSolid  style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
@@ -348,7 +333,7 @@ const createNav = () => {
           to: '/SalesmanLeaveRequest',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaClock  style={{ marginRight: '15px', fontSize: '25px' }} />
+              <CiCalendarDate    style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
@@ -358,7 +343,7 @@ const createNav = () => {
           to: '/ApproveRequest',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaThumbsUp style={{ marginRight: '15px', fontSize: '25px' }} />
+              <GoThumbsup style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
@@ -368,48 +353,14 @@ const createNav = () => {
           to: '/DeniedRequest',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaThumbsDown style={{ marginRight: '15px', fontSize: '25px' }} />
+              <GoThumbsdown style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
-        // {
-        //   component: CNavItem,
-        //   name: 'Absent Report',
-        //   to: '/absent-report',
-        //   icon: (
-        //     <div style={{ display: 'flex', alignItems: 'center' }}>
-        //       <TbReport style={{ marginRight: '15px', fontSize: '25px' }} />
-        //     </div>
-        //   ),
-        // },
+       
       ],
     },
-    // {
-    //   component: CNavTitle,
-    //   name: 'Manage Order',
-    // },
-    // {
-    //   component: CNavItem,
-    //   name: 'Manage Order',
-    //   icon: (
-    //     <div style={{ display: 'flex', alignItems: 'center' }}>
-    //       <FiList style={{ marginRight: '15px', fontSize: '20px' }} />
-    //     </div>
-    //   ),
-    //   items: [
-       
-    //     // {
-    //     //   component: CNavItem,
-    //     //   name: 'Absent Report',
-    //     //   to: '/absent-report',
-    //     //   icon: (
-    //     //     <div style={{ display: 'flex', alignItems: 'center' }}>
-    //     //       <TbReport style={{ marginRight: '15px', fontSize: '25px' }} />
-    //     //     </div>
-    //     //   ),
-    //     // },
-    //   ],
-    // },
+    
     {
       component: CNavItem,
       name: 'Management',
@@ -435,7 +386,7 @@ const createNav = () => {
           to: '/Pending-order-list',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaShoppingCart style={{ marginRight: '15px', fontSize: '25px' }} />
+              <PiShoppingCartSimpleDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
@@ -445,7 +396,7 @@ const createNav = () => {
           to: '/Product-list',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FaEdit style={{ marginRight: '15px', fontSize: '25px' }} />
+              <CiViewList style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
@@ -455,7 +406,7 @@ const createNav = () => {
           to: '/SalesmanExpenceManagement',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <MdOutlineAttachMoney style={{ marginRight: '15px', fontSize: '25px' }} />
+              <GiTakeMyMoney  style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
@@ -465,7 +416,7 @@ const createNav = () => {
           to: '/ExpenceType',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <BiMoney style={{ marginRight: '15px', fontSize: '25px' }} />
+              <PiWalletDuotone style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
@@ -476,7 +427,7 @@ const createNav = () => {
           to: '/chatBot',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <BiMoney style={{ marginRight: '15px', fontSize: '25px' }} />
+              <IoChatbubblesOutline style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         }, 
@@ -486,10 +437,38 @@ const createNav = () => {
           to: '/invoice',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <BiMoney style={{ marginRight: '15px', fontSize: '25px' }} />
+              <LiaFileInvoiceDollarSolid  style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
+        
+        
+      ],
+    },
+    {
+      component: CNavItem,
+      name: 'Report Management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <AiOutlineShoppingCart style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+      items: [
+        {
+          component: CNavItem,
+          name: 'Distance Report',
+          to: '/DistanceReport',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <PiRoadHorizonDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+       
+       
+        
+      
+        
         
         
       ],

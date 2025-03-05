@@ -66,6 +66,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import { FiUser } from "react-icons/fi";
 import PersonIcon from '@mui/icons-material/Person';
 import { CTooltip } from '@coreui/react';
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 // import { useNavigate } from 'react-router-dom';
 const SalesmanExpenceManagement = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -76,6 +77,8 @@ const SalesmanExpenceManagement = () => {
   const [searchQuery, setSearchQuery] = useState('')
  const [branchError, setBranchError] = useState(false)
   const [pageCount, setPageCount] = useState()
+     const [sortBy, setSortBy] = useState('')
+      const [sortOrder, setSortOrder] = useState('asc')
   // const handleEditModalClose = () => setEditModalOpen(false)
   const handleAddModalClose = () => {
     setFormData({})
@@ -606,7 +609,41 @@ const SalesmanExpenceManagement = () => {
     fetchSalesman()
     fetchExpenceType()
   }, [])
+  const handleSort=(accessor)=>{
+    if(sortBy===accessor){
+      setSortOrder(sortOrder==='asc'?'desc':'asc')
+    }else{
+      setSortBy(accessor);
+      setSortOrder('asc');
+    }
+  }
+  useEffect(() => {
+    if (sortBy) {
+      const sorted = [...filteredData].sort((a, b) => {
+        const aValue = a[sortBy];
+        const bValue = b[sortBy];
+        
+        // Handle different data types
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+        
+        // Handle dates
+        if (aValue instanceof Date && bValue instanceof Date) {
+          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+        
+        // Default string comparison
+        return sortOrder === 'asc' 
+          ? String(aValue).localeCompare(String(bValue))
+          : String(bValue).localeCompare(String(aValue));
+      });
   
+      setSortedData(sorted);
+    } else {
+      setSortedData(filteredData);
+    }
+  }, [filteredData, sortBy, sortOrder]);
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -799,8 +836,15 @@ const SalesmanExpenceManagement = () => {
                     backgroundColor: '#1d3d5f',
                     color: 'white',
                   }}
+                  onClick={()=>handleSort(col.accessor)}
+
                 >
                   {col.Header}
+                  {sortBy===col.accessor && (
+                    <span style={{ marginLeft: '5px' }}>
+                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    </span>
+                  )}
                 </CTableHeaderCell>
               ))}
               <CTableHeaderCell
@@ -831,7 +875,7 @@ const SalesmanExpenceManagement = () => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                  <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (

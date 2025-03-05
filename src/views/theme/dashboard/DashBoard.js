@@ -1,19 +1,19 @@
-import React, { useEffect, useState, createRef } from 'react'
-import PropTypes from 'prop-types'
-import classNames from 'classnames'
-import { CRow, CCol, CCard, CCardHeader, CCardBody } from '@coreui/react'
-import { rgbToHex } from '@coreui/utils'
-import { DocsLink } from 'src/components'
-import { AppHeader } from '../../../components'
-
+import React, { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Cookies from 'js-cookie'
 import DashCon from '../../dashboard/DashCon'
 
 const DashBoard = () => {
-  return (
-    <>
-      <DashCon />
-    </>
-  )
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const token = Cookies.get('token') // Get token from cookies
+    if (!token) {
+      navigate('/login') // Redirect to login if token is missing
+    }
+  }, [navigate])
+
+  return <DashCon />
 }
 
 export default DashBoard

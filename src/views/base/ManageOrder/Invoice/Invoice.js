@@ -69,7 +69,7 @@ import Cookies from 'js-cookie'
 import { FiGitBranch } from 'react-icons/fi'
 import { FiUser } from 'react-icons/fi'
 import InvoiceView from './InvoiceView'
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 
 // import { DialogContent } from "@mui/material";
 // import { useNavigate } from 'react-router-dom';
@@ -839,7 +839,7 @@ const handleEditModalClose = () => {
                      color: "#999",
                    }}
                  >
-                   Loading...
+                   <img src={myGif} alt="Animated GIF" width="100" />
                  </CTableDataCell>
                </CTableRow>
              ) : sortedData.length > 0 ? (
