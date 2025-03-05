@@ -63,7 +63,7 @@ import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode'
 import { Token } from '@mui/icons-material'
 import debounce from 'lodash.debounce'
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 const token = Cookies.get('token')
 // let role=null
 // if(token){
@@ -757,7 +757,7 @@ const Branches = () => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                <img src={myGif} alt="Animated GIF" width='100'/>
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (

@@ -62,7 +62,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component'
 import { FaThumbsDown } from 'react-icons/fa';
 import { CTooltip } from '@coreui/react';
 import debounce from 'lodash.debounce';
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 // import { useNavigate } from 'react-router-dom';
 const DeniedRequest = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -612,7 +612,7 @@ const exportToPDF = PDFExporter({
           color: '#999',
         }}
       >
-        Loading...
+        <img src={myGif} alt="Animated GIF" width="100" />
       </CTableDataCell>
     </CTableRow>
   ) : sortedData.length > 0 ? (

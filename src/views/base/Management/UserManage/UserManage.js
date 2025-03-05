@@ -63,7 +63,7 @@ import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode';
 import { FiUser } from "react-icons/fi";
 import debounce from 'lodash.debounce';
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 const token=Cookies.get("token");
 
 const UserManage = () => {
@@ -708,8 +708,7 @@ useEffect(() => {
                     color: '#999',
                   }}
                 >
-                  Loading...
-                </CTableDataCell>
+<img src={myGif} alt="Animated GIF" width="100" />                </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (
               sortedData

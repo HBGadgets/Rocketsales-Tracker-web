@@ -328,7 +328,7 @@ import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 // import { BsFillPersonCheckFill } from 'react-icons/bs'
 import { BsClipboardCheck } from 'react-icons/bs';
 import debounce from 'lodash.debounce';
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 const Manual = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -867,7 +867,7 @@ useEffect(() => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (

@@ -21,6 +21,8 @@ import { CiCalendarDate } from "react-icons/ci";
 import { FaMoneyBillWave, FaRegThumbsUp } from 'react-icons/fa';
 import { FaBoxes, FaUserTie } from 'react-icons/fa';
 import { PiShoppingCartSimpleDuotone } from "react-icons/pi";
+import { PiRoadHorizonDuotone } from "react-icons/pi";
+
 import { IoLocationOutline } from 'react-icons/io5';
 import { BsWindowFullscreen } from 'react-icons/bs';
 import { BsChatDots } from 'react-icons/bs';
@@ -258,26 +260,7 @@ const createNav = () => {
         ),
       },
      
-      // {
-      //   component: CNavItem,
-      //   name: 'Supervisor',
-      //   to: '/Supervisor',
-      //   icon: (
-      //     <div style={{ display: 'flex', alignItems: 'center' }}>
-      //       <FaUserTie style={{ marginRight: '15px', fontSize: '20px' }} />
-      //     </div>
-      //   ),
-      // },
-      //  {
-      //   component: CNavItem,
-      //   name: 'Manage User',
-      //   to: '/UserManage',
-      //   icon: (
-      //     <div style={{ display: 'flex', alignItems: 'center' }}>
-      //       <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
-      //     </div>
-      //   ),
-      // },
+    
     ];
   } else {
     managementItems = [
@@ -291,16 +274,7 @@ const createNav = () => {
           </div>
         ),
       },
-      // {
-      //   component: CNavItem,
-      //   name: 'Manage User',
-      // to: '/UserManage',
-      //   icon: (
-      //     <div style={{ display: 'flex', alignItems: 'center' }}>
-      //       <FaUsers style={{ marginRight: '15px', fontSize: '20px' }} />
-      //     </div>
-      //   ),
-      // },
+    
     ];
   }
 
@@ -383,44 +357,10 @@ const createNav = () => {
             </div>
           ),
         },
-        // {
-        //   component: CNavItem,
-        //   name: 'Absent Report',
-        //   to: '/absent-report',
-        //   icon: (
-        //     <div style={{ display: 'flex', alignItems: 'center' }}>
-        //       <TbReport style={{ marginRight: '15px', fontSize: '25px' }} />
-        //     </div>
-        //   ),
-        // },
+       
       ],
     },
-    // {
-    //   component: CNavTitle,
-    //   name: 'Manage Order',
-    // },
-    // {
-    //   component: CNavItem,
-    //   name: 'Manage Order',
-    //   icon: (
-    //     <div style={{ display: 'flex', alignItems: 'center' }}>
-    //       <FiList style={{ marginRight: '15px', fontSize: '20px' }} />
-    //     </div>
-    //   ),
-    //   items: [
-       
-    //     // {
-    //     //   component: CNavItem,
-    //     //   name: 'Absent Report',
-    //     //   to: '/absent-report',
-    //     //   icon: (
-    //     //     <div style={{ display: 'flex', alignItems: 'center' }}>
-    //     //       <TbReport style={{ marginRight: '15px', fontSize: '25px' }} />
-    //     //     </div>
-    //     //   ),
-    //     // },
-    //   ],
-    // },
+    
     {
       component: CNavItem,
       name: 'Management',
@@ -501,6 +441,34 @@ const createNav = () => {
             </div>
           ),
         },
+        
+        
+      ],
+    },
+    {
+      component: CNavItem,
+      name: 'Report Management',
+      icon: (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <AiOutlineShoppingCart style={{ marginRight: '15px', fontSize: '20px' }} />
+        </div>
+      ),
+      items: [
+        {
+          component: CNavItem,
+          name: 'Distance Report',
+          to: '/DistanceReport',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <PiRoadHorizonDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+       
+       
+        
+      
+        
         
         
       ],

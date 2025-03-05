@@ -65,7 +65,7 @@ import jwt_decode from 'jwt-decode';
 import BusinessIcon from '@mui/icons-material/Business';
 import { FiUser } from "react-icons/fi";
 
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 import { FiGitBranch } from 'react-icons/fi';
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
@@ -871,7 +871,7 @@ useEffect(() => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                  <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (

@@ -44,6 +44,7 @@ const ExpenceType=React.lazy(()=>import('./views/base/ManageOrder/ExpenceType/Ex
 const OrderList=React.lazy(()=>import('./views/base/ManageOrder/OrderList/OrderList'))
 const ProductList=React.lazy(()=>import('./views/base/ManageOrder/ProductList/ProductList'))
 const LiveMap=React.lazy(()=>import('./views/dashboard/LiveMap'))
+const DistanceReport=React.lazy(()=>import('./views/base/ReportMange/DistanceReport/DistanceReport'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   
@@ -92,6 +93,7 @@ const routes = [
   { path: '/ExpenceType', name: 'Expence Type', element: ExpenceType },
   { path: '/invoice', name: 'Invoice', element: Invoice },
   { path: '/live-map', name: 'LiveMap', element: LiveMap },
+  { path: '/DistanceReport', name: 'DistanceReport', element: DistanceReport },
 ]
 
 export default routes

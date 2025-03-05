@@ -66,6 +66,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import { FiUser } from "react-icons/fi";
 import PersonIcon from '@mui/icons-material/Person';
 import { CTooltip } from '@coreui/react';
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 // import { useNavigate } from 'react-router-dom';
 const SalesmanExpenceManagement = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -874,7 +875,7 @@ const SalesmanExpenceManagement = () => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                  <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (
