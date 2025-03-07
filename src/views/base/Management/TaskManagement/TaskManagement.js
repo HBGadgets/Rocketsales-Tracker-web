@@ -70,6 +70,8 @@
   import RoomIcon from '@mui/icons-material/Room';
   import { Checkbox, FormControlLabel } from '@mui/material';
   import VisibilityIcon from '@mui/icons-material/Visibility';
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
+
 import debounce from 'lodash.debounce';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
