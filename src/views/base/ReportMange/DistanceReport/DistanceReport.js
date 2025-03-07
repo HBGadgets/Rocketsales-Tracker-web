@@ -59,12 +59,14 @@ import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
-import { FaThumbsUp } from 'react-icons/fa';
-import { CTooltip } from '@coreui/react';
-import debounce from 'lodash.debounce';
+import { FaThumbsUp } from 'react-icons/fa'
+import { CTooltip } from '@coreui/react'
+import debounce from 'lodash.debounce'
+import { Autocomplete } from '@mui/material'
+import PersonIcon from '@mui/icons-material/Person' // Icon for Salesman
 import myGif from "../../ReusablecodeforTable/loadergif.gif"
 // import { useNavigate } from 'react-router-dom';
-const ApproveRequest = () => {
+const DistanceReport = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [formData, setFormData] = useState({})
@@ -85,8 +87,8 @@ const ApproveRequest = () => {
   const [endDate, setEndDate] = useState('')
   const [selectedPeriod, setSelectedPeriod] = useState('today')
   const [showCustomDates, setShowCustomDates] = useState(false)
-     const [sortBy, setSortBy] = useState('')
-      const [sortOrder, setSortOrder] = useState('asc')
+  const [sortBy, setSortBy] = useState('')
+  const [sortOrder, setSortOrder] = useState('asc')
   const navigate = useNavigate()
 
   const styles = {
@@ -198,69 +200,128 @@ const ApproveRequest = () => {
     marginTop: '8px',
   }
 
+  // const fetchData = async (startDate, endDate, selectedPeriod, page = 1) => {
+  //   setLoading(true)
+  //   const accessToken = Cookies.get('token')
+
+  //   let url = `${import.meta.env.VITE_SERVER_URL}/api/distancedaywise`
+
+  //   if (!selectedSalesman) {
+  //     console.error('Error: No Salesman selected.')
+  //     setLoading(false)
+  //     return
+  //   }
+
+  //   const queryParams = new URLSearchParams({ id: selectedSalesman })
+
+  //   if (selectedPeriod && selectedPeriod !== 'Custom') {
+  //     queryParams.append('period', selectedPeriod)
+  //   } else if (startDate && endDate) {
+  //     queryParams.append('startDate', startDate)
+  //     queryParams.append('endDate', endDate)
+  //   }
+
+  //   url += `?${queryParams.toString()}`
+
+  //   console.log('Constructed URL:', url)
+  //   console.log('Access Token:', accessToken)
+
+  //   try {
+  //     const response = await axios.get(url, {
+  //       headers: {
+  //         Authorization: 'Bearer ' + accessToken,
+  //       },
+  //     })
+
+  //     console.log('Response:', response.data)
+
+  //     if (response.data.success) {
+  //       const formattedData = Object.entries(response.data.dailyDistances).map(
+  //         ([date, details]) => ({
+  //           date,
+  //           totalDistance: details.totalDistance || '0 km',
+  //           startLat: details.startPoint ? details.startPoint.lat : null,
+  //           startLong: details.startPoint ? details.startPoint.long : null,
+  //           endLat: details.endPoint ? details.endPoint.lat : null,
+  //           endLong: details.endPoint ? details.endPoint.long : null,
+  //         }),
+  //       )
+
+  //       setData(formattedData)
+  //       setSortedData(formattedData)
+  //     } else {
+  //       console.error('Error:', response.data.message)
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error)
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
+
+  // cc
+
+  // Format the date into DD-MM-YYYY format
   const fetchData = async (startDate, endDate, selectedPeriod, page = 1) => {
     setLoading(true);
     const accessToken = Cookies.get('token');
-    let url;
-    console.log(selectedPeriod);
   
-    if (selectedPeriod && selectedPeriod !== 'Custom') {
-      // If the period is not custom, pass the period as a filter
-      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?status=Approve&filter=${selectedPeriod}`;
-    } else if (startDate && endDate) {
-      // For "Custom" date range, pass the startDate and endDate as query params
-      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?status=Approve&startDate=${startDate}&endDate=${endDate}`;
-    } else {
-      // If "Custom" is selected but no dates are provided, just fetch all data
-      url = `${import.meta.env.VITE_SERVER_URL}/api/leaverequest?status=Approve`;
+    let url = `${import.meta.env.VITE_SERVER_URL}/api/distancedaywise`;
+  
+    if (!selectedSalesman) {
+      console.error("Error: No Salesman selected.");
+      setLoading(false);
+      return;
     }
   
-    console.log('my url', url);
-    console.log('Access Token:', accessToken);
+    const queryParams = new URLSearchParams({ id: selectedSalesman });
+  
+    if (selectedPeriod && selectedPeriod !== "Custom") {
+      queryParams.append("period", selectedPeriod);
+    } else if (startDate && endDate) {
+      queryParams.append("startDate", startDate);
+      queryParams.append("endDate", endDate);
+    }
+  
+    url += `?${queryParams.toString()}`;
+  
+    console.log("Constructed URL:", url);
+    console.log("Access Token:", accessToken);
   
     try {
       const response = await axios.get(url, {
         headers: {
-          Authorization: 'Bearer ' + accessToken,
+          Authorization: "Bearer " + accessToken,
         },
       });
-      console.log('Response:', response.data);
   
-      if (response.data.success) {
-        // Extract and map over the data
-        const formattedData = response.data.data
-          .map((item) => ({
-            ...item,
-            createdAt: item.createdAt ? formatDate(item.createdAt) : null,
-            updatedAt: item.updatedAt ? formatDate(item.updatedAt) : null,
-            salesmanName: item.salesmanId ? item.salesmanId.salesmanName : null,
-            companyName: item.companyId ? item.companyId.companyName : null,
-            branchName: item.branchId ? item.branchId.branchName : null,
-            supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
-          }))
-          .filter((item) =>
-            Object.values(item).some((value) =>
-              value.toString().toLowerCase().includes(searchQuery.toLowerCase()),
-            ),
-          );
+      console.log("Response:", response.data);
   
-        setData(formattedData); // Set the formatted data to `data`
-        setSortedData(formattedData); // Set the formatted data to `sortedData`
-        setLoading(false);
+      if (response.data) {
+        const formattedData = Object.entries(response.data.dailyDistances).map(
+          ([date, details]) => ({
+            date,
+            totalDistance: details.totalDistance || "0 km",
+            startLat: details.startPoint ? details.startPoint.lat : null,
+            startLong: details.startPoint ? details.startPoint.long : null,
+            endLat: details.endPoint ? details.endPoint.lat : null,
+            endLong: details.endPoint ? details.endPoint.long : null,
+          })
+        );
+  
+        setData(formattedData);
+        console.log("myformateddata",formatDate)
+        setSortedData(formattedData);
       } else {
-        // Handle case when success is false
-        console.error('Error: ' + response.data.message);
-        setLoading(false);
+        console.error("Error:", response.data.message);
       }
     } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
       setLoading(false);
-      console.error('Error fetching data:', error);
-      throw error; // Re-throw the error for further handling if needed
     }
   };
-  // cc
-
-  // Format the date into DD-MM-YYYY format
+  
   function formatDate(date) {
     const d = new Date(date)
     const day = String(d.getDate()).padStart(2, '0') // Add leading zero if single digit
@@ -274,16 +335,10 @@ const ApproveRequest = () => {
     const [day, month, year] = dateString.split('-').map(Number)
     return new Date(year, month - 1, day)
   }
-   useEffect(() => {
-        fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
-      }, []);
-  // useEffect(() => {
-  //   setLoading(true)
-  //   // fetchData() // Refetch data when searchQuery changes
-  //   fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
-  // }, [searchQuery]) // Dependency array ensures the effect runs whenever searchQuery changes
+  useEffect(() => {
+    fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
+  }, [])
 
-  // ##################### Filter data by search query #######################
   const filterGroups = () => {
     if (!searchQuery) {
       setFilteredData(data) // No query, show all drivers
@@ -296,42 +351,41 @@ const ApproveRequest = () => {
     }
   }
   const debouncedFilter = useCallback(
-        debounce((query, sourceData) => {
-          if (!query) {
-            setFilteredData(sourceData);
-            return;
-          }
-          const filtered = sourceData.filter(item =>
-            Object.values(item).some(value =>
-              value?.toString().toLowerCase().includes(query.toLowerCase())
-            )
-          );
-          // const filtered = sourceData.filter(item =>
-          //   Object.entries(item).some(([key, value]) => {
-          //     if (key === 'profileImgUrl') return false; // Skip searching the profileImage field
-          //     return value?.toString().toLowerCase().includes(query.toLowerCase());
-          //   })
-          // );
-          
-          
-          setFilteredData(filtered);
-        }, 500),
-        []
-      );
-      // Handle search input changes
-      const handleSearchChange = (e) => {
-        const query = e.target.value;
-        setSearchQuery(query);
-        debouncedFilter(query, data);
-      };
-    
-      // Cancel debounce on component unmount
-      useEffect(() => {
-        return () => debouncedFilter.cancel();
-      }, [debouncedFilter]);
-      useEffect(() => {
-        setFilteredData(data);
-      }, [data])
+    debounce((query, sourceData) => {
+      if (!query) {
+        setFilteredData(sourceData)
+        return
+      }
+      const filtered = sourceData.filter((item) =>
+        Object.values(item).some((value) =>
+          value?.toString().toLowerCase().includes(query.toLowerCase()),
+        ),
+      )
+      // const filtered = sourceData.filter(item =>
+      //   Object.entries(item).some(([key, value]) => {
+      //     if (key === 'profileImgUrl') return false; // Skip searching the profileImage field
+      //     return value?.toString().toLowerCase().includes(query.toLowerCase());
+      //   })
+      // );
+
+      setFilteredData(filtered)
+    }, 500),
+    [],
+  )
+  // Handle search input changes
+  const handleSearchChange = (e) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    debouncedFilter(query, data)
+  }
+
+  // Cancel debounce on component unmount
+  useEffect(() => {
+    return () => debouncedFilter.cancel()
+  }, [debouncedFilter])
+  useEffect(() => {
+    setFilteredData(data)
+  }, [data])
   // useEffect(() => {
   //   filterGroups(searchQuery)
   // }, [data, searchQuery])
@@ -344,7 +398,6 @@ const ApproveRequest = () => {
     fetchData(page)
   }
 
-
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10)
     setRowsPerPage(newRowsPerPage === -1 ? sortedData.length : newRowsPerPage) // Set to all rows if -1
@@ -355,57 +408,90 @@ const ApproveRequest = () => {
     setPage(newPage)
   }
 
-
   const exportToExcel = ExcelExporter({
-    mytitle:'Approved Request Data',
+    mytitle: 'Approved Request Data',
     columns: COLUMNS(),
     data: filteredData,
     fileName: 'Approve_Request_data.xlsx',
-   
-  });
+  })
 
-const exportToPDF = PDFExporter({
-  title: 'Approved Request Data',
-  columns: COLUMNS(),
-  data: filteredData,
-  fileName: 'Approve_Request_report.pdf',
-});
- 
-  const handleSort=(accessor)=>{
-    if(sortBy===accessor){
-      setSortOrder(sortOrder==='asc'?'desc':'asc')
-    }else{
-      setSortBy(accessor);
-      setSortOrder('asc');
+  const exportToPDF = PDFExporter({
+    title: 'Approved Request Data',
+    columns: COLUMNS(),
+    data: filteredData,
+    fileName: 'Approve_Request_report.pdf',
+  })
+
+  const handleSort = (accessor) => {
+    if (sortBy === accessor) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(accessor)
+      setSortOrder('asc')
     }
   }
   useEffect(() => {
     if (sortBy) {
       const sorted = [...filteredData].sort((a, b) => {
-        const aValue = a[sortBy];
-        const bValue = b[sortBy];
-        
+        const aValue = a[sortBy]
+        const bValue = b[sortBy]
+
         // Handle different data types
         if (typeof aValue === 'number' && typeof bValue === 'number') {
-          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue
         }
-        
+
         // Handle dates
         if (aValue instanceof Date && bValue instanceof Date) {
-          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue
         }
-        
+
         // Default string comparison
-        return sortOrder === 'asc' 
+        return sortOrder === 'asc'
           ? String(aValue).localeCompare(String(bValue))
-          : String(bValue).localeCompare(String(aValue));
-      });
-  
-      setSortedData(sorted);
+          : String(bValue).localeCompare(String(aValue))
+      })
+
+      setSortedData(sorted)
     } else {
-      setSortedData(filteredData);
+      setSortedData(filteredData)
     }
-  }, [filteredData, sortBy, sortOrder]);
+  }, [filteredData, sortBy, sortOrder])
+
+  const [salesmen, setSalesmen] = useState([])
+  const [selectedSalesman, setSelectedSalesman] = useState('')
+  const [searchQuerysale, setSearchQuerysale] = useState('')
+  useEffect(() => {
+    const fetchDatasalesman = async () => {
+      const accessToken = Cookies.get('token')
+      const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`
+
+      try {
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+
+        if (response.data && response.data.salesmandata) {
+          const formattedData = response.data.salesmandata.map((item) => ({
+            _id: item._id,
+            salesmanName: item.salesmanName || 'Unknown',
+          }))
+          setSalesmen(formattedData)
+        } else {
+          console.error('Salesman data is missing or incorrectly structured.')
+        }
+      } catch (error) {
+        console.error('Error fetching salesman data:', error)
+      }
+    }
+
+    fetchDatasalesman()
+  }, [])
+
+  const options = salesmen.map((salesman) => ({
+    value: salesman._id,
+    label: salesman.salesmanName,
+  }))
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -423,8 +509,67 @@ const exportToPDF = PDFExporter({
               }}
             >
               <FaThumbsUp style={{ fontSize: '24px', color: '#4c637c' }} />
-              Approved
+              Distance Report
             </h2>
+          </div>
+          {/* <div style={styles.container}>
+            <div style={styles.inputGroup}>
+              <label htmlFor="salesman" style={styles.label}>
+                Select Salesman:
+              </label>
+              <select
+                id="salesman"
+                value={selectedSalesman}
+                onChange={(e) => setSelectedSalesman(e.target.value)}
+                style={styles.select}
+              >
+                <option value="">Select a Salesman</option>
+                {salesmen.map((salesman) => (
+                  <option key={salesman._id} value={salesman._id}>
+                    {salesman.salesmanName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div> */}
+          <div style={styles.container}>
+            <div style={styles.inputGroup}>
+              <label htmlFor="salesman" style={styles.label}>
+                Salesman:
+              </label>
+              <FormControl fullWidth>
+                <Autocomplete
+                  id="searchable-salesman-select"
+                  options={Array.isArray(salesmen) ? salesmen : []}
+                  getOptionLabel={(option) => option.salesmanName || ''}
+                  value={
+                    Array.isArray(salesmen)
+                      ? salesmen.find((salesman) => salesman._id == selectedSalesman)
+                      : null
+                  }
+                  onChange={(event, newValue) => {
+                    setSelectedSalesman(newValue?._id || '')
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Select..."
+                      variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          height: '38px', // Match Period dropdown height
+                          minWidth: '150px', // Adjust width to match Period dropdown
+                          paddingRight: '32px',
+                        },
+                        '& input': {
+                          padding: '8px 14px',
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </FormControl>
+            </div>
           </div>
 
           <div style={styles.container}>
@@ -506,7 +651,7 @@ const exportToPDF = PDFExporter({
           {/* Settings Dropdown */}
 
           {/* Add Button */}
-       
+
           <CDropdown className="position-relative me-3">
             <CDropdownToggle
               color="secondary"
@@ -522,8 +667,8 @@ const exportToPDF = PDFExporter({
             </CDropdownToggle>
             <CDropdownMenu>
               {/* <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem> */}
-                   <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
-                   <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
+              <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
+              <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
             </CDropdownMenu>
           </CDropdown>
         </div>
@@ -586,112 +731,108 @@ const exportToPDF = PDFExporter({
                     backgroundColor: '#1d3d5f',
                     color: 'white',
                   }}
-                  onClick={()=>handleSort(col.accessor)}
+                  onClick={() => handleSort(col.accessor)}
                 >
-                 {col.Header}
-                  {sortBy===col.accessor && (
-                    <span style={{ marginLeft: '5px' }}>
-                      {sortOrder === 'asc' ? '↑' : '↓'}
-                    </span>
+                  {col.Header}
+                  {sortBy === col.accessor && (
+                    <span style={{ marginLeft: '5px' }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>
                   )}
                 </CTableHeaderCell>
               ))}
-            
             </CTableRow>
           </CTableHead>
 
           <CTableBody>
-  {loading ? (
-    <CTableRow>
-      <CTableDataCell
-        colSpan={columns.length + 2}
-        className="text-center"
-        style={{
-          padding: '20px 0',
-          fontSize: '16px',
-          color: '#999',
-        }}
-      >
-        <img src={myGif} alt="Animated GIF" width="100" />
-      </CTableDataCell>
-    </CTableRow>
-  ) : sortedData.length > 0 ? (
-    sortedData
-      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-      .map((item, index) => (
-        <CTableRow
-          key={index}
-          style={{
-            backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd', // Grey for even rows, transparent for odd rows
-            transition: 'background-color 0.3s ease',
-            borderBottom: '1px solid #e0e0e0',
-          }}
-          hover
-        >
-          <CTableDataCell
-            className="text-center"
-            style={{
-              padding: '12px',
-              color: '#242424',
-              fontSize: '13px',
-              backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
-            }}
-          >
-            {index + 1}
-          </CTableDataCell>
-
-          {columns.map((col) => (
-            <CTableDataCell
-              key={col.accessor}
-              className="text-center"
-              style={{
-                padding: '12px',
-                color: '#242424',
-                fontSize: '13px',
-                backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
-              }}
-            >
-              {col.accessor === 'reason' ? (
-                <CTooltip content={item[col.accessor] || '--'} placement="top">
-                  <span
+            {loading ? (
+              <CTableRow>
+                <CTableDataCell
+                  colSpan={columns.length + 2}
+                  className="text-center"
+                  style={{
+                    padding: '20px 0',
+                    fontSize: '16px',
+                    color: '#999',
+                  }}
+                >
+                  <img src={myGif} alt="Animated GIF" width="100" />
+                </CTableDataCell>
+              </CTableRow>
+            ) : sortedData.length > 0 ? (
+              sortedData
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((item, index) => (
+                  <CTableRow
+                    key={index}
                     style={{
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
+                      backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd', // Grey for even rows, transparent for odd rows
+                      transition: 'background-color 0.3s ease',
+                      borderBottom: '1px solid #e0e0e0',
                     }}
-                    onClick={() => {
-                      // Handle the click event here
-                      // alert('Reason clicked: ' + (item[col.accessor] || '--'));
-                    }}
+                    hover
                   >
-                    {item[col.accessor]
-                      ? item[col.accessor].split(' ').slice(0, 2).join(' ') + '...'
-                      : '--'}
-                  </span>
-                </CTooltip>
-              ) : (
-                item[col.accessor] || '--'
-              )}
-            </CTableDataCell>
-          ))}
-        </CTableRow>
-      ))
-  ) : (
-    <CTableRow>
-      <CTableDataCell
-        colSpan={columns.length + 2}
-        className="text-center"
-        style={{
-          padding: '20px 0',
-          fontSize: '16px',
-          color: '#999',
-        }}
-      >
-        No data available
-      </CTableDataCell>
-    </CTableRow>
-  )}
-</CTableBody>
+                    <CTableDataCell
+                      className="text-center"
+                      style={{
+                        padding: '12px',
+                        color: '#242424',
+                        fontSize: '13px',
+                        backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
+                      }}
+                    >
+                      {index + 1}
+                    </CTableDataCell>
 
+                    {columns.map((col) => (
+                      <CTableDataCell
+                        key={col.accessor}
+                        className="text-center"
+                        style={{
+                          padding: '12px',
+                          color: '#242424',
+                          fontSize: '13px',
+                          backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
+                        }}
+                      >
+                        {col.accessor === 'reason' ? (
+                          <CTooltip content={item[col.accessor] || '--'} placement="top">
+                            <span
+                              style={{
+                                cursor: 'pointer',
+                                textDecoration: 'underline',
+                              }}
+                              onClick={() => {
+                                // Handle the click event here
+                                // alert('Reason clicked: ' + (item[col.accessor] || '--'));
+                              }}
+                            >
+                              {item[col.accessor]
+                                ? item[col.accessor].split(' ').slice(0, 2).join(' ') + '...'
+                                : '--'}
+                            </span>
+                          </CTooltip>
+                        ) : (
+                          item[col.accessor] || '--'
+                        )}
+                      </CTableDataCell>
+                    ))}
+                  </CTableRow>
+                ))
+            ) : (
+              <CTableRow>
+                <CTableDataCell
+                  colSpan={columns.length + 2}
+                  className="text-center"
+                  style={{
+                    padding: '20px 0',
+                    fontSize: '16px',
+                    color: '#999',
+                  }}
+                >
+                  No data available
+                </CTableDataCell>
+              </CTableRow>
+            )}
+          </CTableBody>
         </CTable>
       </TableContainer>
 
@@ -716,4 +857,4 @@ const exportToPDF = PDFExporter({
   )
 }
 
-export default ApproveRequest
+export default DistanceReport

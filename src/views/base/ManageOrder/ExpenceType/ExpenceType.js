@@ -61,7 +61,7 @@ import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode'
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 const ExpenceType = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -615,7 +615,7 @@ useEffect(() => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                  <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (

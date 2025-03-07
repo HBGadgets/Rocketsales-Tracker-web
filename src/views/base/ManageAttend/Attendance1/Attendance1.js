@@ -62,6 +62,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component'
 import emptyimage from '../../images/emptyimage.jpg'
 import debounce from 'lodash.debounce'
 import { number } from 'prop-types'
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 // import { String } from 'core-js/shim'
 // import { DialogContent } from "@mui/material";
 // import { useNavigate } from 'react-router-dom';
@@ -705,7 +706,7 @@ useEffect(() => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                  <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (

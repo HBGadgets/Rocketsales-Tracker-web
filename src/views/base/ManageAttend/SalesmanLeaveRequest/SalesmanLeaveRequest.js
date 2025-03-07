@@ -62,7 +62,7 @@ import { BsCalendarCheck } from 'react-icons/bs';
 import { FaClock } from 'react-icons/fa';
 import { CTooltip } from '@coreui/react';
 import debounce from 'lodash.debounce';
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 const SalesmanLeaveRequest = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -759,7 +759,7 @@ useEffect(() => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                  <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (

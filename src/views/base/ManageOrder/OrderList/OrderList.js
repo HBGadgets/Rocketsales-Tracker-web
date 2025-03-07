@@ -76,7 +76,7 @@ import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material'
 import PercentIcon from '@mui/icons-material/Percent' // Import GST percent icon
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber'
 import DiscountIcon from '@mui/icons-material/Discount'
-
+import myGif from "../../ReusablecodeforTable/loadergif.gif"
 const OrderList = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -1048,7 +1048,7 @@ useEffect(() => {
                     color: '#999',
                   }}
                 >
-                  Loading...
+                  <img src={myGif} alt="Animated GIF" width="100" />
                 </CTableDataCell>
               </CTableRow>
             ) : sortedData.length > 0 ? (

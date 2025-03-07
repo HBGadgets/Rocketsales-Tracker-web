@@ -73,6 +73,7 @@
 import debounce from 'lodash.debounce';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+<img src={myGif} alt="Animated GIF" width="100" />
 // import { set } from 'core-js/core/dict'
 
   // const token = Cookies.get('token')
@@ -1078,8 +1079,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
                       color: '#999',
                     }}
                   >
-                    Loading...
-                  </CTableDataCell>
+<img src={myGif} alt="Animated GIF" width="100" />                  </CTableDataCell>
                 </CTableRow>
               ) : sortedData.length > 0 ? (
                 sortedData
