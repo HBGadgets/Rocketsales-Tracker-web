@@ -464,6 +464,26 @@ const createNav = () => {
             </div>
           ),
         },
+        {
+          component: CNavItem,
+          name: 'Task Report',
+          to: '/SalesmanTaskReport',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <PiRoadHorizonDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
+        {
+          component: CNavItem,
+          name: 'CheckIn & CheckOut',
+          to: '/CheckInCheckOut',
+          icon: (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <PiRoadHorizonDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
+            </div>
+          ),
+        },
        
        
         
