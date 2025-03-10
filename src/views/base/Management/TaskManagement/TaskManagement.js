@@ -75,7 +75,7 @@ import myGif from "../../ReusablecodeforTable/loadergif.gif"
 import debounce from 'lodash.debounce';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import myGif from "../../ReusablecodeforTable/loadergif.gif"
+// import myGif from "../../ReusablecodeforTable/loadergif.gif"
 // import { set } from 'core-js/core/dict'
 
   // const token = Cookies.get('token')
