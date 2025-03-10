@@ -137,7 +137,8 @@ const UserTable = () => {
   
   const [salesmenData, setSalesmenData] = useState(null)
 
-  const SOCKET_SERVER_URL = 'http://104.251.218.102:8080'
+  // const SOCKET_SERVER_URL = 'http://104.251.218.102:8080'
+  const SOCKET_SERVER_URL = import.meta.env.VITE_SERVER_URL;
   useEffect(() => {
     const socket = io(SOCKET_SERVER_URL, { transports: ['websocket'] });
     const token = Cookies.get('token');
