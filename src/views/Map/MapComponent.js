@@ -85,7 +85,7 @@ const MainMap = () => {
       <MapContainer
         center={mapCenter}
         zoom={10}
-        style={{ height: '550px', width: '100%' }}
+        style={{ height: '450px', width: '100%' }}
         scrollWheelZoom={true}
       >
         {/* Tile layer for the map */}
