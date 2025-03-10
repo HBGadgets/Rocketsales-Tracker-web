@@ -75,14 +75,13 @@
 //   const [searchQuery, setSearchQuery] = useState('')
 
 //   const [pageCount, setPageCount] = useState()
- 
+
 //   const [filteredData, setFilteredData] = useState([])
 //   const [currentPage, setCurrentPage] = useState(1)
 //   const [page, setPage] = useState(0)
 //   const [rowsPerPage, setRowsPerPage] = useState(25)
 //   const [columns, setColumns] = useState([]);
 
-  
 //   const [sortedData, setSortedData] = useState([])
 //   const [startDate, setStartDate] = useState('')
 //   const [endDate, setEndDate] = useState('')
@@ -154,8 +153,8 @@
 //     input: {
 //       padding: '8px 2px',
 //       borderRadius: '6px',
-//       border: '1px solid #444', 
-//       color: 'black', 
+//       border: '1px solid #444',
+//       color: 'black',
 //       fontSize: '14px',
 //       width: '136px',
 //     },
@@ -176,16 +175,16 @@
 //   }
 //   const handleApply = () => {
 //     if (!startDate || !endDate) return;
-  
+
 //     const formattedStartDate = formatToUTCString(startDate);
 //     const formattedEndDate = formatToUTCString(endDate);
 //     console.log(`Start Date: ${formattedStartDate}, End Date: ${formattedEndDate}`);
-  
+
 //     // Generate date-based columns dynamically
 //     const start = new Date(startDate);
 //     const end = new Date(endDate);
 //     const newDateColumns = [];
-  
+
 //     while (start <= end) {
 //       const formattedDate = start.toISOString().split('T')[0]; // YYYY-MM-DD format
 //       newDateColumns.push({
@@ -194,19 +193,17 @@
 //       });
 //       start.setDate(start.getDate() + 1); // Move to the next day
 //     }
-  
+
 //     // Set new columns (including static ones)
 //     setColumns([
 //       { Header: "SN", accessor: "sn" },
 //       { Header: "Name", accessor: "name" },
 //       ...newDateColumns, // Add generated date columns
 //     ]);
-  
+
 //     // Fetch data with selected date range
 //     fetchData(formattedStartDate, formattedEndDate, selectedPeriod);
 //   };
-  
-  
 
 //   const style = {
 //     position: 'absolute',
@@ -226,43 +223,42 @@
 //     marginTop: '8px',
 //   }
 
- 
 //   const [selectedSalesmen, setSelectedSalesmen] = useState([])
 //   const fetchData = async (startDate, endDate, selectedPeriod, page = 1) => {
 //     setLoading(true);
 //     const accessToken = Cookies.get("token");
-  
+
 //     let url = `${import.meta.env.VITE_SERVER_URL}/api/distancedaywise`;
-  
+
 //     if (!selectedSalesmen) {
 //       console.error("Error: No Salesman selected.");
 //       setLoading(false);
 //       return;
 //     }
-  
+
 //     const queryParams = new URLSearchParams({ usernames: selectedSalesmen });
-  
+
 //     if (selectedPeriod && selectedPeriod !== "Custom") {
 //       queryParams.append("period", selectedPeriod);
 //     } else if (startDate && endDate) {
 //       queryParams.append("startDate", startDate);
 //       queryParams.append("endDate", endDate);
 //     }
-  
+
 //     url += `?${queryParams.toString()}`;
-  
+
 //     console.log("Constructed URL:", url);
 //     console.log("Access Token:", accessToken);
-  
+
 //     try {
 //       const response = await axios.get(url, {
 //         headers: { Authorization: `Bearer ${accessToken}` },
 //       });
-  
+
 //       console.log("Raw API Response:", response);
-  
+
 //       let responseData = response.data;
-  
+
 //       // ✅ Check if response is already an object
 //       if (typeof responseData === "string") {
 //         try {
@@ -276,9 +272,9 @@
 //           return;
 //         }
 //       }
-  
+
 //       console.log("Parsed API Response:", responseData);
-  
+
 //       // ✅ Ensure `salesmanDistances` exists
 //       if (!responseData.salesmanDistances || typeof responseData.salesmanDistances !== "object") {
 //         console.error("Error: salesmanDistances is missing or invalid", responseData);
@@ -286,30 +282,30 @@
 //         setSortedData([]);
 //         return;
 //       }
-  
+
 //       // ✅ Extract salesmen with non-zero totalDistance
 //       const transformedData = [];
-  
+
 //       Object.entries(responseData.salesmanDistances).forEach(([salesmanName, dates]) => {
 //         let salesmanData = { salesmanName };
-  
+
 //         Object.entries(dates).forEach(([date, data]) => {
 //           if (data && data.totalDistance && data.totalDistance !== "0.00 km") {
 //             salesmanData[date] = data.totalDistance;
 //           }
 //         });
-  
+
 //         if (Object.keys(salesmanData).length > 1) {
 //           transformedData.push(salesmanData);
 //         }
 //       });
-  
+
 //       console.log("Formatted Data:", transformedData);
 //       setData(transformedData);
 //       setSortedData(transformedData);
 //     } catch (error) {
 //       console.error("Error fetching or processing data:", error);
-  
+
 //       if (error.response) {
 //         console.error("Error Response:", error.response);
 //       } else if (error.request) {
@@ -319,20 +315,6 @@
 //       setLoading(false);
 //     }
 //   };
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
 //   function formatDate(date) {
 //     const d = new Date(date)
@@ -505,7 +487,6 @@
 //   //   value: salesman.username,
 //   //   label: salesman.salesmanName,
 //   // }))
-
 
 //   return (
 //     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
@@ -797,12 +778,12 @@
 //                     >
 //                       {index + 1}
 //                     </CTableDataCell>
-                
+
 //                     {columns.map((col) => {
 //                       const date = col.accessor; // Column header (e.g., '2025-03-02')
 //                       const salesmanName = item.name; // Extract salesman name from row data
 //                       const salesData = responseData?.salesmanDistances?.[salesmanName]?.[date];
-                
+
 //                       return (
 //                         <CTableDataCell
 //                           key={col.accessor}
@@ -861,9 +842,6 @@
 // }
 
 // export default DistanceReport
-
-
-
 
 import React, { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
@@ -926,10 +904,10 @@ import ExcelJS from 'exceljs'
 import PDFExporter from '../../ReusablecodeforTable/PDFExporter'
 import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
-import { FaThumbsUp } from 'react-icons/fa';
-import { CTooltip } from '@coreui/react';
-import debounce from 'lodash.debounce';
-import myGif from "../../ReusablecodeforTable/loadergif.gif"
+import { FaThumbsUp } from 'react-icons/fa'
+import { CTooltip } from '@coreui/react'
+import debounce from 'lodash.debounce'
+import myGif from '../../ReusablecodeforTable/loadergif.gif'
 // import { useNavigate } from 'react-router-dom';
 import { Autocomplete } from '@mui/material'
 const DistanceReport = () => {
@@ -937,7 +915,7 @@ const DistanceReport = () => {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [formData, setFormData] = useState({})
   const [loading, setLoading] = useState(true)
-  const [data, setData] = useState([])
+  // const [data, setData] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
 
   const [pageCount, setPageCount] = useState()
@@ -947,14 +925,14 @@ const DistanceReport = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(25)
-  const columns = COLUMNS()
+  // const columns = COLUMNS()
   const [sortedData, setSortedData] = useState([])
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [selectedPeriod, setSelectedPeriod] = useState('today')
   const [showCustomDates, setShowCustomDates] = useState(false)
-     const [sortBy, setSortBy] = useState('')
-      const [sortOrder, setSortOrder] = useState('asc')
+  const [sortBy, setSortBy] = useState('')
+  const [sortOrder, setSortOrder] = useState('asc')
   const navigate = useNavigate()
 
   const styles = {
@@ -1066,47 +1044,61 @@ const DistanceReport = () => {
     marginTop: '8px',
   }
 
-  const fetchData = async (startDate, endDate, selectedPeriod) => {
-    setLoading(true);
-    const accessToken = Cookies.get('token');
-  
-    // Ensure selectedSalesmen is an array before joining
-    const usernamesQuery = selectedSalesmen.length > 0 ? `usernames=${selectedSalesmen.join(',')}` : '';
-  
-    let url = `${import.meta.env.VITE_SERVER_URL}/api/distancedaywise?${usernamesQuery}`;
-  
-    if (selectedPeriod) {
-      url += `&period=${selectedPeriod}`;
+  const [columns, setColumns] = useState([])
+  const [data, setData] = useState([])
+
+  const fetchData = async (startDate, endDate, selectedPeriod, page = 1) => {
+    setLoading(true)
+    const accessToken = Cookies.get('token')
+
+    const usernamesQuery =
+      selectedSalesmen.length > 0 ? `usernames=${selectedSalesmen.join(',')}` : ''
+    let url = `${import.meta.env.VITE_SERVER_URL}/api/distancedaywise?${usernamesQuery}`
+
+    if (selectedPeriod && selectedPeriod !== 'Custom') {
+      url += `&filter=${selectedPeriod}`
     } else if (startDate && endDate) {
-      url += `&startDate=${startDate}&endDate=${endDate}`;
+      url += `&startDate=${startDate}&endDate=${endDate}`
     }
-  
-    console.log('Generated URL:', url);
-    console.log('Access Token:', accessToken);
-  
+
+    console.log('Generated URL:', url)
+
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      });
-  
-      console.log('Response:', response.data);
-  
-      if (response.data.success) {
-        setData(response.data.data);
-        setSortedData(response.data.data);
+      })
+
+      console.log('Response:', response.data)
+
+      if (response.data) {
+        const apiData = response.data
+
+        if (apiData.length > 0) {
+          // Extract unique keys dynamically
+          const keys = Object.keys(apiData[0])
+
+          // Create dynamic columns
+          const dynamicColumns = keys.map((key) => ({
+            Header: key == 'salesmanName' ? 'Salesman Name' : key, // Format header
+            accessor: key,
+          }))
+
+          setColumns(dynamicColumns)
+        }
+
+        setData(apiData)
       } else {
-        console.error('Error:', response.data.message);
+        console.error('Error:', response.data.message)
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching data:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-  
-  
+  }
+
   // cc
 
   // Format the date into DD-MM-YYYY format
@@ -1123,9 +1115,9 @@ const DistanceReport = () => {
     const [day, month, year] = dateString.split('-').map(Number)
     return new Date(year, month - 1, day)
   }
-   useEffect(() => {
-        fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod);
-      }, []);
+  useEffect(() => {
+    fetchData(formatToUTCString(startDate), formatToUTCString(endDate), selectedPeriod)
+  }, [])
   // useEffect(() => {
   //   setLoading(true)
   //   // fetchData() // Refetch data when searchQuery changes
@@ -1145,42 +1137,41 @@ const DistanceReport = () => {
     }
   }
   const debouncedFilter = useCallback(
-        debounce((query, sourceData) => {
-          if (!query) {
-            setFilteredData(sourceData);
-            return;
-          }
-          const filtered = sourceData.filter(item =>
-            Object.values(item).some(value =>
-              value?.toString().toLowerCase().includes(query.toLowerCase())
-            )
-          );
-          // const filtered = sourceData.filter(item =>
-          //   Object.entries(item).some(([key, value]) => {
-          //     if (key === 'profileImgUrl') return false; // Skip searching the profileImage field
-          //     return value?.toString().toLowerCase().includes(query.toLowerCase());
-          //   })
-          // );
-          
-          
-          setFilteredData(filtered);
-        }, 500),
-        []
-      );
-      // Handle search input changes
-      const handleSearchChange = (e) => {
-        const query = e.target.value;
-        setSearchQuery(query);
-        debouncedFilter(query, data);
-      };
-    
-      // Cancel debounce on component unmount
-      useEffect(() => {
-        return () => debouncedFilter.cancel();
-      }, [debouncedFilter]);
-      useEffect(() => {
-        setFilteredData(data);
-      }, [data])
+    debounce((query, sourceData) => {
+      if (!query) {
+        setFilteredData(sourceData)
+        return
+      }
+      const filtered = sourceData.filter((item) =>
+        Object.values(item).some((value) =>
+          value?.toString().toLowerCase().includes(query.toLowerCase()),
+        ),
+      )
+      // const filtered = sourceData.filter(item =>
+      //   Object.entries(item).some(([key, value]) => {
+      //     if (key === 'profileImgUrl') return false; // Skip searching the profileImage field
+      //     return value?.toString().toLowerCase().includes(query.toLowerCase());
+      //   })
+      // );
+
+      setFilteredData(filtered)
+    }, 500),
+    [],
+  )
+  // Handle search input changes
+  const handleSearchChange = (e) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    debouncedFilter(query, data)
+  }
+
+  // Cancel debounce on component unmount
+  useEffect(() => {
+    return () => debouncedFilter.cancel()
+  }, [debouncedFilter])
+  useEffect(() => {
+    setFilteredData(data)
+  }, [data])
   // useEffect(() => {
   //   filterGroups(searchQuery)
   // }, [data, searchQuery])
@@ -1193,7 +1184,6 @@ const DistanceReport = () => {
     fetchData(page)
   }
 
-
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10)
     setRowsPerPage(newRowsPerPage === -1 ? sortedData.length : newRowsPerPage) // Set to all rows if -1
@@ -1204,87 +1194,85 @@ const DistanceReport = () => {
     setPage(newPage)
   }
 
-
   const exportToExcel = ExcelExporter({
-    mytitle:'Approved Request Data',
+    mytitle: 'Approved Request Data',
     columns: COLUMNS(),
     data: filteredData,
     fileName: 'Approve_Request_data.xlsx',
-   
-  });
+  })
 
-const exportToPDF = PDFExporter({
-  title: 'Approved Request Data',
-  columns: COLUMNS(),
-  data: filteredData,
-  fileName: 'Approve_Request_report.pdf',
-});
- 
-  const handleSort=(accessor)=>{
-    if(sortBy===accessor){
-      setSortOrder(sortOrder==='asc'?'desc':'asc')
-    }else{
-      setSortBy(accessor);
-      setSortOrder('asc');
+  const exportToPDF = PDFExporter({
+    title: 'Approved Request Data',
+    columns: COLUMNS(),
+    data: filteredData,
+    fileName: 'Approve_Request_report.pdf',
+  })
+
+  const handleSort = (accessor) => {
+    if (sortBy === accessor) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(accessor)
+      setSortOrder('asc')
     }
   }
   useEffect(() => {
     if (sortBy) {
       const sorted = [...filteredData].sort((a, b) => {
-        const aValue = a[sortBy];
-        const bValue = b[sortBy];
-        
+        const aValue = a[sortBy]
+        const bValue = b[sortBy]
+
         // Handle different data types
         if (typeof aValue === 'number' && typeof bValue === 'number') {
-          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue
         }
-        
+
         // Handle dates
         if (aValue instanceof Date && bValue instanceof Date) {
-          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+          return sortOrder === 'asc' ? aValue - bValue : bValue - aValue
         }
-        
-        // Default string comparison
-        return sortOrder === 'asc' 
-          ? String(aValue).localeCompare(String(bValue))
-          : String(bValue).localeCompare(String(aValue));
-      });
-  
-      setSortedData(sorted);
-    } else {
-      setSortedData(filteredData);
-    }
-  }, [filteredData, sortBy, sortOrder]);
 
-    const [selectedSalesmen, setSelectedSalesmen] = useState('')
+        // Default string comparison
+        return sortOrder === 'asc'
+          ? String(aValue).localeCompare(String(bValue))
+          : String(bValue).localeCompare(String(aValue))
+      })
+
+      setSortedData(sorted)
+    } else {
+      setSortedData(filteredData)
+    }
+  }, [filteredData, sortBy, sortOrder])
+
+  const [selectedSalesmen, setSelectedSalesmen] = useState('')
   const [salesmen, setSalesmen] = useState([])
-    useEffect(() => {
-      const fetchDatasalesman = async () => {
-        const accessToken = Cookies.get('token')
-        const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`
-  
-        try {
-          const response = await axios.get(url, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          })
-  
-          if (response.data && response.data.salesmandata) {
-            const formattedData = response.data.salesmandata.map((item) => ({
-              _id: item._id,
-              username: item.username,
-              salesmanName: item.salesmanName || 'Unknown',
-            }))
-            setSalesmen(formattedData)
-          } else {
-            console.error('Salesman data is missing or incorrectly structured.')
-          }
-        } catch (error) {
-          console.error('Error fetching salesman data:', error)
+  useEffect(() => {
+    const fetchDatasalesman = async () => {
+      const accessToken = Cookies.get('token')
+      const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`
+
+      try {
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+
+        if (response.data && response.data.salesmandata) {
+          const formattedData = response.data.salesmandata.map((item) => ({
+            _id: item._id,
+            username: item.username,
+            salesmanName: item.salesmanName || 'Unknown',
+          }))
+          setSalesmen(formattedData)
+        } else {
+          console.error('Salesman data is missing or incorrectly structured.')
         }
+      } catch (error) {
+        console.error('Error fetching salesman data:', error)
       }
-  
-      fetchDatasalesman()
-    }, [])
+    }
+
+    fetchDatasalesman()
+  }, [])
   return (
     <div className="d-flex flex-column mx-md-3 mt-3 h-auto">
       <Toaster position="top-center" reverseOrder={false} />
@@ -1299,51 +1287,56 @@ const exportToPDF = PDFExporter({
                 color: '#4c637c',
                 fontWeight: '600',
                 fontFamily: "'Poppins', sans-serif",
+                whiteSpace:"nowrap",
+                flexWrap:"nowrap",
+                overflow:"hidden",
+                textOverflow:"ellipsis",
               }}
             >
               <FaThumbsUp style={{ fontSize: '24px', color: '#4c637c' }} />
               Distance Report
             </h2>
           </div>
-   <div style={styles.container}>
+          <div style={styles.container}>
             <div style={styles.inputGroup}>
               <label htmlFor="salesman" style={styles.label}>
                 Salesman:
               </label>
-             <FormControl fullWidth>
-  <Autocomplete
-    multiple
-    id="searchable-salesman-select"
-    options={Array.isArray(salesmen) ? salesmen : []} // Ensure it's an array
-    getOptionLabel={(option) => option?.salesmanName || 'Unknown'} // Avoid undefined errors
-    value={salesmen?.filter((salesman) =>
-      selectedSalesmen?.includes(salesman?.username),
-    ) || []} // Ensure proper filtering
-    onChange={(event, newValue) => {
-      const selectedUsernames = newValue?.map((salesman) => salesman?.username) || [];
-      setSelectedSalesmen(selectedUsernames); // Update state safely
-      console.log('Selected Salesmen:', selectedUsernames);
-    }}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        placeholder={selectedSalesmen?.length > 0 ? '' : 'Select Salesman'} // Fix variable name
-        variant="outlined"
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            height: '38px',
-            minWidth: '150px',
-            paddingRight: '32px',
-          },
-          '& input': {
-            padding: '8px 14px',
-          },
-        }}
-      />
-    )}
-  />
-</FormControl>
-
+              <FormControl fullWidth>
+                <Autocomplete
+                  multiple
+                  id="searchable-salesman-select"
+                  options={Array.isArray(salesmen) ? salesmen : []} // Ensure it's an array
+                  getOptionLabel={(option) => option?.salesmanName || 'Unknown'} // Avoid undefined errors
+                  value={
+                    salesmen?.filter((salesman) =>
+                      selectedSalesmen?.includes(salesman?.username),
+                    ) || []
+                  } // Ensure proper filtering
+                  onChange={(event, newValue) => {
+                    const selectedUsernames = newValue?.map((salesman) => salesman?.username) || []
+                    setSelectedSalesmen(selectedUsernames) // Update state safely
+                    console.log('Selected Salesmen:', selectedUsernames)
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder={selectedSalesmen?.length > 0 ? '' : 'Select Salesman'} // Fix variable name
+                      variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          height: '38px',
+                          minWidth: '150px',
+                          paddingRight: '32px',
+                        },
+                        '& input': {
+                          padding: '8px 14px',
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </FormControl>
             </div>
           </div>
           <div style={styles.container}>
@@ -1425,7 +1418,7 @@ const exportToPDF = PDFExporter({
           {/* Settings Dropdown */}
 
           {/* Add Button */}
-       
+
           <CDropdown className="position-relative me-3">
             <CDropdownToggle
               color="secondary"
@@ -1441,8 +1434,8 @@ const exportToPDF = PDFExporter({
             </CDropdownToggle>
             <CDropdownMenu>
               {/* <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem> */}
-                   <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
-                   <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
+              <CDropdownItem onClick={exportToPDF}>PDF</CDropdownItem>
+              <CDropdownItem onClick={exportToExcel}>Excel</CDropdownItem>
             </CDropdownMenu>
           </CDropdown>
         </div>
@@ -1478,48 +1471,56 @@ const exportToPDF = PDFExporter({
           hover
           responsive
         >
-          <CTableHead>
-            <CTableRow>
-              <CTableHeaderCell
-                className="text-center"
-                style={{
-                  backgroundColor: '#1d3d5f',
-                  padding: '5px 12px', // Reduced padding for top and bottom
-                  borderBottom: '1px solid #e0e0e0', // Light border under headers
-                  textAlign: 'center', // Center header text
-                  verticalAlign: 'middle',
-                  color: 'white',
-                }}
-              >
-                SN
-              </CTableHeaderCell>
-              {columns.map((col) => (
-                <CTableHeaderCell
-                  key={col.accessor}
-                  className="text-center"
-                  style={{
-                    padding: '5px 12px', // Reduced padding for top and bottom
-                    borderBottom: '1px solid #e0e0e0', // Light border under headers
-                    textAlign: 'center', // Center header text
-                    verticalAlign: 'middle',
-                    backgroundColor: '#1d3d5f',
-                    color: 'white',
-                  }}
-                  onClick={()=>handleSort(col.accessor)}
-                >
-                 {col.Header}
-                  {sortBy===col.accessor && (
-                    <span style={{ marginLeft: '5px' }}>
-                      {sortOrder === 'asc' ? '↑' : '↓'}
-                    </span>
-                  )}
-                </CTableHeaderCell>
-              ))}
-            
-            </CTableRow>
-          </CTableHead>
+         <CTableHead>
+  <CTableRow>
+    <CTableHeaderCell
+      className="text-center"
+      style={{
+        backgroundColor: '#1d3d5f', // Dark blue background
+        padding: '8px 16px', // Adjusted padding for better spacing
+        borderBottom: '2px solid #e0e0e0', // Stronger border for clarity
+        textAlign: 'center', // Ensures text is centered
+        verticalAlign: 'middle', // Aligns text in the middle
+        color: 'white', // White text for contrast
+        fontWeight: 'bold', // Makes the header text stand out
+        letterSpacing: '0.5px', // Adds slight spacing for readability
+        textTransform: 'uppercase', // Converts text to uppercase for a sleek look
+      }}
+    >
+      SN
+    </CTableHeaderCell>
+    {columns.map((col) => (
+      <CTableHeaderCell
+        key={col.accessor}
+        className="text-center"
+        style={{
+          padding: '8px 16px', // Adjusted padding for better spacing
+          borderBottom: '2px solid #e0e0e0', // Stronger border
+          textAlign: 'center',
+          verticalAlign: 'middle',
+          backgroundColor: '#1d3d5f',
+          color: 'white',
+          fontWeight: 'bold',
+          letterSpacing: '0.5px',
+          textTransform: 'uppercase',
+          cursor: 'pointer', // Indicate clickability for sorting
+          userSelect: 'none', // Prevent text selection when clicking
+        }}
+        onClick={() => handleSort(col.accessor)}
+      >
+        {col.Header}
+        {sortBy === col.accessor && (
+          <span style={{ marginLeft: '8px', fontSize: '14px' }}>
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </span>
+        )}
+      </CTableHeaderCell>
+    ))}
+  </CTableRow>
+</CTableHead>
 
-          <CTableBody>
+
+<CTableBody>
   {loading ? (
     <CTableRow>
       <CTableDataCell
@@ -1531,69 +1532,45 @@ const exportToPDF = PDFExporter({
           color: '#999',
         }}
       >
-        <img src={myGif} alt="Animated GIF" width="100" />
+        <img src={myGif} alt="Loading" width="100" />
       </CTableDataCell>
     </CTableRow>
-  ) : sortedData.length > 0 ? (
-    sortedData
-      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-      .map((item, index) => (
-        <CTableRow
-          key={index}
+  ) : data.length > 0 ? (
+    data.map((item, index) => (
+      <CTableRow
+        key={index}
+        style={{
+          backgroundColor: index % 2 == 0 ? 'transparent' : '#f1f8fd',
+          transition: 'background-color 0.3s ease',
+          borderBottom: '1px solid #e0e0e0',
+        }}
+      >
+        <CTableDataCell
+          className="text-center"
           style={{
-            backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd', // Grey for even rows, transparent for odd rows
-            transition: 'background-color 0.3s ease',
-            borderBottom: '1px solid #e0e0e0',
+            padding: '0px 12px',
+            color: '#242424',
+            fontSize: '13px',
           }}
-          hover
         >
+          {index + 1}
+        </CTableDataCell>
+
+        {columns.map((col) => (
           <CTableDataCell
+            key={col.accessor}
             className="text-center"
             style={{
-              padding: '12px',
+              padding: '0px 12px',
               color: '#242424',
               fontSize: '13px',
-              backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
             }}
           >
-            {index + 1}
+            {item[col.accessor] || '--'}
           </CTableDataCell>
-
-          {columns.map((col) => (
-            <CTableDataCell
-              key={col.accessor}
-              className="text-center"
-              style={{
-                padding: '12px',
-                color: '#242424',
-                fontSize: '13px',
-                backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
-              }}
-            >
-              {col.accessor === 'reason' ? (
-                <CTooltip content={item[col.accessor] || '--'} placement="top">
-                  <span
-                    style={{
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                    }}
-                    onClick={() => {
-                      // Handle the click event here
-                      // alert('Reason clicked: ' + (item[col.accessor] || '--'));
-                    }}
-                  >
-                    {item[col.accessor]
-                      ? item[col.accessor].split(' ').slice(0, 2).join(' ') + '...'
-                      : '--'}
-                  </span>
-                </CTooltip>
-              ) : (
-                item[col.accessor] || '--'
-              )}
-            </CTableDataCell>
-          ))}
-        </CTableRow>
-      ))
+        ))}
+      </CTableRow>
+    ))
   ) : (
     <CTableRow>
       <CTableDataCell

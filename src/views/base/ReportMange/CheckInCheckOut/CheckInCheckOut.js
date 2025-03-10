@@ -491,7 +491,7 @@ useEffect(() => {
       <div className="d-flex justify-content-between mb-2">
         <div style={{ display: 'flex', gap: '42px' }}>
           <div>
-            <h2
+            {/* <h2
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -502,8 +502,26 @@ useEffect(() => {
               }}
             >
               <BsFillPersonCheckFill style={{ fontSize: '24px', color: '#4c637c' }} />
-              CheckIn CheckOut Data
-            </h2>
+              <div>In & Out Data</div>
+            </h2> */}
+            <h2
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    color: '#4c637c',
+    fontWeight: '600',
+    fontFamily: "'Poppins', sans-serif",
+    whiteSpace: 'nowrap', // Prevents text from wrapping
+    flexWrap: 'nowrap', // Ensures content stays in one line
+    overflow: 'hidden', // Prevents overflow
+    textOverflow: 'ellipsis', // Adds "..." if content overflows
+  }}
+>
+  <BsFillPersonCheckFill style={{ fontSize: '24px', color: '#4c637c' }} />
+  <div>CheckIn & CheckOut Data</div>
+</h2>
+
           </div>
 
           <div style={styles.container}>
