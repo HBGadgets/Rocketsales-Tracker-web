@@ -13,6 +13,10 @@ export const columns = [
     accessor: 'salesmanName',
   },
   {
+    Header: 'Username Name',
+    accessor: 'username',
+  },
+  {
     Header: 'Phone',
     accessor: 'salesmanPhone',
   },
@@ -67,16 +71,16 @@ export const columns = [
     Header: 'Status',
     accessor: 'timestamp',
     Cell: ({ value }) => {
-      if (!value) return <span>N/A</span>;
+      if (!value) return <span>--</span>;
   
       const now = new Date();
       const timestampDate = new Date(value);
       const diffSeconds = (now - timestampDate) / 1000;
   
-      return diffSeconds <= 20 ? (
-        <span style={{ color: 'green' }}>Online</span>
+      return diffSeconds <= 10? (
+        <span><strong>🟢 Online</strong></span>
       ) : (
-        <span style={{ color: 'red' }}>Offline</span>
+        <span><strong>🔴 Offline</strong></span>
       );
     }
   }

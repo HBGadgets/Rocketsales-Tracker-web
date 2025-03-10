@@ -89,11 +89,24 @@ const UserTable = () => {
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
-  const filteredData = data.filter((item) =>
-    Object.values(item).some((value) =>
-      value?.toString().toLowerCase().includes(searchQuery.toLowerCase()),
-    ),
-  )
+  // const filteredData = data.filter((item) =>
+  //   Object.values(item).some((value) =>
+  //     value?.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+  //   ),
+  // )
+  const filteredData = data.filter((item) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      item.salesmanName?.toLowerCase().includes(searchLower) || // Salesman name
+      item.salesmanEmail?.toLowerCase().includes(searchLower) || // Email
+      item.salesmanPhone?.toLowerCase().includes(searchLower) || // Phone
+      item.companyName?.toLowerCase().includes(searchLower) || // Company name
+      item.branchName?.toLowerCase().includes(searchLower) || // Branch name
+      item.supervisorName?.toLowerCase().includes(searchLower) || // Supervisor name
+      item.batteryLevel?.toString().includes(searchQuery) || // Battery level
+      item.username?.toLowerCase().includes(searchLower) // Username (if applicable)
+    );
+  });
   const displayedData =
     rowsPerPage === -1
       ? filteredData
@@ -143,6 +156,7 @@ const UserTable = () => {
           companyName: item.companyId?.companyName || 'Unknown',
           branchName: item.branchId?.branchName || 'Unknown',
           supervisorName: item.supervisorId?.supervisorName || 'Unknown',
+          battery:item.batteryLevel || 'Unknown',
         }));
   console.log("modifiedData",modifiedData)
         setData(modifiedData);
@@ -394,9 +408,9 @@ const UserTable = () => {
               ) : col.accessor === 'createdAt' ? (
                 item[col.accessor] ? format(new Date(item[col.accessor]), 'dd MMM yyyy') : 'N/A'
               ) :col.accessor === 'timestamp' ? (
-                item[col.accessor] ? format(new Date(item[col.accessor]), 'hh:mm a, dd MMMM') : 'N/A'
+                item[col.accessor] ? format(new Date(item[col.accessor]), 'hh:mm a, dd MMM') : '--'
               ) : (
-                item[col.accessor] || 'N/A'
+                item[col.accessor] || '--'
               )}        {isOpen && (
                 <div
                   onClick={closePopup} // Clicking outside closes the popup
