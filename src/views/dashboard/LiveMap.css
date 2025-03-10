@@ -31,7 +31,7 @@
 
 .map-container {
   height: 100%;
-  width: 100%;
+  width: 80%;
 }
 
 .popup-content h4 {
@@ -105,6 +105,76 @@
   cursor: pointer;
 }
 
-.marker-icon{
-  
+.data-warning-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 100px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+.satellite-control {
+  background: white !important;
+  border-radius: 50px !important;
+  /* box-shadow: 0 1px 5px rgba(0,0,0,0.2) !important; */
+  padding: 0px !important;
+  z-index: 1000 !important;
+}
+
+.satellite-toggle-btn {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.satellite-toggle-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  transition: stroke 0.2s ease-in-out !important;
+}
+.satellite-control {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+  margin-top: 50px;
+}
+
+.satellite-toggle-btn {
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+}
+
+.satellite-icon {
+  width: 20px;
+  height: 20px;
+  filter: grayscale(100%) brightness(0.5);
+  transition: all 0.2s ease;
+}
+
+.satellite-icon.active {
+  filter: none;
+  animation: satellite-pulse 1s ease-in-out infinite;
+}
+
+@keyframes satellite-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }

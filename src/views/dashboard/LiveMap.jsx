@@ -242,7 +242,7 @@
 //----------------arrow add--------------------------
 
 //------------------------proper code-----------------
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef,useCallback } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import './LiveMap.css'
@@ -290,7 +290,88 @@ import CloseIcon from '@mui/icons-material/Close'
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered'
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
 import RoomIcon from '@mui/icons-material/Room'
+import { AiOutlinePlus } from 'react-icons/ai'
+import myGif from "../../../src/views/base/ReusablecodeforTable/loadergif.gif"
+import satimg from "../../../src/assets/images/satimg.svg";
+function usePageVisibility() {
+  const [isVisible, setIsVisible] = useState(!document.hidden);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  return isVisible;
+}
+
+const SatelliteLayer = React.memo(() => (
+  <TileLayer
+    key="satellite"
+    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+    attribution='© Esri'
+  />
+));
+
+const StreetLayer = React.memo(() => (
+  <TileLayer
+    key="street"
+    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    attribution='© OpenStreetMap'
+  />
+));
+
+const SatelliteToggleControl = React.memo(({ isSatellite, onToggle }) => {
+  const map = useMap();
+  const controlRef = useRef(null);
+
+  useEffect(() => {
+    if (!map) return;
+
+    if (!controlRef.current) {
+      const control = L.control({ position: 'topleft' });
+      
+      control.onAdd = () => {
+        const div = L.DomUtil.create('div', 'leaflet-bar satellite-control');
+        div.innerHTML = `
+          <button class="satellite-toggle-btn">
+            <img 
+              src="${satimg}" 
+              alt="Satellite View" 
+              class="satellite-icon ${isSatellite ? 'active' : ''}"
+            />
+          </button>
+        `;
+        
+        L.DomEvent.on(div, 'click', onToggle);
+        return div;
+      };
+
+      control.addTo(map);
+      controlRef.current = control;
+    }
+
+    // Update icon color
+    const svg = map.getContainer().querySelector('.satellite-control svg');
+    if (svg) {
+      svg.setAttribute('stroke', isSatellite ? '#1890ff' : '#000000');
+    }
+
+    return () => {
+      if (controlRef.current) {
+        controlRef.current.remove();
+        controlRef.current = null;
+      }
+    };
+  }, [map, isSatellite, onToggle]);
+
+  return null;
+});
 const sidebarStyles = `
   .task-sidebar {
     position: fixed;
@@ -383,10 +464,14 @@ const TaskSidebar = ({ isOpen, onClose, selectedSalesman }) => {
   }
   // Fetch tasks when the sidebar opens or when the selected salesman changes
   useEffect(() => {
-    if (isOpen && selectedSalesman) {
+    // if (isOpen && selectedSalesman) {
+    //   fetchTasks()
+    // }
+    if (selectedSalesman?._id) {
       fetchTasks()
     }
-  }, [isOpen, selectedSalesman])
+    // }, [selectedSalesman?._id])
+  }, [selectedSalesman?.username])
 
   const fetchTasks = async () => {
     try {
@@ -573,7 +658,7 @@ const TaskSidebar = ({ isOpen, onClose, selectedSalesman }) => {
               </Typography>
               <div
                 className="d-flex align-items-center justify-content-end"
-                style={{ gap: '10px', marginTop: '1px' }}
+                style={{ gap: '1px', marginTop: '-12%' }}
               >
                 <IconButton
                   aria-label="status"
@@ -608,10 +693,9 @@ const TaskSidebar = ({ isOpen, onClose, selectedSalesman }) => {
             </div>
           ))
         ) : (
-<Typography style={{ textAlign: 'center' }}>
-  <strong> No tasks available to {selectedSalesman.salesmanName}</strong>
-</Typography>
-
+          <Typography style={{ textAlign: 'center' }}>
+            <strong> No tasks available to {selectedSalesman.salesmanName}</strong>
+          </Typography>
         )}
       </div>
 
@@ -630,7 +714,16 @@ const TaskSidebar = ({ isOpen, onClose, selectedSalesman }) => {
           zIndex: 10,
         }}
       >
-        <Button variant="contained" color="primary" onClick={() => handleAddTaskBySal()}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => handleAddTaskBySal()}
+          style={{
+            borderRadius: '20px',
+            boxShadow: '4px 4px 10px rgba(0, 0, 0, 0.2), -4px 4px 10px rgba(0, 0, 0, 0.2)',
+          }}
+          startIcon={<AiOutlinePlus size={20} />}
+        >
           Add Task
         </Button>
       </div>
@@ -853,7 +946,7 @@ const pulsingIcon = L.divIcon({
 const getRotatedIcon = (rotation) =>
   L.divIcon({
     html: `<img src="https://cdn-icons-png.flaticon.com/512/271/271226.png" 
-             style="width:20px; height:20px; transform: rotate(${rotation}deg)" />`,
+             style="width:10px; height:10px; transform: rotate(${rotation}deg)" />`,
     className: '',
     iconSize: [5, 5],
     iconAnchor: [5, 5],
@@ -872,81 +965,186 @@ const getRotatedIcon = (rotation) =>
 //   bearing = bearing * (180 / Math.PI);
 //   return (bearing + 360) % 360;
 // };
-const DEFAULT_POSITION = [17.385, 78.4867]
-const SOCKET_SERVER_URL = 'http://104.251.218.102:8080'
+const DEFAULT_POSITION = [21.129125, 79.104877]
+// const SOCKET_SERVER_URL = 'http://104.251.218.102:8080'
+const SOCKET_SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const STIMULATOR = 'http://104.251.218.94:9000'
 
 // Animation Controller Component
-const MapController = ({ coordinates, previousPosition, polylineRef, autoFocus }) => {
-  const map = useMap()
-  const animationRef = useRef(null)
+// const MapController = ({
+//   coordinates,
+//   previousPosition,
+//   polylineRef,
+//   autoFocus,
+//   setMarkerPosition,
+// }) => {
+//   const map = useMap()
+//   const animationRef = useRef(null)
 
-  // Easing function: easeInOutQuad
-  const easeInOutQuad = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t)
+//   // Easing function: easeInOutQuad
+//   const easeInOutQuad = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t)
+
+//   useEffect(() => {
+//     if (coordinates && map && autoFocus) {
+//       const targetPosition = coordinates
+
+//       if (previousPosition.current) {
+//         const duration = 9500 // 2 seconds animation
+//         let startTime
+
+//         const animateMarker = (timestamp) => {
+//           if (!startTime) startTime = timestamp
+//           const elapsedTime = timestamp - startTime
+//           const progress = Math.min(elapsedTime / duration, 1)
+//           const easedProgress = easeInOutQuad(progress)
+
+//           // Calculate intermediate position
+//           const newLat =
+//             previousPosition.current[0] +
+//             (coordinates[0] - previousPosition.current[0]) * easedProgress
+//           const newLng =
+//             previousPosition.current[1] +
+//             (coordinates[1] - previousPosition.current[1]) * easedProgress
+
+//           // Update polyline
+//           if (polylineRef.current) {
+//             const currentPath = polylineRef.current.getLatLngs()
+//             currentPath.push([newLat, newLng])
+//             polylineRef.current.setLatLngs(currentPath)
+//             setMarkerPosition([newLat, newLng])
+//           }
+//           setMarkerPosition([newLat, newLng])
+
+//           // Update map view
+//           map.setView([newLat, newLng], map.getZoom(), { animate: true })
+
+//           if (progress < 1) {
+//             animationRef.current = requestAnimationFrame(animateMarker)
+//           } else {
+//             previousPosition.current = coordinates
+//           }
+//         }
+
+//         animationRef.current = requestAnimationFrame(animateMarker)
+
+//         return () => {
+//           if (animationRef.current) {
+//             cancelAnimationFrame(animationRef.current)
+//           }
+//         }
+//       } else {
+//         previousPosition.current = coordinates
+//       }
+//     }
+//   }, [coordinates, map, autoFocus])
+
+//   return null
+// }
+const MapController = ({
+  coordinates,
+  polylineRef,
+  autoFocus,
+  setMarkerPosition,
+  setIsLoading
+}) => {
+  const map = useMap();
+  const animationRef = useRef(null);
+  const markerPositionRef = useRef(coordinates);
+  const startTimeRef = useRef(null);
+  const targetPositionRef = useRef(coordinates);
+  const initialPositionRef = useRef(coordinates);
+  
+  const isValidCoordinate = (lat, lng) => {
+    return !isNaN(lat) && !isNaN(lng) && typeof lat === 'number' && typeof lng === 'number';
+  };
+  // const easeInOutQuad = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+  const easeInOutQuad = (t) => t;
+
+  const animate = (timestamp) => {
+    if (!startTimeRef.current) startTimeRef.current = timestamp;
+    const elapsed = timestamp - startTimeRef.current;
+    const progress = Math.min(elapsed / 10000, 1);
+    const eased = easeInOutQuad(progress);
+
+      //guess intermediate lat long for smoothness
+    const currentLat = initialPositionRef.current[0] + 
+      (targetPositionRef.current[0] - initialPositionRef.current[0]) * eased;
+    const currentLng = initialPositionRef.current[1] + 
+      (targetPositionRef.current[1] - initialPositionRef.current[1]) * eased;
+        
+      if (!isValidCoordinate(currentLat, currentLng)) {
+        console.error('Invalid intermediate coordinates:', currentLat, currentLng);
+        setIsLoading(true); 
+        return;
+      }else{
+        setIsLoading(false); 
+      }
+    
+    
+    // Update marker position and ref
+    const newPos = [currentLat, currentLng];
+    setMarkerPosition(newPos);
+    markerPositionRef.current = newPos;
+
+    // Update polyline
+    if (polylineRef.current) {
+      const currentPath = polylineRef.current.getLatLngs();
+      currentPath.push(newPos);
+      polylineRef.current.setLatLngs(currentPath);
+    }
+
+    // Update map view
+    if (autoFocus) {
+      map.setView(newPos, map.getZoom(), { animate: true });
+    }
+
+    if (progress < 1) {
+      animationRef.current = requestAnimationFrame(animate);
+    } else {
+      // Final position update
+      initialPositionRef.current = targetPositionRef.current;
+      markerPositionRef.current = targetPositionRef.current;
+    }
+  };
 
   useEffect(() => {
-    if (coordinates && map && autoFocus) {
-      const targetPosition = coordinates
+    if (!coordinates || !map) return;
 
-      if (previousPosition.current) {
-        const duration = 8000 // 2 seconds animation
-        let startTime
-
-        const animateMarker = (timestamp) => {
-          if (!startTime) startTime = timestamp
-          const elapsedTime = timestamp - startTime
-          const progress = Math.min(elapsedTime / duration, 1)
-          const easedProgress = easeInOutQuad(progress)
-
-          // Calculate intermediate position
-          const newLat =
-            previousPosition.current[0] +
-            (coordinates[0] - previousPosition.current[0]) * easedProgress
-          const newLng =
-            previousPosition.current[1] +
-            (coordinates[1] - previousPosition.current[1]) * easedProgress
-
-          // Update polyline
-          if (polylineRef.current) {
-            const currentPath = polylineRef.current.getLatLngs()
-            currentPath.push([newLat, newLng])
-            polylineRef.current.setLatLngs(currentPath)
-          }
-
-          // Update map view
-          map.setView([newLat, newLng], map.getZoom(), { animate: true })
-
-          if (progress < 1) {
-            animationRef.current = requestAnimationFrame(animateMarker)
-          } else {
-            previousPosition.current = coordinates
-          }
-        }
-
-        animationRef.current = requestAnimationFrame(animateMarker)
-
-        return () => {
-          if (animationRef.current) {
-            cancelAnimationFrame(animationRef.current)
-          }
-        }
-      } else {
-        previousPosition.current = coordinates
-      }
+    // Cancel any existing animation
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
     }
-  }, [coordinates, map, autoFocus])
 
-  return null
-}
+    // Update target position and reset animation state
+    targetPositionRef.current = coordinates;
+    initialPositionRef.current = markerPositionRef.current;
+    startTimeRef.current = null;
+
+    // Start new animation
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [coordinates, map, autoFocus]);
+
+  return null;
+};
+
 
 const LiveMap = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { salesman: initialSalesman } = location.state || {}
-
+  
+  const initialCoordinates = initialSalesman?.latitude && initialSalesman?.longitude
+    ? [initialSalesman.latitude, initialSalesman.longitude]
+    : DEFAULT_POSITION;
   const [salesman, setSalesman] = useState(initialSalesman)
-  const [coordinates, setCoordinates] = useState(DEFAULT_POSITION)
+  const [coordinates, setCoordinates] = useState(initialCoordinates)
   const [path, setPath] = useState([])
   const [lastUpdated, setLastUpdated] = useState(new Date())
   const [autoFocus, setAutoFocus] = useState(true)
@@ -956,55 +1154,30 @@ const LiveMap = () => {
   const polylineRef = useRef(null)
   const pathRef = useRef([])
   const [showSidebar, setShowSidebar] = useState(false)
-
+  const [markerPosition, setMarkerPosition] = useState(coordinates)
   // Just after your other useState calls
   const [satelliteView, setSatelliteView] = useState(false)
-  function SatelliteToggleControl({ onToggle, isSatellite }) {
-    const map = useMap()
-    const controlRef = useRef(null)
 
-    useEffect(() => {
-      if (!map) return
+  const handleSatelliteToggle = useCallback(() => {
+    setSatelliteView(prev => !prev);
+  }, []);
 
-      // Create the control container
-      const controlDiv = L.DomUtil.create('div', 'leaflet-bar')
-      controlDiv.style.backgroundColor = '#fff'
-      controlDiv.style.width = '34px'
-      controlDiv.style.height = '34px'
-      controlDiv.style.display = 'flex'
-      controlDiv.style.alignItems = 'center'
-      controlDiv.style.justifyContent = 'center'
-      controlDiv.style.cursor = 'pointer'
-      // This margin will push it below the default zoom controls
-      controlDiv.style.marginTop = '50px'
-      controlDiv.title = 'Toggle Satellite View'
 
-      // Create an inner container for React to render the icon
-      const iconContainer = L.DomUtil.create('div', '')
-      controlDiv.appendChild(iconContainer)
 
-      // Render the FaSatellite icon into the container
-      const root = createRoot(iconContainer)
-      root.render(<FaSatellite size={20} color={isSatellite ? 'blue' : 'black'} />)
 
-      // Click handler
-      controlDiv.addEventListener('click', onToggle)
 
-      // Create and add the Leaflet control
-      const customControl = L.control({ position: 'topleft' })
-      customControl.onAdd = () => controlDiv
-      customControl.addTo(map)
-
-      // Keep a reference so we can remove it on unmount
-      controlRef.current = customControl
-
-      return () => {
-        customControl.remove()
-      }
-    }, [map, onToggle, isSatellite])
-
-    return null
-  }
+  const isValidCoordinate = (lat, lng) => {
+    return !isNaN(lat) && !isNaN(lng) && typeof lat === "number" && typeof lng === "number";
+  };
+  const initialHasData = initialSalesman?.latitude && initialSalesman?.longitude && 
+  isValidCoordinate(initialSalesman.latitude, initialSalesman.longitude);
+  const [hasReceivedData, setHasReceivedData] = useState(initialHasData);
+  const [isLoading,setIsLoading] = useState(false);
+  //  const isTabVisible = usePageVisibility(); 
+   
+  
+  
+  
   const calculateDistance = (coord1, coord2) => {
     const [lat1, lon1] = coord1
     const [lat2, lon2] = coord2
@@ -1063,7 +1236,8 @@ const LiveMap = () => {
     socket.emit('authenticate', token)
     socket.on('connect', () => {
       console.log('✅Connected to tracking server')
-      socket.emit('📌requestSalesmanTracking', initialSalesman.username)
+      socket.emit('requestSalesmanTracking', initialSalesman.username)
+      // socket.emit("requestSalesmanHistory", initialSalesman.username );
     })
     // socket.on('liveSalesmanData', (data) => {
     //   const updatedSalesman = data.find(
@@ -1100,24 +1274,51 @@ const LiveMap = () => {
     //     }
     //     );
     // });
-    socket.on('connect', () => {
-      console.log('Connected to tracking server')
-      socket.emit('requestSalesmanTracking', initialSalesman.username)
-    })
+    // socket.on('connect', () => {
+    //   console.log('Connected to tracking server')
+    //   // socket.emit('requestSalesmanTracking', initialSalesman.username)
+    //   socket.emit("requestSalesmanHistory", initialSalesman.username );
+
+    // })
     socket.on('salesmanTrackingData', (data) => {
+      // //stimulator comment
+      // socket.on('salesmanHistoryData', (data) => {
       if (!data) return
 
       const newCoordinates = [Number(data.latitude), Number(data.longitude)]
-      console.log('😎✅ single track Data', data)
-      // Update state with new data
+      if (!isValidCoordinate(...newCoordinates)) {
+        console.error('Invalid Coordinates:', newCoordinates);
+        return;
+      }else{
+        // setIsLoading(false);
+      }
+      const isFirstData = !hasReceivedData;
+      console.log('😎✅ Valid Coordinates');
+      console.log('😎✅ single track Data', data);
+      // Update stat>e with new data
+      // setHasReceivedData(true);
+      setTimeout(() => {
+        setHasReceivedData(true);
+      }, 10000);
+
       setSalesman(data)
       setCoordinates(newCoordinates)
       setLastUpdated(new Date())
 
       // Update path history
-      pathRef.current = [...pathRef.current, newCoordinates]
-      if (pathRef.current.length % 5 === 0) {
-        setPath([...pathRef.current])
+      //? pathRef.current = [...pathRef.current, newCoordinates]
+      // if (pathRef.current.length % 5 === 0) {
+      // setPath([...pathRef.current])
+      // }
+      // Reset animation history for first data point
+      if (isFirstData) {
+        previousPosition.current = newCoordinates;
+        pathRef.current = [newCoordinates];
+        setPath([newCoordinates]);
+        setMarkerPosition(newCoordinates);
+        if (mapRef.current) mapRef.current.setView(newCoordinates);
+      } else {
+        pathRef.current = [...pathRef.current, newCoordinates];
       }
     })
     // Handle socket errors
@@ -1170,8 +1371,25 @@ const LiveMap = () => {
     return (bearing + 360) % 360
   }
 
+  if (!coordinates || !isValidCoordinate(coordinates[0], coordinates[1])) {
+    return <p>No data available. Ensure the salesman is being tracked.</p>;
+  }
   return (
     <div className="live-map-container">
+      {isLoading && (
+        <div className="data-warning-overlay">
+          <h2><strong>Loading...</strong></h2>
+          <p><strong>please ensure the person you want to track has enabled the location ! </strong></p>
+          <img src={myGif} alt="Loading..." style={{width: '100px'}} />
+        </div>
+      )}
+       {!hasReceivedData && (
+        <div className="data-warning-overlay">
+          <h2><strong>No data available. Ensure salesman tracking is enabled.</strong></h2>
+          <p><strong>please ensure the person you want to track has enabled the location ! </strong></p>
+          <img src={myGif} alt="Loading..." style={{width: '100px'}} />
+        </div>
+      )}
       <TaskSidebar
         isOpen={showSidebar}
         onClose={() => setShowSidebar(false)}
@@ -1200,40 +1418,66 @@ const LiveMap = () => {
       </div>
 
       <MapContainer center={coordinates} zoom={13} className="map-container" ref={mapRef}>
-        <SatelliteToggleControl
-          satelliteView={satelliteView}
-          onToggle={() => setSatelliteView((prev) => !prev)}
+      <SatelliteToggleControl 
+          isSatellite={satelliteView}
+          onToggle={handleSatelliteToggle}
         />
-        <SidebarToggleButton />
+
+        {satelliteView ? <SatelliteLayer /> : <StreetLayer />}
 
         {/* Conditionally show either the OSM tile or the Satellite tile */}
         {satelliteView ? (
-          <TileLayer
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            attribution='&copy; <a href="https://www.esri.com/">Esri</a> &mdash; Earthstar Geographics'
-          />
-        ) : (
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">
-        OpenStreetMap</a> contributors'
-          />
-        )}
+        <TileLayer
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+          attribution='© Esri'
+        />
+      ) : (
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='© OpenStreetMap'
+        />
+      )}
+        {/* <MemoTileLayer
+         key={satelliteView ? "satellite" : "street"} // Forces clean remount
+          url={
+            satelliteView
+              ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+              : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          }
+          attribution={
+            satelliteView
+              ? '© Esri'
+              : '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          }
+        /> */}
         {/* <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         /> */}
 
-        <ReactLeafletDriftMarker position={coordinates} icon={pulsingIcon} duration={8000}>
+        <ReactLeafletDriftMarker position={markerPosition} icon={pulsingIcon} duration={1}>
           <Popup>
             <div className="popup-content">
-              <h4>{salesman?.salesmanName}</h4>
+              {/* <h4>{salesman?.salesmanName}</h4>
               <p>Latitude: {coordinates[0]?.toFixed(6)}</p>
               <p>Longitude: {coordinates[1]?.toFixed(6)}</p>
               <p>Speed: {salesman?.speed}</p>
-              <p>Battary: {salesman?.batteryLevel}</p>
+              <p>Battery: {salesman?.batteryLevel}</p>
               <p>Network: {salesman?.mobileNetwork}</p>
-              <p>Last updated: {lastUpdated.toLocaleTimeString()}</p>
+              <p>Last updated: {lastUpdated.toLocaleTimeString()}</p> */}
+              {isNaN(coordinates[0]) || isNaN(coordinates[1]) ? (
+  <p>No data available. Please ensure the salesman is being tracked.</p>
+) : (
+  <>
+    <h4>{salesman?.salesmanName}</h4>
+    <p>Latitude: {coordinates[0]?.toFixed(6)}</p>
+    <p>Longitude: {coordinates[1]?.toFixed(6)}</p>
+    <p>Speed: {salesman?.speed}</p>
+    <p>Battery: {salesman?.batteryLevel}</p>
+    <p>Network: {salesman?.mobileNetwork}</p>
+    <p>Last updated: {lastUpdated.toLocaleTimeString()}</p>
+  </>
+)}
 
               {salesman?.profileImage && (
                 <img
@@ -1268,7 +1512,14 @@ const LiveMap = () => {
     }
   }}
 /> */}
-        <Polyline ref={polylineRef} positions={path} color="#3388ff" weight={3} dashArray="5, 7" />
+        <Polyline
+          ref={polylineRef}
+          positions={path}
+          color="#3388ff"
+          weight={3}
+          dashArray="5, 7"
+          smoothFactor={1}
+        />
 
         {/* {path.map((coord, index) => {
   if ((index + 1) % 1 === 0 && index < path.length - 1) {
@@ -1313,13 +1564,14 @@ const LiveMap = () => {
     );
   })} */}
 
-        {(() => {
+        {/* {(() => {
           let lastMarkerPosition = null
           return path.slice(0, -1).map((coord, index) => {
             // Check if we already have a marker and if the current one is less than 5 meters away
             if (lastMarkerPosition) {
               const distance = calculateDistance(lastMarkerPosition, coord)
-              if (distance < 100) {//distance to remove redudent marker
+              if (distance < 100) {
+                //distance to remove redudent marker
                 return null // Skip drawing this marker
               }
             }
@@ -1339,13 +1591,42 @@ const LiveMap = () => {
               />
             )
           })
-        })()}
+        })()}  */}
+          {(() => {
+        let lastMarkerPosition = null;
+        // Use the current polyline path from the ref
+        return pathRef.current.slice(0, -2).map((coord, index) => {
+          // Skip marker if too close to the last marker
+          if (lastMarkerPosition) {
+            const distance = calculateDistance(lastMarkerPosition, coord);
+            if (distance < 100) { // 100 meters threshold
+              return null;
+            }
+          }
+          // Update last marker position
+          lastMarkerPosition = coord;
 
+          // Calculate rotation based on bearing between current and next coordinates
+          const nextCoord = pathRef.current[index + 1];
+          const bearing = calculateBearing(coord, nextCoord);
+          const rotation = bearing - 90; // Adjust for East-facing icon
+
+          return (
+            <Marker
+              key={`direction-${index}-${coord[0]}-${coord[1]}`}
+              position={coord}
+              icon={getRotatedIcon(rotation)}
+            />
+          );
+        });
+      })()}
         <MapController
           coordinates={coordinates}
-          previousPosition={previousPosition}
+          // previousPosition={previousPosition}
           polylineRef={polylineRef}
           autoFocus={autoFocus}
+          setMarkerPosition={setMarkerPosition}
+          setIsLoading={setIsLoading}
         />
       </MapContainer>
       <button className="sidebar-toggle" onClick={() => setShowSidebar(!showSidebar)}>

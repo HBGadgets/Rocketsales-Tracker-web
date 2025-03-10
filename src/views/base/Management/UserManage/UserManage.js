@@ -63,7 +63,9 @@ import ExcelExporter from '../../ReusablecodeforTable/ExcelExporter'
 import jwt_decode from 'jwt-decode';
 import { FiUser } from "react-icons/fi";
 import debounce from 'lodash.debounce';
+import { Menu } from "@mui/material";
 import myGif from "../../ReusablecodeforTable/loadergif.gif"
+import { HiOutlineDotsVertical } from "react-icons/hi";
 const token=Cookies.get("token");
 
 const UserManage = () => {
@@ -88,8 +90,77 @@ const UserManage = () => {
   const [companyData, setCompanyData] = useState([]);
   const [BranchData, setBranchData] = useState([]);
   const [SupervisorData, setSupervisorData] = useState([]);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
    const [sortBy,setSortBy]=useState('');
     const [sortOrder,setSortOrder]=useState('asc');
+    const handleClick = (event, rowData) => {
+      setAnchorEl(event.currentTarget);
+      setSelectedRow(rowData);
+    };
+    
+    const handleClose = () => {
+      setAnchorEl(null);
+      setSelectedRow(null);
+    };
+    
+    const handleResetLogin = async () => {
+      if (!selectedRow) return;
+    
+      // Display confirmation toast with the username
+      toast((t) => (
+        <div>
+          <p>
+            Are you sure you want to reset login for user: <b>{selectedRow.username}</b>?
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id); // Dismiss the toast
+                try {
+                  const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/logout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: selectedRow.username }),
+                  });
+    
+                  const data = await response.json();
+                  if (response.ok) {
+                    toast.success(`Reset Successful for ${selectedRow.username}`);
+                  } else {
+                    toast.error(`Reset failed: ${data.message}`);
+                  }
+                } catch (error) {
+                  toast.error("Error during Reset");
+                }
+                handleClose(); // Close the menu after reset
+              }}
+              style={{
+                background: '#4CAF50',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: 'none',
+              }}
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                background: '#f44336',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                border: 'none',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ), { duration: Infinity }); // Keep the toast open until the user acts
+    };
   const handleEditModalClose = () => {
     setFormData({})
     setEditModalOpen(false)
@@ -769,6 +840,25 @@ useEffect(() => {
       >
         <AiFillDelete className="icon-button-icon" />
       </IconButton>
+      
+      <IconButton aria-label="options" onClick={(e) => handleClick(e, item)}  className="icon-button">
+        <HiOutlineDotsVertical />
+      </IconButton>
+      <Menu
+  anchorEl={anchorEl}
+  open={Boolean(anchorEl)}
+  onClose={handleClose}
+  sx={{
+    "& .MuiPaper-root": {
+      boxShadow: "none", // Removes shadow
+      border: "1px solid #ddd", // Optional: adds a subtle border
+    },
+  }}
+>
+<MenuItem onClick={handleResetLogin}>
+    Reset Login
+  </MenuItem>
+</Menu>
     </CTableDataCell>
 
                   </CTableRow>

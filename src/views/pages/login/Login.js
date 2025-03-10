@@ -38,9 +38,9 @@ const Login = () => {
         },
         body: JSON.stringify({ username, password }),
       })
-
       if (!response.ok) {
-        throw new Error('Login failed')
+      const result = await response.json()
+        throw new Error(result.message)
       }
 
       const data = await response.json()
@@ -54,7 +54,7 @@ const Login = () => {
       navigate('/dashboard')
     } catch (error) {
       console.error('Login failed:', error)
-      alert('Login failed, please try again')
+      alert(error.message)
     }
   }
 
