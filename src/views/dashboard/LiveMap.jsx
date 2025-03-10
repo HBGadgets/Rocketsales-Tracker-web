@@ -242,7 +242,7 @@
 //----------------arrow add--------------------------
 
 //------------------------proper code-----------------
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef,useCallback } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import './LiveMap.css'
@@ -291,10 +291,87 @@ import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered'
 import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled'
 import RoomIcon from '@mui/icons-material/Room'
 import { AiOutlinePlus } from 'react-icons/ai'
+import myGif from "../../../src/views/base/ReusablecodeforTable/loadergif.gif"
+import satimg from "../../../src/assets/images/satimg.svg";
+function usePageVisibility() {
+  const [isVisible, setIsVisible] = useState(!document.hidden);
 
-const MemoTileLayer = React.memo(({ url, attribution }) => (
-  <TileLayer url={url} attribution={attribution} />
-))
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  return isVisible;
+}
+
+const SatelliteLayer = React.memo(() => (
+  <TileLayer
+    key="satellite"
+    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+    attribution='© Esri'
+  />
+));
+
+const StreetLayer = React.memo(() => (
+  <TileLayer
+    key="street"
+    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    attribution='© OpenStreetMap'
+  />
+));
+
+const SatelliteToggleControl = React.memo(({ isSatellite, onToggle }) => {
+  const map = useMap();
+  const controlRef = useRef(null);
+
+  useEffect(() => {
+    if (!map) return;
+
+    if (!controlRef.current) {
+      const control = L.control({ position: 'topleft' });
+      
+      control.onAdd = () => {
+        const div = L.DomUtil.create('div', 'leaflet-bar satellite-control');
+        div.innerHTML = `
+          <button class="satellite-toggle-btn">
+            <img 
+              src="${satimg}" 
+              alt="Satellite View" 
+              class="satellite-icon ${isSatellite ? 'active' : ''}"
+            />
+          </button>
+        `;
+        
+        L.DomEvent.on(div, 'click', onToggle);
+        return div;
+      };
+
+      control.addTo(map);
+      controlRef.current = control;
+    }
+
+    // Update icon color
+    const svg = map.getContainer().querySelector('.satellite-control svg');
+    if (svg) {
+      svg.setAttribute('stroke', isSatellite ? '#1890ff' : '#000000');
+    }
+
+    return () => {
+      if (controlRef.current) {
+        controlRef.current.remove();
+        controlRef.current = null;
+      }
+    };
+  }, [map, isSatellite, onToggle]);
+
+  return null;
+});
 const sidebarStyles = `
   .task-sidebar {
     position: fixed;
@@ -969,6 +1046,7 @@ const MapController = ({
   polylineRef,
   autoFocus,
   setMarkerPosition,
+  setIsLoading
 }) => {
   const map = useMap();
   const animationRef = useRef(null);
@@ -976,7 +1054,10 @@ const MapController = ({
   const startTimeRef = useRef(null);
   const targetPositionRef = useRef(coordinates);
   const initialPositionRef = useRef(coordinates);
-
+  
+  const isValidCoordinate = (lat, lng) => {
+    return !isNaN(lat) && !isNaN(lng) && typeof lat === 'number' && typeof lng === 'number';
+  };
   // const easeInOutQuad = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
   const easeInOutQuad = (t) => t;
 
@@ -991,7 +1072,15 @@ const MapController = ({
       (targetPositionRef.current[0] - initialPositionRef.current[0]) * eased;
     const currentLng = initialPositionRef.current[1] + 
       (targetPositionRef.current[1] - initialPositionRef.current[1]) * eased;
-
+        
+      if (!isValidCoordinate(currentLat, currentLng)) {
+        console.error('Invalid intermediate coordinates:', currentLat, currentLng);
+        setIsLoading(true); 
+        return;
+      }else{
+        setIsLoading(false); 
+      }
+    
     
     // Update marker position and ref
     const newPos = [currentLat, currentLng];
@@ -1050,9 +1139,12 @@ const LiveMap = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { salesman: initialSalesman } = location.state || {}
-
+  
+  const initialCoordinates = initialSalesman?.latitude && initialSalesman?.longitude
+    ? [initialSalesman.latitude, initialSalesman.longitude]
+    : DEFAULT_POSITION;
   const [salesman, setSalesman] = useState(initialSalesman)
-  const [coordinates, setCoordinates] = useState(DEFAULT_POSITION)
+  const [coordinates, setCoordinates] = useState(initialCoordinates)
   const [path, setPath] = useState([])
   const [lastUpdated, setLastUpdated] = useState(new Date())
   const [autoFocus, setAutoFocus] = useState(true)
@@ -1065,52 +1157,26 @@ const LiveMap = () => {
   const [markerPosition, setMarkerPosition] = useState(coordinates)
   // Just after your other useState calls
   const [satelliteView, setSatelliteView] = useState(false)
-  function SatelliteToggleControl({ onToggle, isSatellite }) {
-    const map = useMap()
-    const controlRef = useRef(null)
 
-    useEffect(() => {
-      if (!map) return
+  const handleSatelliteToggle = useCallback(() => {
+    setSatelliteView(prev => !prev);
+  }, []);
 
-      // Create the control container
-      const controlDiv = L.DomUtil.create('div', 'leaflet-bar')
-      controlDiv.style.backgroundColor = '#fff'
-      controlDiv.style.width = '34px'
-      controlDiv.style.height = '34px'
-      controlDiv.style.display = 'flex'
-      controlDiv.style.alignItems = 'center'
-      controlDiv.style.justifyContent = 'center'
-      controlDiv.style.cursor = 'pointer'
-      // This margin will push it below the default zoom controls
-      controlDiv.style.marginTop = '50px'
-      controlDiv.title = 'Toggle Satellite View'
 
-      // Create an inner container for React to render the icon
-      const iconContainer = L.DomUtil.create('div', '')
-      controlDiv.appendChild(iconContainer)
 
-      // Render the FaSatellite icon into the container
-      const root = createRoot(iconContainer)
-      root.render(<FaSatellite size={20} color={isSatellite ? 'blue' : 'black'} />)
 
-      // Click handler
-      controlDiv.addEventListener('click', onToggle)
 
-      // Create and add the Leaflet control
-      const customControl = L.control({ position: 'topleft' })
-      customControl.onAdd = () => controlDiv
-      customControl.addTo(map)
-
-      // Keep a reference so we can remove it on unmount
-      controlRef.current = customControl
-
-      return () => {
-        customControl.remove()
-      }
-    }, [map, onToggle, isSatellite])
-
-    return null
-  }
+  const isValidCoordinate = (lat, lng) => {
+    return !isNaN(lat) && !isNaN(lng) && typeof lat === "number" && typeof lng === "number";
+  };
+  const initialHasData = initialSalesman?.latitude && initialSalesman?.longitude && 
+  isValidCoordinate(initialSalesman.latitude, initialSalesman.longitude);
+  const [hasReceivedData, setHasReceivedData] = useState(initialHasData);
+  const [isLoading,setIsLoading] = useState(false);
+  //  const isTabVisible = usePageVisibility(); 
+   
+  
+  
   
   const calculateDistance = (coord1, coord2) => {
     const [lat1, lon1] = coord1
@@ -1220,17 +1286,40 @@ const LiveMap = () => {
       if (!data) return
 
       const newCoordinates = [Number(data.latitude), Number(data.longitude)]
-      console.log('😎✅ single track Data', data)
-      // Update state with new data
+      if (!isValidCoordinate(...newCoordinates)) {
+        console.error('Invalid Coordinates:', newCoordinates);
+        return;
+      }else{
+        // setIsLoading(false);
+      }
+      const isFirstData = !hasReceivedData;
+      console.log('😎✅ Valid Coordinates');
+      console.log('😎✅ single track Data', data);
+      // Update stat>e with new data
+      // setHasReceivedData(true);
+      setTimeout(() => {
+        setHasReceivedData(true);
+      }, 10000);
+
       setSalesman(data)
       setCoordinates(newCoordinates)
       setLastUpdated(new Date())
 
       // Update path history
-      pathRef.current = [...pathRef.current, newCoordinates]
+      //? pathRef.current = [...pathRef.current, newCoordinates]
       // if (pathRef.current.length % 5 === 0) {
       // setPath([...pathRef.current])
       // }
+      // Reset animation history for first data point
+      if (isFirstData) {
+        previousPosition.current = newCoordinates;
+        pathRef.current = [newCoordinates];
+        setPath([newCoordinates]);
+        setMarkerPosition(newCoordinates);
+        if (mapRef.current) mapRef.current.setView(newCoordinates);
+      } else {
+        pathRef.current = [...pathRef.current, newCoordinates];
+      }
     })
     // Handle socket errors
     socket.on('connect_error', (err) => {
@@ -1282,8 +1371,25 @@ const LiveMap = () => {
     return (bearing + 360) % 360
   }
 
+  if (!coordinates || !isValidCoordinate(coordinates[0], coordinates[1])) {
+    return <p>No data available. Ensure the salesman is being tracked.</p>;
+  }
   return (
     <div className="live-map-container">
+      {isLoading && (
+        <div className="data-warning-overlay">
+          <h2><strong>Loading...</strong></h2>
+          <p><strong>please ensure the person you want to track has enabled the location ! </strong></p>
+          <img src={myGif} alt="Loading..." style={{width: '100px'}} />
+        </div>
+      )}
+       {!hasReceivedData && (
+        <div className="data-warning-overlay">
+          <h2><strong>No data available. Ensure salesman tracking is enabled.</strong></h2>
+          <p><strong>please ensure the person you want to track has enabled the location ! </strong></p>
+          <img src={myGif} alt="Loading..." style={{width: '100px'}} />
+        </div>
+      )}
       <TaskSidebar
         isOpen={showSidebar}
         onClose={() => setShowSidebar(false)}
@@ -1312,26 +1418,26 @@ const LiveMap = () => {
       </div>
 
       <MapContainer center={coordinates} zoom={13} className="map-container" ref={mapRef}>
-        <SatelliteToggleControl
-          satelliteView={satelliteView}
-          onToggle={() => setSatelliteView((prev) => !prev)}
+      <SatelliteToggleControl 
+          isSatellite={satelliteView}
+          onToggle={handleSatelliteToggle}
         />
-        <SidebarToggleButton />
+
+        {satelliteView ? <SatelliteLayer /> : <StreetLayer />}
 
         {/* Conditionally show either the OSM tile or the Satellite tile */}
-        {/* {satelliteView ? (
-          <TileLayer
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            attribution='&copy; <a href="https://www.esri.com/">Esri</a> &mdash; Earthstar Geographics'
-          />
-        ) : (
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">
-        OpenStreetMap</a> contributors'
-          />
-        )} */}
-        <MemoTileLayer
+        {satelliteView ? (
+        <TileLayer
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+          attribution='© Esri'
+        />
+      ) : (
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='© OpenStreetMap'
+        />
+      )}
+        {/* <MemoTileLayer
          key={satelliteView ? "satellite" : "street"} // Forces clean remount
           url={
             satelliteView
@@ -1343,7 +1449,7 @@ const LiveMap = () => {
               ? '© Esri'
               : '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           }
-        />
+        /> */}
         {/* <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -1352,13 +1458,26 @@ const LiveMap = () => {
         <ReactLeafletDriftMarker position={markerPosition} icon={pulsingIcon} duration={1}>
           <Popup>
             <div className="popup-content">
-              <h4>{salesman?.salesmanName}</h4>
+              {/* <h4>{salesman?.salesmanName}</h4>
               <p>Latitude: {coordinates[0]?.toFixed(6)}</p>
               <p>Longitude: {coordinates[1]?.toFixed(6)}</p>
               <p>Speed: {salesman?.speed}</p>
               <p>Battery: {salesman?.batteryLevel}</p>
               <p>Network: {salesman?.mobileNetwork}</p>
-              <p>Last updated: {lastUpdated.toLocaleTimeString()}</p>
+              <p>Last updated: {lastUpdated.toLocaleTimeString()}</p> */}
+              {isNaN(coordinates[0]) || isNaN(coordinates[1]) ? (
+  <p>No data available. Please ensure the salesman is being tracked.</p>
+) : (
+  <>
+    <h4>{salesman?.salesmanName}</h4>
+    <p>Latitude: {coordinates[0]?.toFixed(6)}</p>
+    <p>Longitude: {coordinates[1]?.toFixed(6)}</p>
+    <p>Speed: {salesman?.speed}</p>
+    <p>Battery: {salesman?.batteryLevel}</p>
+    <p>Network: {salesman?.mobileNetwork}</p>
+    <p>Last updated: {lastUpdated.toLocaleTimeString()}</p>
+  </>
+)}
 
               {salesman?.profileImage && (
                 <img
@@ -1507,6 +1626,7 @@ const LiveMap = () => {
           polylineRef={polylineRef}
           autoFocus={autoFocus}
           setMarkerPosition={setMarkerPosition}
+          setIsLoading={setIsLoading}
         />
       </MapContainer>
       <button className="sidebar-toggle" onClick={() => setShowSidebar(!showSidebar)}>
