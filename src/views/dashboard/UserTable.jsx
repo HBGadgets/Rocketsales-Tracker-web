@@ -52,6 +52,8 @@ import { io } from 'socket.io-client'
 import emptyimage from '../../views/base/images/emptyimage.jpg'
 import CloseIcon from '@mui/icons-material/Close'
 import { useNavigate } from 'react-router-dom'
+import { format } from 'date-fns';
+
 const UserTable = () => {
   const [data, setData] = useState([])
   const [page, setPage] = useState(0)
@@ -87,11 +89,24 @@ const UserTable = () => {
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
-  const filteredData = data.filter((item) =>
-    Object.values(item).some((value) =>
-      value?.toString().toLowerCase().includes(searchQuery.toLowerCase()),
-    ),
-  )
+  // const filteredData = data.filter((item) =>
+  //   Object.values(item).some((value) =>
+  //     value?.toString().toLowerCase().includes(searchQuery.toLowerCase()),
+  //   ),
+  // )
+  const filteredData = data.filter((item) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      item.salesmanName?.toLowerCase().includes(searchLower) || // Salesman name
+      item.salesmanEmail?.toLowerCase().includes(searchLower) || // Email
+      item.salesmanPhone?.toLowerCase().includes(searchLower) || // Phone
+      item.companyName?.toLowerCase().includes(searchLower) || // Company name
+      item.branchName?.toLowerCase().includes(searchLower) || // Branch name
+      item.supervisorName?.toLowerCase().includes(searchLower) || // Supervisor name
+      item.batteryLevel?.toString().includes(searchQuery) || // Battery level
+      item.username?.toLowerCase().includes(searchLower) // Username (if applicable)
+    );
+  });
   const displayedData =
     rowsPerPage === -1
       ? filteredData
@@ -122,7 +137,8 @@ const UserTable = () => {
   
   const [salesmenData, setSalesmenData] = useState(null)
 
-  const SOCKET_SERVER_URL = 'http://104.251.218.102:8080'
+  // const SOCKET_SERVER_URL = 'http://104.251.218.102:8080'
+  const SOCKET_SERVER_URL = import.meta.env.VITE_SERVER_URL;
   useEffect(() => {
     const socket = io(SOCKET_SERVER_URL, { transports: ['websocket'] });
     const token = Cookies.get('token');
@@ -141,6 +157,7 @@ const UserTable = () => {
           companyName: item.companyId?.companyName || 'Unknown',
           branchName: item.branchId?.branchName || 'Unknown',
           supervisorName: item.supervisorId?.supervisorName || 'Unknown',
+          battery:item.batteryLevel || 'Unknown',
         }));
   console.log("modifiedData",modifiedData)
         setData(modifiedData);
@@ -263,6 +280,20 @@ const UserTable = () => {
           {/* Table Header */}
           <CTableHead>
             <CTableRow>
+               <CTableHeaderCell
+                              className="text-center"
+                              style={{
+                                backgroundColor: '#1d3d5f',
+                                padding: '5px 12px', // Reduced padding for top and bottom
+                                borderBottom: '1px solid #e0e0e0', // Light border under headers
+                                textAlign: 'center', // Center header text
+                                verticalAlign: 'middle',
+                                color: 'white',
+                              }}
+                            >
+                              SN
+                            </CTableHeaderCell>
+              
               {columns
                 .filter((col) => visibleColumns[col.accessor])
                 .map((col) => (
@@ -317,6 +348,17 @@ const UserTable = () => {
         }}
         hover
       >
+        <CTableDataCell
+                              className="text-center"
+                              style={{
+                                padding: '0px 12px',
+                                color: '#242424',
+                                fontSize: '13px',
+                                backgroundColor: index % 2 === 0 ? 'transparent':'#f1f8fd'  ,
+                              }}
+                            >
+                              {index + 1}
+                            </CTableDataCell>
         {columns
           .filter((col) => visibleColumns[col.accessor])
           .map((col) => (
@@ -330,7 +372,10 @@ const UserTable = () => {
                 backgroundColor: index % 2 === 0 ? 'transparent' : '#f1f8fd',
               }}
             >
-              {col.accessor === 'profileImage' ? (
+               {col.Cell ? (
+                      // Use the custom Cell renderer (e.g., for Battery)
+                      col.Cell({ value: item[col.accessor], row: item })
+                    ) : col.accessor === 'profileImage' ? (
                 item[col.accessor] ? (
                   <img
                     src={`data:image/png;base64,${item[col.accessor]}`}
@@ -362,9 +407,11 @@ const UserTable = () => {
                   </div>
                 )
               ) : col.accessor === 'createdAt' ? (
-                item[col.accessor] ? new Date(item[col.accessor]).toLocaleDateString() : 'N/A'
+                item[col.accessor] ? format(new Date(item[col.accessor]), 'dd MMM yyyy') : 'N/A'
+              ) :col.accessor === 'timestamp' ? (
+                item[col.accessor] ? format(new Date(item[col.accessor]), 'hh:mm a, dd MMM') : '--'
               ) : (
-                item[col.accessor] || 'N/A'
+                item[col.accessor] || '--'
               )}        {isOpen && (
                 <div
                   onClick={closePopup} // Clicking outside closes the popup

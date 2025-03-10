@@ -14,7 +14,8 @@ import UserTable from './UserTable'
 import TraficAndSales from './TraficAndSales'
 import Progress from './Progress'
 import "./styledash.css"
-
+import CardContainerCount from './CardContainerCount'
+import SalesmanCard from './dashboardCard/SalesmanCard'
 const Dashboard = () => {
   return (
     <>
@@ -28,15 +29,16 @@ const Dashboard = () => {
         <Progress />
       </CCard>
 
-      <WidgetsDropdown className="mb-4" />
-      <WidgetsBrand className="mb-4" withCharts />
+      {/* <CardContainerCount className="mb-4" /> */}
+
+      {/* <WidgetsBrand className="mb-4" withCharts /> */}
 
       <CRow>
         <CCol xs>
           <CCard className="mb-4">
-            <CCardHeader>Traffic & Sales</CCardHeader>
+            {/* <CCardHeader>Traffic & Sales</CCardHeader> */}
             <CCardBody>
-              <TraficAndSales />
+              {/* <TraficAndSales /> */}
               <br />
               <UserTable />
             </CCardBody>
