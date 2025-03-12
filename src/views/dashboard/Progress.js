@@ -11,6 +11,7 @@ export default function Progress() {
      const [completed, setCompleted] = useState(0)
      const [pending, setPending] = useState(0)
      const [totalOrders, setTotalOrders] = useState(0); 
+     const [invoicecount,setinvoicecount]=useState(0);
       const navigate = useNavigate();
 const fetchSalesmanCount = async () => {
   const accessToken = Cookies.get("token");
@@ -101,8 +102,26 @@ const fetchSalesmanAttendance = async () => {
       console.error('Error fetching order data:', error);
     }
   };
+  const fetchinvoiceCount = async () => {
+    const accessToken = Cookies.get("token");
+    const url = `${import.meta.env.VITE_SERVER_URL}/api/invoice`;
   
+    try {
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+  
+      if (response.data ) {
+        setinvoicecount(response.data.data.length); // Set total salesmen count
+      } else {
+        console.error("invoice data is missing or incorrectly structured.");
+      }
+    } catch (error) {
+      console.error("Error fetching salesman data:", error);
+    } 
+  };
   const totalTasks = completed + pending
+  const ordersum=totalOrders+invoicecount
   const getColorByPercent = (percent) => {
     if (percent >= 75) return 'success'; // Green
     if (percent >= 50) return 'warning'; // Yellow-Orange
@@ -131,9 +150,9 @@ const fetchSalesmanAttendance = async () => {
     },
     {
       title: 'Orders',
-      value: `${totalOrders}`,
-      percent: 100,
-      color: 'success', // You can also apply dynamic logic here if needed
+      value: `${totalOrders}/${ordersum}`,
+      percent:ordersum > 0 ? Math.round((totalOrders / ordersum) * 100) : 0,
+      color: getColorByPercent(totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0), // You can also apply dynamic logic here if needed
     },
   ];
   
@@ -142,6 +161,7 @@ useEffect(()=>{
   fetchSalesmanAttendance()
   fetchTaskCount()
   fetchOrderCount()
+  fetchinvoiceCount()
 },[])
 const handleNavigate = (title) => {
   switch (title) {
