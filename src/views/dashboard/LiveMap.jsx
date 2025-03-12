@@ -293,6 +293,7 @@ import RoomIcon from '@mui/icons-material/Room'
 import { AiOutlinePlus } from 'react-icons/ai'
 import myGif from "../../../src/views/base/ReusablecodeforTable/loadergif.gif"
 import satimg from "../../../src/assets/images/satimg.svg";
+import walkingsal from "../../../public/WalkingSalesman.gif";
 function usePageVisibility() {
   const [isVisible, setIsVisible] = useState(!document.hidden);
 

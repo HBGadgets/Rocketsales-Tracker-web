@@ -70,6 +70,7 @@ export const columns = [
   {
     Header: 'Status',
     accessor: 'timestamp',
+    id: 'status',
     Cell: ({ value }) => {
       if (!value) return <span>--</span>;
   
@@ -77,7 +78,7 @@ export const columns = [
       const timestampDate = new Date(value);
       const diffSeconds = (now - timestampDate) / 1000;
   
-      return diffSeconds <= 10? (
+      return diffSeconds <= 20? (
         <span><strong>🟢 Online</strong></span>
       ) : (
         <span><strong>🔴 Offline</strong></span>

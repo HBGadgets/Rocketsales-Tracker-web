@@ -17,7 +17,7 @@ import { cilLockLocked, cilUser } from '@coreui/icons'
 import { Link, useNavigate } from 'react-router-dom'
 import Cookies from 'js-cookie'
 import logo from 'src/assets/brand/logo.svg' // Adjust the relative path if needed
-
+import loginpng from '../../../../public/Login.png';
 const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -59,7 +59,15 @@ const Login = () => {
   }
 
   return (
-    <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
+    <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center" style={{ 
+      // backgroundImage: 'url("https://www.lystloc.com/blog/wp-content/uploads/2022/12/ezgif.com-gif-maker-30.webp")',
+      backgroundImage: `url(${loginpng})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      minHeight: '100vh',
+      width: '100vw'
+    }}>
       <CContainer 
         onKeyDown={(e) => {
           if (e.key === "Enter") {
@@ -68,10 +76,10 @@ const Login = () => {
         }}
         // Ensures the container can listen for key events
       >
-        <CRow className="justify-content-center">
+        <CRow className="justify-content-center" >
           <CCol md={5}>
             <CCardGroup>
-              <CCard className="p-4">
+              <CCard className="p-4"style={{  borderRadius: '10px', boxShadow: '0px 8px 30px rgba(0, 0, 0, 0.5)' }} >
                 <CCardBody>
                   {/* Logo Integration */}
                   <div className="text-center mb-4">
@@ -114,12 +122,12 @@ const Login = () => {
                         onClick={handleRegisterRedirect} 
                         style={{ cursor: 'pointer', marginTop: '10px' }}
                       >
-                        <p>New Here? <strong>Register</strong></p>
+                        {/* <p>New Here? <strong>Register</strong></p> */}
                       </div>
                       <CCol xs={6} className="text-right">
-                        <CButton color="link" className="px-0">
+                        {/* <CButton color="link" className="px-0">
                           Forgot password?
-                        </CButton>
+                        </CButton> */}
                       </CCol>
                     </CRow>
                   </CForm>
