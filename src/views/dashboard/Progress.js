@@ -3,6 +3,7 @@ import { CCardFooter, CRow, CCol, CProgress } from '@coreui/react'
 import classNames from 'classnames'
 import Cookies from "js-cookie";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 export default function Progress() {
   
    const [totalSalesmen, setTotalSalesmen] = useState(0);
@@ -10,6 +11,7 @@ export default function Progress() {
      const [completed, setCompleted] = useState(0)
      const [pending, setPending] = useState(0)
      const [totalOrders, setTotalOrders] = useState(0); 
+      const navigate = useNavigate();
 const fetchSalesmanCount = async () => {
   const accessToken = Cookies.get("token");
   const url = `${import.meta.env.VITE_SERVER_URL}/api/salesman`;
@@ -141,6 +143,24 @@ useEffect(()=>{
   fetchTaskCount()
   fetchOrderCount()
 },[])
+const handleNavigate = (title) => {
+  switch (title) {
+    case 'SalesMan':
+      navigate('/UserManage'); // Replace with actual route
+      break;
+    case 'Present-Absent':
+      navigate('/attendance1'); // Replace with actual route
+      break;
+    case 'Total-Task':
+      navigate('/task-management'); // Replace with actual route
+      break;
+    case 'Orders':
+      navigate('/Pending-order-list'); // Replace with actual route
+      break;
+    default:
+      navigate('/dashboard'); // Fallback route
+  }
+};
   return (
     <div>
       <CCardFooter>
@@ -157,6 +177,8 @@ useEffect(()=>{
                 'd-none d-xl-block': index + 1 === items.length,
               })}
               key={index}
+              onClick={() => handleNavigate(item.title)}
+              style={{ cursor: 'pointer' }}
             >
               <div className="text-body-secondary">{item.title}</div>
               <div className="fw-semibold text-truncate">
