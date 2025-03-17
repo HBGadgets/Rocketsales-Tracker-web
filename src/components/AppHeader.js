@@ -162,14 +162,77 @@ import {
   cilSun,
 } from '@coreui/icons'
 import { setToggleSidebar } from '../feature/navSlice'
-import { FaAddressCard, FaChartBar, FaCog, FaHome } from 'react-icons/fa'
+import { FaVolumeUp, FaVolumeMute, FaAddressCard, FaChartBar, FaCog, FaHome } from 'react-icons/fa'
+import { RiVolumeUpFill } from "react-icons/ri";
 import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
 import { cilHome, cilUser, cilChartLine, cilBasket, cilClipboard } from '@coreui/icons';
 import { TbReportSearch } from 'react-icons/tb'
 import { AiOutlineShoppingCart } from "react-icons/ai";
+import { requestNotificationPermission, setOnNotificationReceivedCallback } from "../firebase/firebase-config";
+import { Tooltip,Box,Badge, Menu, MenuItem, IconButton, ListItemIcon, ListItemText, Divider, Typography } from '@mui/material';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import DeleteIcon from '@mui/icons-material/Delete';
+const audio = new Audio('../../../notificationsount.wav');
 
 const AppHeader = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount1, setUnreadCount1] = useState(0);
+  const [anchorEl, setAnchorEl] = useState(null); // For MUI dropdown
+  const [soundEnabled, setSoundEnabled] = useState(true);
+    // Toggle sound function
+    const toggleSound = () => {
+      setSoundEnabled((prev) => !prev);
+    };
+  const open = Boolean(anchorEl);
+   // Handle notification click to open dropdown
+   const handleNotificationClick = (event) => {
+    requestNotificationPermission();
+
+    setAnchorEl(event.currentTarget);
+    // setUnreadCount1(unreadCount);
+    // setUnreadCount(0); 
+
+  };
+  const handleMarkAsRead = () => {
+    setUnreadCount(0);
+  };
+  // Close dropdown
+  const handleClose = () => {
+    setAnchorEl(null);
+    setUnreadCount(0); 
+
+  };
+
+  // Clear all notifications
+  const handleClearAll = () => {
+    console.log("Before clearing:", notifications); // Debug log
+  
+    setNotifications([]); // Clear notifications
+    setUnreadCount(0); // Reset unread count
+    // setAnchorEl(null); // Close the dropdown
+  
+    console.log("After clearing:", notifications); // Debug log
+  };
+  useEffect(() => {
+    // Set up the callback for new notifications
+    setOnNotificationReceivedCallback((newNotification) => {
+      setNotifications(prev => [newNotification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+      setUnreadCount1((prev) => prev + 1);
+      if (soundEnabled) {
+        audio.play();
+      }
+
+    });
+
+    return () => {
+      // Cleanup callback when component unmounts
+      setOnNotificationReceivedCallback(null);
+    };
+  }, [soundEnabled]);
   const headerRef = useRef()
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
 
@@ -385,14 +448,111 @@ const AppHeader = () => {
         {/* Right Section with Notifications, Theme Selector, and User Dropdown */}
     
       </div>
+      
       <CHeaderNav className=" d-flex align-items-center">
+      
+     {/* Notification Icon with MUI Dropdown */}
+     <IconButton
+            aria-label="notifications"
+            onClick={handleNotificationClick}
+            style={{ color: 'white' }}
+          >
+            <Badge badgeContent={unreadCount} color="error">
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
+
+          {/* MUI Dropdown Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            PaperProps={{
+              style: {
+                width: '350px',
+                maxHeight: '400px',
+                overflowY: 'auto',
+              },
+            }}
+          >
+            {/* Dropdown Header */}
+            <MenuItem >
+              <Typography variant="subtitle1" style={{ fontWeight: 'bold' }}>
+                Notifications
+              </Typography>
+              {/* {notifications.length > 0 && ( */}
+              {/* <IconButton
+            // aria-label="toggle sound"
+            onClick={toggleSound}
+            style={{marginLeft: 'auto'}}
+          >
+            {soundEnabled ? <FaVolumeUp /> : <FaVolumeMute />}
+          </IconButton>
+                  <IconButton
+                  size="small"
+                  style={{ marginLeft: 'auto' }}
+                > 
+                  <DeleteIcon fontSize="small" onClick={handleClearAll}/>
+                </IconButton> */}
+                <Box style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
+                <Tooltip title={soundEnabled ? "Mute Notifications" : "Unmute Notifications"}>
+    <IconButton onClick={toggleSound}>
+      {soundEnabled ? <RiVolumeUpFill /> : <FaVolumeMute />}
+    </IconButton>
+    </Tooltip>
+    <Tooltip title="Clear All Notifications">
+    <IconButton size="small" onClick={handleClearAll}>
+      <DeleteIcon fontSize="small" />
+    </IconButton>
+    </Tooltip>
+  </Box>
+              {/* // )} */}
+            </MenuItem>
+            <Divider />
+
+            {/* Notifications List */}
+            {notifications.length === 0 ? (
+              <MenuItem disabled>
+                <Typography variant="body2" color="textSecondary">
+                  No new notifications
+                </Typography>
+              </MenuItem>
+            ) : (
+              notifications.map((notification, index) => (
+                <MenuItem key={index}
+                 onClick={handleClose}
+                 style={anchorEl && index < unreadCount ? { backgroundColor: '#eef6fd' } : {}}
+                 >
+                  {/* <ListItemIcon>
+                    <NotificationsIcon fontSize="small" />
+                  </ListItemIcon> */}
+                  <ListItemText
+                    primary={notification.notification.title}
+                    secondary={notification.notification.body}
+                  />
+                  {/* <Typography variant="caption" color="textSecondary">
+                    {new Date().toLocaleTimeString()}
+                  </Typography> */}
+                </MenuItem>
+              ))
+            )}
+          </Menu>
           
           {/* Notifications */}
-          <CNavItem>
+          {/* <CNavItem>
             <CNavLink href="#" style={{ color: "white" }}>
-              <CIcon icon={cilBell} size="lg" />
+              <CIcon onClick={requestNotificationPermission} icon={cilBell} size="lg" />
             </CNavLink>
-          </CNavItem>
+          </CNavItem> */}
   
           {/* Divider */}
           <li className="nav-item py-1">
@@ -410,6 +570,8 @@ const AppHeader = () => {
                 <CIcon icon={cilSun} size="lg" style={{ color: "white" }} />
               )}
             </CDropdownToggle>
+             {/* Sound Toggle Button */}
+          
             <CDropdownMenu>
               <CDropdownItem
                 active={colorMode === "light"}
