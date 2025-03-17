@@ -82,7 +82,7 @@ const OrderList = () => {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [invoicemodalopen, setinvoicemodalopen] = useState(false)
   const [formData, setFormData] = useState({
-    products: [{ productName: '', quantity: '', price: '' }],
+    products: [{ productName: '', quantity: '', price: '',hsnCode: '' }],
   })
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState([])
@@ -120,7 +120,7 @@ const OrderList = () => {
   }
   const navigate = useNavigate()
   const handleEditModalClose = () => {
-    setFormData({ products: [{ productName: '', quantity: '', price: '' }] })
+    setFormData({ products: [{ productName: '', quantity: '', price: '',hsnCode: '' }] })
     setEditModalOpen(false)
   }
   const handleEditSubmit = async (e) => {
@@ -171,8 +171,8 @@ const OrderList = () => {
       // Calculate totalAmount and assign perPiecePrice as UnitPrice
       let totalAmount = 0
       products = products.map((product) => {
-        const perPiecePrice = product.quantity ? product.price / product.quantity : 0
-        totalAmount += product.price
+        const perPiecePrice = product.quantity ? product.price  : 0
+        totalAmount += product.price * product.quantity
         return { ...product, UnitPrice: perPiecePrice }
       })
 
@@ -181,11 +181,14 @@ const OrderList = () => {
         products,
         totalAmount,
         customerName: selectedOrder.shopName || 'Unknown',
+        // customerName: selectedOrder.shopName || 'Unknown',
+        customerAddress: selectedOrder.shopAddress || '',
+        orderId: selectedOrder._id,
       }
 
       console.log('Final Data Sent to API:', JSON.stringify(requestData, null, 2))
 
-      const response = await fetch('http://104.251.218.102:8080/api/invoice', {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/invoice`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -285,11 +288,12 @@ const OrderList = () => {
   const haqndleIn = async (item) => {
     console.log('my item for invoice', item)
     setinvoicemodalopen(true)
+    setSelectedOrder(item);
     setFormData({ ...item })
     console.log('this is before invoice', formData)
   }
   const handleAddModalClose = () => {
-    setFormData({ products: [{ productName: '', quantity: '', price: '' }] })
+    setFormData({ products: [{ productName: '', quantity: '', price: '',hsnCode: '' }] })
     setAddModalOpen(false)
   }
   const [selectedOrder, setSelectedOrder] = useState(null) // State to store matched order
@@ -318,6 +322,7 @@ const OrderList = () => {
             productName: product.productName || '',
             quantity: Number(product.quantity) || 0,
             price: Number(product.price) || 0,
+            hsnCode: product.hsnCode || '',
           }))
         : []
 
@@ -363,7 +368,7 @@ const OrderList = () => {
         }
 
         // Reset form data
-        setFormData({ products: [{ productName: '', quantity: '', price: '' }] })
+        setFormData({ products: [{ productName: '', quantity: '', price: '',hsnCode:'' }] })
         setAddModalOpen(false)
       } else {
         throw new Error(`Unexpected response status: ${response.status}`)
@@ -584,10 +589,10 @@ const OrderList = () => {
       })
       console.log('my data for product', response.data.data)
       if (response.data) {
-        // const companydata1 = response.data
+        const companydata1 = response.data
         setProductData(response.data.data)
       }
-      console.log('products are', companyData)
+      console.log('products are', response.data)
     } catch (error) {
       setLoading(false)
       console.error('Error fetching data:', error)
@@ -743,7 +748,8 @@ const OrderList = () => {
 
   const handleProductChange = (index, newValue) => {
     const updatedProducts = [...formData.products]
-    updatedProducts[index].productName = newValue?.productName || ''
+    updatedProducts[index].productName = newValue?.productName || '';
+    updatedProducts[index].hsnCode = newValue?.hsnCode || ''; // Add this line
     setFormData({ ...formData, products: updatedProducts })
   }
 
@@ -762,7 +768,7 @@ const OrderList = () => {
   const addProductRow = () => {
     setFormData({
       ...formData,
-      products: [...formData.products, { productName: '', quantity: '', price: '' }],
+      products: [...formData.products, { productName: '', quantity: '', price: '',hsnCode: ''}],
     })
   }
   const deleteProductRow = (index) => {
@@ -1184,6 +1190,7 @@ useEffect(() => {
                               <CTableHead>
                                 <CTableRow>
                                   <CTableHeaderCell>Product Name</CTableHeaderCell>
+                                  <CTableHeaderCell>HSN Code</CTableHeaderCell>
                                   <CTableHeaderCell>Quantity</CTableHeaderCell>
                                   <CTableHeaderCell>Price</CTableHeaderCell>
                                   <CTableHeaderCell>Total</CTableHeaderCell>
@@ -1195,6 +1202,7 @@ useEffect(() => {
                                   return (
                                     <CTableRow key={pIndex}>
                                       <CTableDataCell>{product.productName}</CTableDataCell>
+                                      <CTableDataCell>{product.hsnCode}</CTableDataCell>
                                       <CTableDataCell>{product.quantity}</CTableDataCell>
                                       <CTableDataCell>
                                         ₹
@@ -1213,7 +1221,7 @@ useEffect(() => {
                                 {item.products.length > 0 && (
                                   <CTableRow style={{ backgroundColor: '#f1f8fd' }}>
                                     <CTableDataCell
-                                      colSpan={3}
+                                      colSpan={4}
                                       style={{ textAlign: 'right', fontWeight: 'bold' }}
                                     >
                                       Gross Total:
@@ -2229,12 +2237,12 @@ useEffect(() => {
             <form onSubmit={handleInvoiceSubmit}>
               <FormControl style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <TextField
-                  key="gst"
-                  label="GST (%)"
+                  key="cgst"
+                  label="CGST (%)"
                   variant="outlined"
-                  name="gst"
-                  value={formData.gst || ''} // Ensure it doesn't show undefined
-                  onChange={(e) => setFormData({ ...formData, gst: e.target.value })}
+                  name="cgst"
+                  value={formData.cgst || ''} // Ensure it doesn't show undefined
+                  onChange={(e) => setFormData({ ...formData, cgst: e.target.value })}
                   sx={{ marginBottom: '10px' }}
                   fullWidth
                   InputProps={{
@@ -2245,19 +2253,19 @@ useEffect(() => {
                     ),
                   }}
                 />
-                <TextField
-                  key="HSNcode"
-                  label="HSN Code"
+                 <TextField
+                  key="sgst"
+                  label="SGST (%)"
                   variant="outlined"
-                  name="HSNcode"
-                  value={formData.HSNcode || ''}
-                  onChange={(e) => setFormData({ ...formData, HSNcode: e.target.value })}
+                  name="sgst"
+                  value={formData.sgst || ''} // Ensure it doesn't show undefined
+                  onChange={(e) => setFormData({ ...formData, sgst: e.target.value })}
                   sx={{ marginBottom: '10px' }}
                   fullWidth
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <ConfirmationNumberIcon /> {/* HSN Code Icon */}
+                        <PercentIcon /> {/* GST Icon in input field */}
                       </InputAdornment>
                     ),
                   }}
