@@ -479,45 +479,53 @@ const SalesmanTaskReport = () => {
                       SalesMan Task Report
                     </h4>
                   </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <label style={{ fontWeight: 'bold' }}>Salesman:</label>
-            <FormControl fullWidth>
-              <Autocomplete
-                multiple
-                id="searchable-salesman-select"
-                options={Array.isArray(salesmen) ? salesmen : []} // Ensure it's an array
-                getOptionLabel={(option) => option?.salesmanName || 'Unknown'} // Avoid undefined errors
-                value={
-                  salesmen?.filter((salesman) => selectedSalesmen?.includes(salesman?._id)) || []
-                } // Ensure proper filtering
-                onChange={(event, newValue) => {
-                  const selectedUsernames = newValue?.map((salesman) => salesman?._id) || []
-                  setSelectedSalesmen(selectedUsernames) // Update state safely
-                  console.log('Selected Salesmen:', selectedUsernames)
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    placeholder="Select Salesman"
-                    variant="outlined"
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        height: '38px',
-                        minWidth: '150px',
-                        paddingRight: '32px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis', // ✅ Ensure truncation
-                      },
-                      '& input': {
-                        padding: '8px 14px',
-                      },
-                    }}
-                  />
-                )}
-              />
-            </FormControl>
-          </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+  <label style={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Salesman:</label>
+  <FormControl fullWidth>
+  <Autocomplete
+  multiple
+  id="searchable-salesman-select"
+  options={Array.isArray(salesmen) ? [{ salesmanName: "All", _id: "all" }, ...salesmen] : []}
+  getOptionLabel={(option) => option?.salesmanName || "Unknown"}
+  value={salesmen?.filter((s) => selectedSalesmen.includes(s?._id)) || []}
+  onChange={(event, newValue) => {
+    if (newValue.some((item) => item._id === "all")) {
+      setSelectedSalesmen(
+        selectedSalesmen.length === salesmen.length ? [] : salesmen.map((s) => s._id)
+      );
+    } else {
+      setSelectedSalesmen(newValue.map((s) => s._id));
+    }
+  }}
+  isOptionEqualToValue={(option, value) => option._id === value._id}
+  renderTags={(value) => {
+    const selectedText = value.map((v) => v.salesmanName).join(", ");
+    return selectedText.length > 30 ? `${selectedText.slice(0, 30)}...` : selectedText;
+  }}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      placeholder={selectedSalesmen.length ? "" : "Select Salesman"} // Hide placeholder if value exists
+      variant="outlined"
+      sx={{
+        "& .MuiOutlinedInput-root": {
+          minWidth: "200px",
+          paddingRight: "32px",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        },
+        "& input": {
+          padding: " 14px",
+        },
+      }}
+    />
+  )}
+/>
+
+  </FormControl>
+</div>
+
 
           <div style={styles.container}>
             <div style={styles.inputGroup}>
