@@ -64,6 +64,7 @@ import { FaThumbsUp } from 'react-icons/fa'
 import { CTooltip } from '@coreui/react'
 import debounce from 'lodash.debounce'
 import myGif from '../../ReusablecodeforTable/loadergif.gif'
+import { BiTask } from "react-icons/bi";
 // import { useNavigate } from 'react-router-dom';
 const SalesmanTaskReport = () => {
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -88,7 +89,7 @@ const SalesmanTaskReport = () => {
   const [showCustomDates, setShowCustomDates] = useState(false)
   const [sortBy, setSortBy] = useState('')
   const [sortOrder, setSortOrder] = useState('asc')
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('')
 
   const navigate = useNavigate()
 
@@ -202,52 +203,52 @@ const SalesmanTaskReport = () => {
   }
 
   const fetchData = async (startDate, endDate, selectedPeriod, page = 1) => {
-    setLoading(true);
-    const accessToken = Cookies.get('token');
-    let url;
-  
-    console.log("Selected Period:", selectedPeriod);
-    console.log("Selected Salesmen:", selectedSalesmen);
-    console.log("Selected Status:", status);
-  
+    setLoading(true)
+    const accessToken = Cookies.get('token')
+    let url
+
+    console.log('Selected Period:', selectedPeriod)
+    console.log('Selected Salesmen:', selectedSalesmen)
+    console.log('Selected Status:', status)
+
     // Convert selected salesmen array into a comma-separated string
-    const salesmanIds = selectedSalesmen.length > 0 ? selectedSalesmen.join(",") : "";
-  
+    const salesmanIds = selectedSalesmen.length > 0 ? selectedSalesmen.join(',') : ''
+
     // Construct the base URL
-    url = `${import.meta.env.VITE_SERVER_URL}/api/taskreport?`;
-  
+    url = `${import.meta.env.VITE_SERVER_URL}/api/taskreport?`
+
     // Append IDs if selected
     if (salesmanIds) {
-      url += `ids=${salesmanIds}&`;
+      url += `ids=${salesmanIds}&`
     }
-  
+
     // Append Status if selected and it's NOT "All"
-    if (status && status !== "All") {
-      url += `status=${status}&`;
+    if (status && status !== 'All') {
+      url += `status=${status}&`
     }
-  
+
     // Handle date range and period logic
-    if (selectedPeriod && selectedPeriod !== "Custom") {
-      url += `filter=${selectedPeriod}`;
+    if (selectedPeriod && selectedPeriod !== 'Custom') {
+      url += `filter=${selectedPeriod}`
     } else if (startDate && endDate) {
-      url += `startDate=${startDate}&endDate=${endDate}`;
+      url += `startDate=${startDate}&endDate=${endDate}`
     }
-  
+
     // Remove the trailing '&' if it exists
-    url = url.endsWith("&") ? url.slice(0, -1) : url;
-  
-    console.log("Final URL:", url);
-    console.log("Access Token:", accessToken);
-  
+    url = url.endsWith('&') ? url.slice(0, -1) : url
+
+    console.log('Final URL:', url)
+    console.log('Access Token:', accessToken)
+
     try {
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      });
-  
-      console.log("Response:", response.data);
-  
+      })
+
+      console.log('Response:', response.data)
+
       if (response.data.tasks) {
         // Format response data correctly
         const formattedData = response.data.tasks.map((item) => ({
@@ -258,23 +259,22 @@ const SalesmanTaskReport = () => {
           companyName: item.companyId ? item.companyId.companyName : null,
           branchName: item.branchId ? item.branchId.branchName : null,
           supervisorName: item.supervisorId ? item.supervisorId.supervisorName : null,
-        }));
-  
-        setData(formattedData);
-        setSortedData(formattedData);
-        setLoading(false);
+        }))
+
+        setData(formattedData)
+        setSortedData(formattedData)
+        setLoading(false)
       } else {
-        console.error("Error: No tasks found in response.");
-        setLoading(false);
+        console.error('Error: No tasks found in response.')
+        setLoading(false)
       }
     } catch (error) {
-      setLoading(false);
-      console.error("Error fetching data:", error);
-      throw error;
+      setLoading(false)
+      console.error('Error fetching data:', error)
+      throw error
     }
-  };
-  
-  
+  }
+
   // cc
 
   // Format the date into DD-MM-YYYY format
@@ -371,17 +371,17 @@ const SalesmanTaskReport = () => {
   }
 
   const exportToExcel = ExcelExporter({
-    mytitle: 'Approved Request Data',
+    mytitle: 'SalesMan Task Report Data',
     columns: COLUMNS(),
     data: filteredData,
-    fileName: 'Approve_Request_data.xlsx',
+    fileName: 'SalesMan_Task_Report_data.xlsx',
   })
 
   const exportToPDF = PDFExporter({
-    title: 'Approved Request Data',
+    title: 'SalesMan Task Report Data',
     columns: COLUMNS(),
     data: filteredData,
-    fileName: 'Approve_Request_report.pdf',
+    fileName: 'SalesMan_Task_Report_data.pdf',
   })
 
   const handleSort = (accessor) => {
@@ -421,7 +421,7 @@ const SalesmanTaskReport = () => {
   }, [filteredData, sortBy, sortOrder])
 
   const [selectedSalesmen, setSelectedSalesmen] = useState('')
-const [salesmen, setSalesmen] = useState([])
+  const [salesmen, setSalesmen] = useState([])
   useEffect(() => {
     const fetchDatasalesman = async () => {
       const accessToken = Cookies.get('token')
@@ -460,90 +460,96 @@ const [salesmen, setSalesmen] = useState([])
       <div className="d-flex justify-content-between mb-2">
         <div style={{ display: 'flex', gap: '42px' }}>
           <div>
-            <h2
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                color: '#4c637c',
-                fontWeight: '600',
-                fontFamily: "'Poppins', sans-serif",
-              }}
-            >
-              <FaThumbsUp style={{ fontSize: '24px', color: '#4c637c' }} />
-              Task Report
-            </h2>
+                    <h4
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        color: '#4c637c',
+                        fontWeight: '600',
+                        fontFamily: "'Poppins', sans-serif",
+                        whiteSpace:"nowrap",
+                        flexWrap:"nowrap",
+                        overflow:"hidden",
+                        textOverflow:"ellipsis",
+                      }}
+                    >
+                      
+                      <BiTask style={{ fontSize: '24px', color: '#4c637c' }} />
+                      SalesMan Task Report
+                    </h4>
+                  </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label style={{ fontWeight: 'bold' }}>Salesman:</label>
+            <FormControl fullWidth>
+              <Autocomplete
+                multiple
+                id="searchable-salesman-select"
+                options={Array.isArray(salesmen) ? salesmen : []} // Ensure it's an array
+                getOptionLabel={(option) => option?.salesmanName || 'Unknown'} // Avoid undefined errors
+                value={
+                  salesmen?.filter((salesman) => selectedSalesmen?.includes(salesman?._id)) || []
+                } // Ensure proper filtering
+                onChange={(event, newValue) => {
+                  const selectedUsernames = newValue?.map((salesman) => salesman?._id) || []
+                  setSelectedSalesmen(selectedUsernames) // Update state safely
+                  console.log('Selected Salesmen:', selectedUsernames)
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Select Salesman"
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        height: '38px',
+                        minWidth: '150px',
+                        paddingRight: '32px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis', // ✅ Ensure truncation
+                      },
+                      '& input': {
+                        padding: '8px 14px',
+                      },
+                    }}
+                  />
+                )}
+              />
+            </FormControl>
           </div>
+
           <div style={styles.container}>
             <div style={styles.inputGroup}>
-              <label htmlFor="salesman" style={styles.label}>
-                Salesman:
+              <label htmlFor="status" style={styles.label}>
+                Status:
               </label>
-             <FormControl fullWidth>
-  <Autocomplete
-    multiple
-    id="searchable-salesman-select"
-    options={Array.isArray(salesmen) ? salesmen : []} // Ensure it's an array
-    getOptionLabel={(option) => option?.salesmanName || 'Unknown'} // Avoid undefined errors
-    value={salesmen?.filter((salesman) =>
-      selectedSalesmen?.includes(salesman?._id),
-    ) || []} // Ensure proper filtering
-    onChange={(event, newValue) => {
-      const selectedUsernames = newValue?.map((salesman) => salesman?._id) || [];
-      setSelectedSalesmen(selectedUsernames); // Update state safely
-      console.log('Selected Salesmen:', selectedUsernames);
-    }}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        placeholder={selectedSalesmen?.length > 0 ? '' : 'Select Salesman'} // Fix variable name
-        variant="outlined"
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            height: '38px',
-            minWidth: '150px',
-            paddingRight: '32px',
-          },
-          '& input': {
-            padding: '8px 14px',
-          },
-        }}
-      />
-    )}
-  />
-</FormControl>
-
+              <FormControl fullWidth>
+                <Select
+                  id="status-select"
+                  value={status}
+                  onChange={(event) => setStatus(event.target.value)}
+                  displayEmpty
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      height: '38px',
+                      minWidth: '150px',
+                      paddingRight: '32px',
+                    },
+                    '& .MuiSelect-select': {
+                      padding: '8px 14px',
+                    },
+                  }}
+                >
+                  <MenuItem value="">Select Status</MenuItem>
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                </Select>
+              </FormControl>
             </div>
           </div>
-          <div style={styles.container}>
-          <div style={styles.inputGroup}>
-    <label htmlFor="status" style={styles.label}>Status:</label>
-    <FormControl fullWidth>
-      <Select
-        id="status-select"
-        value={status}
-        onChange={(event) => setStatus(event.target.value)}
-        displayEmpty
-        variant="outlined"
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            height: '38px',
-            minWidth: '150px',
-            paddingRight: '32px',
-          },
-          '& .MuiSelect-select': {
-            padding: '8px 14px',
-          },
-        }}
-      >
-        <MenuItem value="">Select Status</MenuItem>
-        <MenuItem value="All">All</MenuItem>
-        <MenuItem value="Pending">Pending</MenuItem>
-        <MenuItem value="Completed">Completed</MenuItem>
-      </Select>
-    </FormControl>
-  </div>
-  </div>
           <div style={styles.container}>
             <div style={styles.inputGroup}>
               <label htmlFor="period" style={styles.label}>
@@ -555,7 +561,7 @@ const [salesmen, setSalesmen] = useState([])
                 onChange={handlePeriodChange}
                 style={styles.select}
               >
-                 <option value="today">Today</option>
+                <option value="today">Today</option>
                 <option value="yesterday">Yesterday</option>
                 <option value="thisweek">This Week</option>
                 <option value="prevweek">Previous Week</option>

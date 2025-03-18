@@ -4,7 +4,7 @@
     background: linear-gradient(to right, rgb(216, 116, 22) 40%, rgb(50, 42, 111) 60%);
     color: white;
     border-radius: 8px;
-    padding: 0 20px; /* Adjusted padding */
+    padding: 0 0px; /* Adjusted padding */
     height: 40px; /* Match the height of the search input */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
@@ -83,6 +83,6 @@
   }
   @media (min-width: 1400px) {
     .container {
-        max-width: 1513px !important;
+        max-width: 1533px !important;
     }
 }

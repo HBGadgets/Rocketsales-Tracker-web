@@ -21,7 +21,7 @@ import { CiCalendarDate } from "react-icons/ci";
 import { FaMoneyBillWave, FaRegThumbsUp } from 'react-icons/fa';
 import { FaBoxes, FaUserTie } from 'react-icons/fa';
 import { PiShoppingCartSimpleDuotone } from "react-icons/pi";
-import { PiRoadHorizonDuotone } from "react-icons/pi";
+
 
 import { IoLocationOutline } from 'react-icons/io5';
 import { BsWindowFullscreen } from 'react-icons/bs';
@@ -50,7 +50,10 @@ import { MdOutlineAttachMoney } from "react-icons/md";
 import { BiMoney } from "react-icons/bi";
 import { FaShoppingCart } from 'react-icons/fa'; // Import icons
 import { ShoppingCart } from '@mui/icons-material';
-
+import { BiTask } from "react-icons/bi";
+import { MdOutlineLogin, MdOutlineLogout } from "react-icons/md";
+import { BiTimeFive } from "react-icons/bi";
+import { PiRoadHorizonDuotone } from "react-icons/pi";
 const token = Cookies.get("token");
 
 let role = null;
@@ -470,7 +473,7 @@ const createNav = () => {
           to: '/SalesmanTaskReport',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <PiRoadHorizonDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
+              <BiTask  style={{ marginRight: '15px', fontSize: '25px' }} />
             </div>
           ),
         },
@@ -480,10 +483,12 @@ const createNav = () => {
           to: '/CheckInCheckOut',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <PiRoadHorizonDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
+              <BiTimeFive style={{ fontSize: '25px' }} />
             </div>
           ),
         },
+        
+        
        
        
         

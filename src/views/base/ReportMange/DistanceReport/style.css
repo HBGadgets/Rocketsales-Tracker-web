@@ -1,0 +1,13 @@
+/* If using CSS */
+.custom-table tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa !important;
+  }
+  
+  .custom-table tbody tr:nth-of-type(even) {
+    background-color: #ffffff !important;
+  }
+  
+  /* For hover effect */
+  .custom-table tbody tr:hover {
+    background-color: #e9ecef !important;
+  }
