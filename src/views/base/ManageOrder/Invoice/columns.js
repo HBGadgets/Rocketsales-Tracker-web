@@ -36,7 +36,7 @@ export const COLUMNS = () => [
  
   {
     Header: 'Date of Generate',
-    accessor: 'date',
+    accessor: 'updatedAt',
     icon: <Business />,
   },
   {

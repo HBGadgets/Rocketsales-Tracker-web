@@ -88,6 +88,7 @@ const normalizeInvoiceData = (data) => {
     products: (data.products || []).map((product) => ({
       id: product._id,
       name: product.productName,
+      hsnCode: product.hsnCode,
       quantity: product.quantity,
       unitPrice: product.price,
       totalPrice: product.quantity * product.price,
@@ -537,6 +538,7 @@ Payement Type:
           <TableHead>
             <TableRow>
               <TableCell>Product Name</TableCell>
+              <TableCell align="right">HSN Code</TableCell>
               <TableCell align="right">Quantity</TableCell>
               <TableCell align="right">Unit Price (₹)</TableCell>
               <TableCell align="right">Total Price (₹)</TableCell>
@@ -551,6 +553,7 @@ Payement Type:
                 }}
               >
                 <TableCell>{product.name || ""}</TableCell>
+                <TableCell align="right">{product.hsnCode || ''}</TableCell>
                 <TableCell align="right">{product.quantity || 0}</TableCell>
                 <TableCell align="right">{product.unitPrice || 0}</TableCell>
                 <TableCell align="right">{product.totalPrice || 0}</TableCell>

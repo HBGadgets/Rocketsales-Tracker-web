@@ -151,15 +151,43 @@ const UserTable = () => {
       socket.on('liveSalesmanData', (data) => {
         console.log('📩 Received live location data:', data);
         
-        const modifiedData = data.map(item => ({
+        // const modifiedData = data.map(item => ({
+        //   ...item,
+        //   _id:item._id || 'unknown',
+        //   companyName: item.companyId?.companyName || 'Unknown',
+        //   branchName: item.branchId?.branchName || 'Unknown',
+        //   supervisorName: item.supervisorId?.supervisorName || 'Unknown',
+        //   battery:item.batteryLevel || 'Unknown',
+        // }));
+        const now = new Date(); // ✅ Define `now` before using it
+
+      const modifiedData = data.map(item => {
+        if (!item.timestamp) {
+          return {
+            ...item,
+            _id: item._id || 'unknown',
+            companyName: item.companyId?.companyName || 'Unknown',
+            branchName: item.branchId?.branchName || 'Unknown',
+            supervisorName: item.supervisorId?.supervisorName || 'Unknown',
+            battery: item.batteryLevel || 'Unknown',
+            status: "--", // ✅ Show "--" if timestamp is missing
+          };
+        }
+
+        const timestampDate = new Date(item.timestamp);
+        const diffSeconds = (now - timestampDate) / 1000;
+
+        return {
           ...item,
-          _id:item._id || 'unknown',
+          _id: item._id || 'unknown',
           companyName: item.companyId?.companyName || 'Unknown',
           branchName: item.branchId?.branchName || 'Unknown',
           supervisorName: item.supervisorId?.supervisorName || 'Unknown',
-          battery:item.batteryLevel || 'Unknown',
-        }));
-  console.log("modifiedData",modifiedData)
+          battery: item.batteryLevel || 'Unknown',
+          status: diffSeconds <= 20 ? 'Online' : 'Offline', // ✅ Define status properly
+        };
+      });
+       // console.log("modifiedData",modifiedData)
         setData(modifiedData);
         setLoading(false); // Data received, stop loading
       });

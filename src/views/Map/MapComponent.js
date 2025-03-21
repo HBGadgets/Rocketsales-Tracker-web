@@ -40,12 +40,12 @@ const MainMap = () => {
 
     // Handle connection events
     socket.on('connect', () => {
-      console.log('✅ Connected to Socket Server');
+      // console.log(' Connected to main map');
     });
 
     // Listen for live salesman location updates
     socket.on('liveSalesmanData', (data) => {
-      console.log('📩 Received live location data:', data);
+      // console.log('main map', data);
 
       // Process the data to ensure it has the required fields
       const processedData = data.map((item) => ({
@@ -66,7 +66,7 @@ const MainMap = () => {
 
     // Handle disconnection events
     socket.on('disconnect', (reason) => {
-      console.log(`❌ Disconnected: ${reason}`);
+      console.log(` Disconnected: main map ${reason}`);
     });
 
     // Handle connection errors

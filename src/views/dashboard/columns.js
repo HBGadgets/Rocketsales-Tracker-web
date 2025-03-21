@@ -65,19 +65,33 @@ export const columns = [
     Header: 'Last Updated At',
     accessor: 'timestamp',
     // Cell: ({ value }) => (value ? new Date(value).toLocaleDateString() : 'N/A'),
-    
+    id: 'lastUpdatedAt',
   },
+  // {
+  //   Header: 'Status',
+  //   accessor: 'timestamp',
+  //   id: 'status',
+  //   Cell: ({ value }) => {
+  //     if (!value) return <span>--</span>;
+  
+  //     const now = new Date();
+  //     const timestampDate = new Date(value);
+  //     const diffSeconds = (now - timestampDate) / 1000;
+  
+  //     return diffSeconds <= 20? (
+  //       <span><strong>🟢 Online</strong></span>
+  //     ) : (
+  //       <span><strong>🔴 Offline</strong></span>
+  //     );
+  //   }
+  // }
   {
     Header: 'Status',
-    accessor: 'timestamp',
+    accessor: 'status', // ✅ Now coming from pre-processed data
     Cell: ({ value }) => {
-      if (!value) return <span>--</span>;
-  
-      const now = new Date();
-      const timestampDate = new Date(value);
-      const diffSeconds = (now - timestampDate) / 1000;
-  
-      return diffSeconds <= 10? (
+      if (!value || value === "--") return <span>--</span>; // ✅ Handle missing status
+
+      return value === 'Online' ? (
         <span><strong>🟢 Online</strong></span>
       ) : (
         <span><strong>🔴 Offline</strong></span>

@@ -985,6 +985,8 @@ const handleEditModalClose = () => {
                                <thead>
                                  <tr>
                                    <th style={{ border: "1px solid #ccc", padding: "5px" }}>Product Name</th>
+                                  
+                                    <th style={{ border: "1px solid #ccc", padding: "5px" }}>HSN Code</th>
                                    <th style={{ border: "1px solid #ccc", padding: "5px" }}>Quantity</th>
                                    <th style={{ border: "1px solid #ccc", padding: "5px" }}>Price</th>
                                    <th style={{ border: "1px solid #ccc", padding: "5px" }}>Total</th>
@@ -994,6 +996,7 @@ const handleEditModalClose = () => {
                                  {item.products.map((prod, pIndex) => (
                                    <tr key={pIndex}>
                                      <td style={{ border: "1px solid #ccc", padding: "5px" }}>{prod.productName}</td>
+                                     <td style={{ border: "1px solid #ccc", padding: "5px", }}>{prod.hsnCode}</td>
                                      <td style={{ border: "1px solid #ccc", padding: "5px", }}>{prod.quantity}</td>
                                      <td style={{ border: "1px solid #ccc", padding: "5px",  }}>₹ {prod.price}</td>{console.log("AAAAAAAAAAAAAAAA",prod.price,prod)}
                                      <td style={{ border: "1px solid #ccc", padding: "5px",  }}>
@@ -1003,7 +1006,7 @@ const handleEditModalClose = () => {
                                  ))}
                                  <tr>
                                    <td
-                                     colSpan="3"
+                                     colSpan="4"
                                      style={{
                                        border: "1px solid #ccc",
                                        padding: "5px",
@@ -1051,7 +1054,8 @@ const handleEditModalClose = () => {
                              <CTable bordered hover>
                                <CTableHead>
                                  <CTableRow>
-                                   <CTableHeaderCell>Product Name</CTableHeaderCell>
+                                   <CTableHeaderCell>Product Name</CTableHeaderCell>                              
+                                   <CTableHeaderCell>HSN Code</CTableHeaderCell>
                                    <CTableHeaderCell>Quantity</CTableHeaderCell>
                                    <CTableHeaderCell>Price</CTableHeaderCell>
                                    <CTableHeaderCell>Total</CTableHeaderCell>
