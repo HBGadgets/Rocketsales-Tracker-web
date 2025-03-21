@@ -184,7 +184,7 @@ const UserTable = () => {
           branchName: item.branchId?.branchName || 'Unknown',
           supervisorName: item.supervisorId?.supervisorName || 'Unknown',
           battery: item.batteryLevel || 'Unknown',
-          status: diffSeconds <= 20 ? 'Online' : 'Offline', // ✅ Define status properly
+          status: diffSeconds <= 30 ? 'Online' : 'Offline', // ✅ Define status properly
         };
       });
        // console.log("modifiedData",modifiedData)
