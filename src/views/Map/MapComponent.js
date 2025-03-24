@@ -138,6 +138,25 @@ const MainMap = () => {
                   >
                     Live Track
                   </button>
+                  <button
+                    onClick={() => {
+                      // const url = `http://maps.google.com/maps?q=&layer=c&cbll=${salesman?.latitude},${salesman?.longitude}&cbp=11,0,0,0,0}`;
+                      const url = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${salesman?.latitude},${salesman?.longitude}`;
+                      
+                      window.open(url, "_blank", "noopener,noreferrer");
+                    }}
+                    style={{
+                      margin: '10px 10px 10px 10px',                    
+                      padding: '8px 12px',
+                      backgroundColor: '#1d3d5f',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Street View
+                  </button>
                 </div>
               </Popup>
             </Marker>
