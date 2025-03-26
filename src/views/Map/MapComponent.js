@@ -91,8 +91,12 @@ const MainMap = () => {
         {/* Tile layer for the map */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">H B Gadget</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">open street map</a>'
         />
+        {/* <TileLayer
+  url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+  attribution='&copy; <a href="https://www.google.com/maps">Google Maps</a>'
+/> */}
 
         {/* Render markers only for salesmen with valid latitude and longitude */}
         {salesmen
@@ -137,6 +141,25 @@ const MainMap = () => {
                     }}
                   >
                     Live Track
+                  </button>
+                  <button
+                    onClick={() => {
+                      // const url = `http://maps.google.com/maps?q=&layer=c&cbll=${salesman?.latitude},${salesman?.longitude}&cbp=11,0,0,0,0}`;
+                      const url = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${salesman?.latitude},${salesman?.longitude}`;
+                      
+                      window.open(url, "_blank", "noopener,noreferrer");
+                    }}
+                    style={{
+                      margin: '10px 10px 10px 10px',                    
+                      padding: '8px 12px',
+                      backgroundColor: '#1d3d5f',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Street View
                   </button>
                 </div>
               </Popup>

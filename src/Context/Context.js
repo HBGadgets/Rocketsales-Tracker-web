@@ -42,11 +42,11 @@ export default function GlobalState({ children }) {
         const username = 'schoolmaster'
         const password = '123456'
         const token = btoa(`${username}:${password}`)
-        const response = await axios.get('https://rocketsalestracker.com/api/positions', {
-          headers: {
-            Authorization: `Basic ${token}`,
-          },
-        })
+        // const response = await axios.get('https://rocketsalestracker.com/api/positions', {
+        //   headers: {
+        //     Authorization: `Basic ${token}`,
+        //   },
+        // })
 
         if (response.status === 200) {
           console.log(response.data)
