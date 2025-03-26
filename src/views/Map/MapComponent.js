@@ -91,8 +91,12 @@ const MainMap = () => {
         {/* Tile layer for the map */}
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">H B Gadget</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">open street map</a>'
         />
+        {/* <TileLayer
+  url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+  attribution='&copy; <a href="https://www.google.com/maps">Google Maps</a>'
+/> */}
 
         {/* Render markers only for salesmen with valid latitude and longitude */}
         {salesmen
