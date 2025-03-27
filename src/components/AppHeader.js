@@ -136,7 +136,8 @@
 
 
 import React, { useEffect, useRef,useState } from 'react'
-import { NavLink,useLocation } from 'react-router-dom'
+import { Navigate, NavLink,useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   CContainer,
@@ -182,6 +183,7 @@ const AppHeader = () => {
   const [unreadCount1, setUnreadCount1] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null); // For MUI dropdown
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const navigate = useNavigate()
     // Toggle sound function
     const toggleSound = () => {
       setSoundEnabled((prev) => !prev);
@@ -263,6 +265,7 @@ const AppHeader = () => {
     if (toggle.home) {
       dispatch({ type: 'set', sidebarShow: !sidebarShow });
     }
+    navigate('/dashboard')
   };
   
   const handleMaster = () => {
@@ -318,33 +321,47 @@ const AppHeader = () => {
           <CNavItem className="d-flex">
           <CHeaderNav className="ms-auto">
           <CHeaderNav className="ms-auto">
-          <button className="nav-btn"  onClick={() => handleHome()}>
+          <button 
+           className={`nav-btn ${toggle.home ? 'active' : ''}`} 
+          onClick={() => handleHome()}>
             <FaHome className="nav-icon" /> Home
           </button>
         </CHeaderNav>
 
         <CHeaderNav className="ms-auto">
-          <button className="nav-btn" onClick={() => handleMaster()}>
+          <button 
+          // className="nav-btn" 
+          className={`nav-btn ${toggle.management ? 'active' : ''}`}
+          onClick={() => handleMaster()}>
             <FaAddressCard className="nav-icon" /> Management
           </button>
         </CHeaderNav>
 
         <CHeaderNav className="ms-auto">
-          <button className="nav-btn" onClick={() => handleReports()}>
+          <button 
+          // className="nav-btn" 
+          className={`nav-btn ${toggle.manageAttendance ? 'active' : ''}`}
+          onClick={() => handleReports()}>
             <FaChartBar className="nav-icon" /> Manage Attendance
           </button>
         </CHeaderNav>
 
         <CHeaderNav className="ms-auto">
         
-            <button className="nav-btn" onClick={() => handleOrder()}>
+            <button 
+            // className="nav-btn" 
+            className={`nav-btn ${toggle.manageOrder ? 'active' : ''}`}
+            onClick={() => handleOrder()}>
               <AiOutlineShoppingCart className="nav-icon" /> Manage order
             </button>
         
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
         
-        <button className="nav-btn" onClick={() => handleReportManagement()}>
+        <button 
+        // className="nav-btn" 
+        className={`nav-btn ${toggle.reportManagement ? 'active' : ''}`}
+        onClick={() => handleReportManagement()}>
           <TbReportSearch className="nav-icon" /> Report Management
         </button>
     
@@ -379,9 +396,14 @@ const AppHeader = () => {
     margin-right: 20px; /* Space between icon and text */
     font-size: 18px; /* Icon size */
   }
-
+  .nav-btn.active {
+                background-color: #2d3a4b;
+                // border-color: #4a90e2;
+                // box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+              }
   .nav-btn:hover {
-    background-color: #212631; /* Light gray background on hover */
+    // background-color: #212631; /* Light gray background on hover */
+     background-color: #2d3a4b;
     border-color: #ccc; /* Darker border color on hover */
     transform: scale(1.05); /* Slight scaling effect on hover */
   }

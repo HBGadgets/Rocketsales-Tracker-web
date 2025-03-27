@@ -18,7 +18,7 @@ import { GoThumbsdown } from "react-icons/go";
 import { FiUserCheck } from "react-icons/fi";
 import { FcLeave } from "react-icons/fc";
 import { CiCalendarDate } from "react-icons/ci";
-import { FaMoneyBillWave, FaRegThumbsUp } from 'react-icons/fa';
+import { FaMoneyBillWave, FaRegCalendarCheck, FaRegThumbsUp } from 'react-icons/fa';
 import { FaBoxes, FaUserTie } from 'react-icons/fa';
 import { PiShoppingCartSimpleDuotone } from "react-icons/pi";
 import { PiRoadHorizonDuotone } from "react-icons/pi";
@@ -27,7 +27,7 @@ import { IoLocationOutline } from 'react-icons/io5';
 import { BsWindowFullscreen } from 'react-icons/bs';
 import { BsChatDots } from 'react-icons/bs';
 import { IoChatbubblesOutline } from "react-icons/io5";
-import { GiTakeMyMoney } from "react-icons/gi";
+import { GiPathDistance, GiTakeMyMoney } from "react-icons/gi";
 import { CiViewList } from "react-icons/ci";
 import { LiaFileInvoiceDollarSolid, LiaUserCheckSolid } from "react-icons/lia";
 import { FiList } from 'react-icons/fi';
@@ -460,7 +460,7 @@ const createNav = () => {
           to: '/DistanceReport',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <PiRoadHorizonDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
+              <GiPathDistance   style={{ marginRight: '15px', fontSize: '20px' }} />
             </div>
           ),
         },
@@ -470,7 +470,7 @@ const createNav = () => {
           to: '/SalesmanTaskReport',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <PiRoadHorizonDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
+              <FaTasks    style={{ marginRight: '15px', fontSize: '20px' }} />
             </div>
           ),
         },
@@ -480,7 +480,7 @@ const createNav = () => {
           to: '/CheckInCheckOut',
           icon: (
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <PiRoadHorizonDuotone  style={{ marginRight: '15px', fontSize: '25px' }} />
+              <FaRegCalendarCheck  style={{ marginRight: '15px', fontSize: '20px' }} />
             </div>
           ),
         },

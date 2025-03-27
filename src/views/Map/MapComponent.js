@@ -123,7 +123,7 @@ const MainMap = () => {
                   <p>📍 {salesman.branchName || 'Unknown Branch'}</p> */}
                   {salesman.timestamp && (
                     <p>
-                    Last update: {format(new Date(salesman.timestamp),'dd MMM yyyy')}
+                    Last update: {format(new Date(salesman.timestamp),'hh:mm a ( dd MMM yyyy )')}
                     </p>
                   )}
                   <button
